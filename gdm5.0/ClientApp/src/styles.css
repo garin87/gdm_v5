@@ -1,0 +1,66 @@
+
+a {
+  color: #0366d6;
+}
+
+code {
+  color: #e01a76;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+html, body {height: 100%; margin: 0;}
+body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+.snack-bar-warning {
+  color: #212529;
+  background: #fc506d; 
+  /* #fc3d5c #ff867f;  */
+}
+.snack-bar-warning .mat-simple-snackbar-action {
+  color: #5f676d
+}
+.snack-bar-success {
+  color: #000000;
+  background-color: #b2fab4;
+}
+.snack-bar-success .mat-simple-snackbar-action {
+  color: #7b8186
+}
+
+mat-form-field.register-user-select-role > div.mat-form-field-wrapper > div.mat-form-field-flex {
+  background-color: rgba(0,0,0,0) !important;
+  padding: .75em 0 0 0 !important;
+}
+
+mat-form-field.register-user-select-role > div.mat-form-field-wrapper > div.mat-form-field-flex > .mat-form-field-infix {
+  padding: .25em 0 .5em 0 !important;
+}
+mat-form-field.editable-input div.mat-form-field-wrapper div.mat-form-field-flex{
+  padding-top: 0.19em;
+}
+.dialog-footer{
+  display: flex;
+  justify-content: end;
+}
+.filter-sidenav-content-field .mat-form-field-wrapper .mat-form-field-flex {
+  padding: 0em 0.74em 0 0.75em;
+}
+.loading-shade{
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 56px;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

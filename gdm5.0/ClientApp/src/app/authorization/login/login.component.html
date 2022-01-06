@@ -1,0 +1,31 @@
+<div class="login-container">
+  <mat-card>
+      <mat-card-content>
+        <form  class="form-signin" [formGroup]="loginForm" (ngSubmit)="login(loginForm.value)">
+          <h2>Log In</h2>
+          <mat-form-field class="full-width-input">
+            <input matInput formControlName="username"  id="username" minlength="4" maxlength="17" name="username" placeholder="User Name" required>
+            <mat-error *ngIf="username.errors?.required">
+              Please provide a valid Name
+            </mat-error>
+            <mat-error *ngIf="username.errors?.minlength">
+              Name must be at least 4 characters long.
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field class="full-width-input">
+              <input placeholder="Password" matInput id="password" minlength="4" maxlength="17" name="password" [type]="hide ? 'password' : 'text' " formControlName="password" required>
+              <button mat-icon-button matSuffix (click)="hide = !hide" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide">
+                  <mat-icon>{{hide ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+            <mat-error *ngIf="password.errors?.required">
+              Please provide a valid password
+            </mat-error>
+            <mat-error *ngIf="password.errors?.minlength">
+              Password must be at least 4 characters long.
+            </mat-error>
+          </mat-form-field>
+          <button mat-raised-button color="primary" [disabled]="!loginForm.valid">Login</button>
+        </form>
+      </mat-card-content>
+  </mat-card>
+</div>

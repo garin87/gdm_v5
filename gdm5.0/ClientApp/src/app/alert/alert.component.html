@@ -1,0 +1,5 @@
+<div *ngFor="let al of statusAlerts" [class]="al.class" role="alert" 
+    title="Click to close" (click)="close(al)">       
+    <div class="alert-time">{{al.time | date:'mediumTime'}}</div>        
+    <div>{{al.message}}</div>    
+</div>

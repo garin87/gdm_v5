@@ -1,0 +1,22 @@
+.text-field{
+    margin: 4px;
+}
+/* .field-input-action{
+    display: flex;
+    margin-bottom: 1.34375em;
+} */
+.field-input-wrapper{
+    display: flex;
+}
+.field-input-action{
+    display: flex;
+    align-items: center;
+}
+
+.field-input-action > mat-icon{
+    cursor: pointer;
+}
+.field-input-action > mat-icon:hover{
+    color: #797968;
+}
+

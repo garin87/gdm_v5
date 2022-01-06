@@ -1,0 +1,64 @@
+
+<mat-card>
+    <mat-card-content>
+      <form  class="form-signin" [formGroup]="registerForm" (ngSubmit)="registerUser(registerForm.value)">
+        <h2>User registration</h2>
+        <mat-form-field class="full-width-input">
+          <input matInput formControlName="username"  id="UserName" minlength="4" maxlength="17" name="UserName" placeholder="User Name" required>
+          <mat-error *ngIf="username.errors?.required">
+            Please provide a valid Name
+          </mat-error>
+          <mat-error *ngIf="username.errors?.minlength">
+            Name must be at least 4 characters long.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width-input">
+            <input placeholder="Email" matInput id="email" minlength="4" maxlength="17" type="email" name="email"formControlName="email" required>
+          <mat-error *ngIf="email.errors?.required">
+            Please provide a valid email
+          </mat-error>
+          <mat-error *ngIf="email.errors?.email">
+            Please provide a valid email
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width-input">
+            <input placeholder="Password" matInput id="password" minlength="4" maxlength="17" name="password" [type]="hidePassword ? 'password' : 'text' " formControlName="password" required>
+            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidePassword">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          <mat-error *ngIf="password.errors?.required">
+            Please provide a valid password
+          </mat-error>
+          <mat-error *ngIf="password.errors?.minlength">
+            Password must be at least 4 characters long.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="full-width-input">
+            <input placeholder="Confirm Password" matInput id="passwordConfirm" minlength="4" maxlength="17" name="passwordConfirm" [type]="hidepasswordConfirm ? 'password' : 'text' " formControlName="passwordConfirm" required>
+            <button mat-icon-button matSuffix (click)="hidepasswordConfirm = !hidepasswordConfirm" [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hidepasswordConfirm">
+                <mat-icon>{{hidepasswordConfirm ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+          <!-- <mat-error *ngIf="passwordConfirm.errors?.required">
+            Please provide a valid confirm password
+          </mat-error>
+          <mat-error *ngIf="passwordConfirm.errors?.minlength">
+            Confirm password must be at least 4 characters long.
+          </mat-error> -->
+          <mat-error *ngIf="passwordConfirm.errors?.mismatch">
+            Password and Confirm password is not matched.
+          </mat-error>
+        </mat-form-field>
+        <mat-form-field class="register-user-select-role" appearance="fill">
+          <mat-label>Choose an user role</mat-label>
+          <mat-select name="userRole" formControlName="userRole"  required>
+            <mat-option *ngFor="let role of userRoles" [value]="role.value">
+              {{role.viewValue}}
+            </mat-option>
+          </mat-select>
+          <mat-error *ngIf="userRole.errors?.required">Please choose an user role</mat-error>  
+        </mat-form-field>
+         <button mat-raised-button color="primary" [disabled]="!registerForm.valid">Register</button>
+    
+         </form>
+    </mat-card-content>
+  </mat-card>

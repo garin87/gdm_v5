@@ -1,0 +1,8 @@
+.dialog-footer{
+    display: flex;
+    justify-content: flex-end;
+}
+/* #f3675d */
+.parameter-dialog-input{
+    width: 100%;
+}

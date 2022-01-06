@@ -1,0 +1,25 @@
+
+<div *ngIf="valueUpdated">
+    <div class="app-field-editor" [ngSwitch]="editorName">
+        <div *ngSwitchCase="'input'">
+            <text-editor [property]="property" [valueUpdated]="valueUpdated"> 
+            </text-editor>
+        </div>
+        <div *ngSwitchCase="'dateTime'">
+             <dateTimePiker-editor [property]="property" [valueUpdated]="valueUpdated">
+             </dateTimePiker-editor>
+        </div>
+        <div *ngSwitchCase="'selector'">
+            <selector-editor [items]="property?.selectableItems" 
+                [property]="property" [valueUpdated]="valueUpdated">
+            </selector-editor>
+       </div>
+       <div *ngSwitchCase="'parameter'">
+           <customField-editor [property]="property" [valueUpdated]="valueUpdated">
+           </customField-editor>
+       </div>
+        <div *ngSwitchDefault>
+             <div class="message-warning"> This type of field not emplimented</div>
+        </div>
+  </div>
+</div>

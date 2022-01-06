@@ -1,0 +1,20 @@
+<div class="parameter-dialog">
+    <h2 mat-dialog-title>Enter a new parameter name and priority of it</h2>
+    <div mat-dialog-content>
+        <form  class="form-signin" [formGroup]="parameterForm">
+            <mat-form-field class="parameter-dialog-input" appearance="fill">
+                <mat-label>Parameter name</mat-label>
+                <input formControlName="parameterName"  matInput required>
+            </mat-form-field>
+            <mat-form-field class="parameter-dialog-input" appearance="fill">
+                <mat-label>Priority</mat-label>
+                <input formControlName="parameterPriority"  matInput type="number">
+            </mat-form-field>
+        </form>
+    </div>
+    <div mat-dialog-actions class="dialog-footer"> 
+      <button mat-raised-button color="warn" (click)="onNoClick()">Cancel</button>
+      <button mat-raised-button color="primary" (click)="saveParameters(parameterForm.value)" 
+              [disabled]="!parameterForm.valid">Save</button>
+    </div>
+</div>

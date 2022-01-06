@@ -1,0 +1,8 @@
+<div  class="app-form-field-row" id="{{instanceName + 'controls-id'}}" *ngIf="properties | async" >
+     <div *ngFor="let property of(properties) | async" class="row-property">
+       <field-editor  class="app-property-row" [property]="property" 
+            [valueUpdated]="this._formEditorService.valueUpdated">
+            
+        </field-editor>
+     </div>
+</div>

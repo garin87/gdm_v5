@@ -1,0 +1,64 @@
+
+<div class="product-main-container">
+    <app-sidePanel [eventToggle]="sidenavToggle" [properties]="namesParoduct"></app-sidePanel>
+    <div class="product-container">
+        <mat-card class="product-card product-commands">
+            <!-- <mat-card-title>Product</mat-card-title> -->
+            <mat-card-actions>
+                <button mat-raised-button class="product-command-button"
+                     color="primary" (click)="onToggleSidenav($event)">
+                    products
+                </button>
+                <button class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isAddProduct')">Add a product</button>
+                <button class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isAddNewProduct')" >Add a new product</button> 
+                <button class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isEditParamProduct')" >Edit product parameters</button> 
+            </mat-card-actions>
+        </mat-card>
+
+        <div class="product-content">
+            <mat-card class="product-card instance-product-card"  *ngIf="isAddProduct">
+                <mat-card-title>Add  a product</mat-card-title>
+                <mat-card-subtitle>Add a instance of product </mat-card-subtitle>
+                <form-editor  [instanceName]="'AddInstanceProduct'"></form-editor>
+                <mat-card-actions>
+                    <div class="product-save-button">
+                        <button  mat-raised-button color="primary" (click)="saveInstanceProduct()" >Save a new product</button>    
+                    </div>
+                </mat-card-actions>
+            </mat-card>
+            <mat-card class="product-card parameters-product-card"  *ngIf="isNewProduct">
+                <mat-card-title>Add  a new product</mat-card-title>
+                <mat-card-subtitle>Add parameters for  a new product </mat-card-subtitle>
+                <form-editor  [instanceName]="'Product'"></form-editor>
+                <mat-card-actions>
+                    <div class="product-save-button">
+                        <button  mat-raised-button color="primary" (click)="saveProduct()" >Save a new product</button>    
+                    </div>
+                </mat-card-actions>
+            </mat-card>
+            <mat-card class="product-card parameters-product-card"  *ngIf="isEditParamProduct">
+                <mat-card-title>Edit product parameters</mat-card-title>
+                <mat-card-subtitle>You can add, delete or edit product parameters</mat-card-subtitle>
+                <form-editor  [instanceName]="'EditProductParameters'"></form-editor>
+                <mat-card-actions>
+                    <div class="product-save-button">
+                        <button  mat-raised-button color="primary" (click)="saveEditedProduct()" >Save a new product</button> 
+                    </div>
+                </mat-card-actions>
+            </mat-card>
+            
+            <mat-card class="product-card parameters-product-card"  *ngIf="isGridShow">
+                <div class="loading-shade" *ngIf="isLoadingResults">
+                    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+                </div>
+                <mat-card-title>Products</mat-card-title>
+                
+                <grid-control [selectedProduct]="currentProductName" [gridData]="gridProductData" [gridMetadataType]="gridMetadaType"></grid-control>
+            </mat-card>
+        </div>   
+
+    </div>
+</div>

@@ -1,0 +1,173 @@
+using gdm5._0.Data;
+using gdm5._0.Models;
+using gdm5._0.Services;
+using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.SpaServices.AngularCli;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Text;
+
+namespace gdm5._0
+{
+    public class Startup
+    {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+        // This method gets called by the runtime. Use this method to add services to the container.
+        public void ConfigureServices(IServiceCollection services)
+        {
+            string conString = Configuration["ConnectionStrings:DefaultConnection"];
+            services.AddDbContext<DataContext>(options =>
+                options.UseSqlServer(conString));
+
+            services.AddDatabaseDeveloperPageExceptionFilter();
+
+            services.AddHttpContextAccessor();
+            services.AddSingleton<IUriService>(options =>
+            {
+                var accessor = options.GetRequiredService<IHttpContextAccessor>();
+                var request = accessor.HttpContext.Request;
+                var uri = string.Concat(request.Scheme, "://", request.Host.ToUriComponent());
+                return new UriService(uri);
+            });
+
+            services.AddDefaultIdentity<ApplicationUser>(options => 
+                      options.SignIn.RequireConfirmedAccount = true)
+                     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddIdentityServer()
+                    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+
+       
+
+            //.AddCookie(config =>
+            // {
+            //     config.Cookie.Name = "auth";
+            //     config.Cookie.HttpOnly = true;//The cookie cannot be obtained by the front-end or the browser, and can only be modified on the server side
+            //                                   // config.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict;//This cookie cannot be used as a third-party cookie under any circumstances, without exception. For example, suppose b.com sets the following cookies:
+            // })
+
+            var jwtSettings = Configuration.GetSection("JwtSettings");
+            services.AddAuthentication(options =>
+           {
+               options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+               options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+               //options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
+               //}).AddCookie("CookiewAuth", options => {
+               //    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("Identity/Account/Login");
+
+
+           }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    //http://localhost:24378
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
+                    ValidAudience = jwtSettings.GetSection("validAudience").Value,
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSettings.GetSection("securityKey").Value))
+
+                };
+            }).AddIdentityServerJwt();
+
+            services.AddControllersWithViews();
+
+            services.AddRazorPages();
+            // In production, the Angular files will be served from this directory
+            services.AddSpaStaticFiles(configuration =>
+            {
+                configuration.RootPath = "ClientApp/dist";
+            });
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("EnableCORS", builder =>
+                {
+                    builder.AllowAnyOrigin()
+                       .AllowAnyHeader()
+                       .AllowAnyMethod();
+                });
+            });
+
+            services.AddTransient<IAuthService, AuthService>();
+            services.AddTransient<IRegistrationService, RegistrationService>();
+            services.AddTransient<ITokenService, TokenService>();
+            services.AddTransient<IMetadataService, MetadataService>();
+            services.AddTransient<IProductTypeService, ProductTypeService>();
+        }
+
+        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        {
+            if (env.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+                app.UseHsts();
+            }
+
+            app.UseCors("EnableCORS");
+
+            app.UseHttpsRedirection();
+            app.UseStaticFiles();
+            if (!env.IsDevelopment())
+            {
+                app.UseSpaStaticFiles();
+            }
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            // app.UseIdentityServer();
+        
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
+
+            app.UseSpa(spa =>
+            {
+                // To learn more about options for serving an Angular SPA from ASP.NET Core,
+                // see https://go.microsoft.com/fwlink/?linkid=864501
+
+                spa.Options.SourcePath = "ClientApp";
+
+                if (env.IsDevelopment())
+                {
+                    spa.UseAngularCliServer(npmScript: "start");
+                }
+            });
+        }
+    }
+}

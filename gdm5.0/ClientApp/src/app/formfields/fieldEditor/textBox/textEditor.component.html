@@ -1,0 +1,23 @@
+<div class="text-field">
+    
+    <mat-form-field  *ngIf="!isTypeArea" [attr.class]="(isEditable || isDeleted)?'editable-input':''"  class="" appearance="fill">
+        <mat-label>{{displayedName}}</mat-label>
+        <mat-label *ngIf="navPriority">  PRI - {{navPriority}}</mat-label>
+        <div class="field-input-wrapper">
+            <input #textInput [type]="typeName" [attr.step]="step" [attr.min]="min" matInput [required]="required" [readonly]="readOnly" [value]="value"
+                (keyup)="changeText()" (paste)="changeText()" (cut)="changeText()" (input)="changeText()">
+            <div class="field-input-action" *ngIf="isEditable || isDeleted">
+                <mat-icon (click)="editField()"  *ngIf="isEditable">mode_edit</mat-icon>
+                <mat-icon (click)="deleteField()" *ngIf="isDeleted">close</mat-icon>
+            </div> 
+            
+        </div>
+    </mat-form-field>      
+    
+    <mat-form-field *ngIf="isTypeArea" class="" appearance="fill">
+        <mat-label>Em</mat-label>
+        <textarea #textInput matInput placeholder="" [readonly]="readonly" [value]=""
+        (keyup)="changeText()" (paste)="changeText()" (cut)="changeText()" (input)="changeText()">
+        </textarea>
+    </mat-form-field>
+</div>

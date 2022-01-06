@@ -1,0 +1,278 @@
+{
+   "Product":{ 
+      "Name":{
+        "Name": "Name",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "Required":true
+      },
+      "ProductNumber":{
+        "Name": "ProductNumber",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Product number"
+      },
+      "Quantity":{
+        "Name": "Quantity",
+        "TypeView":"input",
+        "Type":"double",
+        "DefaultValue":"",
+        "Required":true
+      },
+      "StandartCost":{
+        "Name": "StandartCost",
+        "TypeView":"input",
+        "Type":"double",
+        "DefaultValue":"",
+        "DisplayedName":"Product standart cost"
+      },
+      "PrimeCost":{
+        "Name": "PrimeCost",
+        "TypeView":"input",
+        "Type":"double",
+        "DefaultValue":"",
+        "DisplayedName":"Product prime cost"
+      },
+      "Manufacturer":{
+        "Name": "Manufacturer",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":""
+      },
+      "Description":{
+        "Name": "Description",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":""
+      },
+      "DateOfReceipt":{
+        "Name": "DateOfReceipt",
+        "TypeView":"DateTime",
+        "Type":"DateTime",
+        "DefaultValue":"",
+        "DisplayedName":"Date of receipt"
+      },
+      "Parameter":{
+        "Name": "TestParameter",
+        "TypeView":"parameter",
+        "Type":"string",
+        "DefaultValue":"",
+        "Order": -2
+      },
+      "CurrencyName":{
+        "Name": "CurrencyName",
+        "TypeView":"selector",
+        "Type":"string",
+        "DefaultValue":"BYR",
+        "DisplayedName":"Currency name"
+      },
+      "WarehouseName":{  
+        "Name": "WarehouseName",
+        "TypeView":"input",
+        "Type":"string",
+        "DisplayedName":"Warehouse name",
+        "DefaultValue":"",
+        "Required":true
+      }
+   },
+   "EditProductParameters":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Provider":"loadProductParameters",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "Accessor":"loadParameterFields",
+      "DisplayedName":"Name"
+    }
+   },
+   "AddInstanceProduct":{
+    "Name":{
+      "Name": "Name",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Provider":"loadProductParameters",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "Accessor":"loadDependParameters",
+      "DisplayedName":"Name"
+    },
+    "ProductNumber":{
+      "Name": "ProductNumber",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Product number"
+    },
+    "Quantity":{
+      "Name": "Quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "Required":true
+    },
+    "StandartCost":{
+      "Name": "StandartCost",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Product standart cost"
+    },
+    "PrimeCost":{
+      "Name": "PrimeCost",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Product prime cost"
+    },
+    "Manufacturer":{
+      "Name": "Manufacturer",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":""
+    },
+    "Description":{
+      "Name": "Description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":""
+    },
+    "DateOfReceipt":{
+      "Name": "DateOfReceipt",
+      "TypeView":"DateTime",
+      "Type":"DateTime",
+      "DefaultValue":"",
+      "DisplayedName":"Date of receipt"
+    },
+    "CurrencyName":{
+      "Name": "CurrencyName",
+      "TypeView":"selector",
+      "Type":"string",
+      "DefaultValue":"BYR",
+      "DisplayedName":"Currency name"
+    },
+    "WarehouseName":{  
+      "Name": "WarehouseName",
+      "TypeView":"input",
+      "Type":"string",
+      "DisplayedName":"Warehouse name",
+      "DefaultValue":"",
+      "Required":true
+    }
+   },
+   "Customer":{
+     "Name":{
+        "Name": "Name",
+        "TypeView":"selector",
+        "Type":"string",
+        "DefaultValue":""
+      },
+      "TestMergeCustomer":{
+        "Name": "TestMergeCustomer",
+        "TypeView":"selector",
+        "Type":"string",
+        "DefaultValue":""
+      }
+   },  
+   "PruductGrid":{
+    "Position":{
+      "Name": "position",
+      "Type":"string",
+      "DisplayedName":"No.",
+      "Order": 1,
+      "isSortable": false
+    },
+    "Name":{
+      "Name": "name",
+      "Type":"string",
+      "DisplayedName":"Product",
+      "isSortable": false
+    },
+    "ProductNumber":{
+      "Name": "productNumber",
+      "Type":"string",
+      "DisplayedName":"Prod. No",
+      "isSortable": true
+    },
+    "Quantity":{
+      "Name": "quantity",
+      "Type":"double",
+      "DisplayedName":"Quantity",
+      "isSortable": true
+    },
+    "StandartCost":{
+      "Name": "standartCost",
+      "Type":"double",
+      "DisplayedName":"Std cost",
+      "isSortable": true
+    },
+    "PrimeCost":{
+      "Name": "primeCost",
+      "Type":"double",
+      "DisplayedName":"Prime cost",
+      "isSortable": true
+    },
+    "Manufacturer":{
+      "Name": "manufacturer",
+      "Type":"string",
+      "DisplayedName":"Manufacturer",
+      "isSortable": true
+    },
+    "Description":{
+      "Name": "description",
+      "Type":"string",
+      "DisplayedName":"Description",
+      "isSortable": false
+    },
+    "DateOfReceipt":{
+      "Name": "dateOfReceipt",
+      "Type":"DateTime",
+      "DisplayedName":"Date of receipt",
+      "isSortable": true
+    },
+    "CurrencyName":{
+      "Name": "currency",
+      "Type":"string",
+      "DisplayedName":"Currency",
+      "isSortable": true
+    },
+    "WarehouseName":{  
+      "Name": "wareHouse",
+      "Type":"string",
+      "DisplayedName":"Warehouse",
+      "isSortable": true
+    }
+   },
+   "OptionalOfProduct":{
+      "Manufacturer":{
+        "Name": "Manufacturer",
+        "TypeView":"selector",
+        "Type":"string",
+        "DefaultValue":""
+      },
+      "WarehouseName":{  
+        "Name": "WarehouseName",
+        "TypeView":"selector",
+        "Type":"string",
+        "DisplayedName":"Warehouse name",
+        "DefaultValue":"",
+        "Required":true
+      },
+      "productParameters":{
+        "Name": "productParameters",
+        "TypeView":"selector",
+        "Editor":"selector",
+        "Provider":"loadProductParameters",
+        "Type":"string",
+        "DefaultValue":"",
+        "Required":true,
+        "Accessor":"loadDependParameters",
+        "DisplayedName":"Name"
+      }
+   }
+}

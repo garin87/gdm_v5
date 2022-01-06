@@ -1,0 +1,41 @@
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+html {
+  font-size: 14px;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.navbar-nav{
+  flex-direction: row;
+  color: white;
+}
+
+.nav-item{
+  border-radius: 4px
+}
+.nav-link{
+  color: white;
+  font-size: 18px;
+  padding: .5rem .5rem .5rem .5rem;
+}
+.menu-item:focus, 
+.menu-item:hover, 
+ a:hover{
+  background: rgba(0,0,0,.4);
+  color: #f48fb1;
+}
+
+.link-active{
+  background: rgba(0,0,0,.4);
+}
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
