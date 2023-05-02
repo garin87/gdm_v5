@@ -27,6 +27,9 @@ export class FieldEditorComponent implements OnInit  {
        if(typeView == "DateTime") return "dateTime";
        if(typeView == "selector") return "selector";
        if(typeView == "parameter") return "parameter";
+       if(typeView == "listparameter") return "listparameter";
+       if(typeView == "picklist") return "picklist";
+       
        return "input"
     }
 }

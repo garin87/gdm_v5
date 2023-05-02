@@ -8,10 +8,13 @@ using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
 using gdm5._0.DTO;
 using gdm5._0.Services;
+using gdm5._0.Requests.Product;
+using gdm5._0.Services.Interfaces;
+using gdm5._0.Requests.Order;
 
 namespace gdm5._0.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/orders")]
     [ApiController]
     public class OrdersController : ControllerBase
     {
@@ -19,10 +22,11 @@ namespace gdm5._0.Controllers
 
         private OrderService _orderService;
 
-        public OrdersController(DataContext context)
+        public OrdersController(DataContext context, IHttpContextAccessor httpContextAccessor,
+             IProductService ProductService, IUriService uriService)
         {
             _context = context;
-            _orderService = new OrderService(_context);
+            _orderService = new OrderService(_context, httpContextAccessor, ProductService, uriService);
         }
   
         // GET: api/Orders
@@ -102,61 +106,267 @@ namespace gdm5._0.Controllers
             return Ok(order);
         }
 
-        private bool OrderExists(int id)
+        
+        // POST: api/Orders/addOrderProduct
+        [Route("addOrderProduct")]
+        [HttpPost]
+        public async Task<IActionResult> addOrderProduct(AddOrderRequest AddOrderRequest)
         {
-            return _context.Orders.Any(e => e.Id == id);
+            try
+            {
+                await _orderService.AddOrder(AddOrderRequest);
+                return Ok(new { IsSuccess = true, Message = "Success: Order has added." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+
+        }
+
+        // POST: api/Orders/addToCartOrder
+        [Route("addToCartOrder")]
+        [HttpPost]
+        public async Task<IActionResult> AddToCartOrder(AddOrderRequest AddOrderRequest)
+        {
+            try
+            {
+                await _orderService.AddToCartOrder(AddOrderRequest);
+                return Ok(new { IsSuccess = true, Message = "Success: Order has added to cart." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+
         }
 
         // POST: api/Orders/addOrderProduct
+        [Route("addOrderProductList")]
         [HttpPost]
-        [Route("addOrderProduct")]
-        public async Task<OrderDTO> addOrderProduct(OrderDTO orderDTO)
+        public async Task<IActionResult> addOrderProductList(addOrderListProductRequest AddOrderRequest)
         {
+            try
+            {
+                await _orderService.addOrderProductList(AddOrderRequest);
+                return Ok(new { IsSuccess = true, Message = "Success: Order has added." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
 
-            var orderNew = await _orderService.AddOrders(orderDTO);
+        }
 
-            return orderNew;
+        [Route("getOrderProduct")]
+        [HttpPost]
+        public IActionResult getOrderProduct(getOrdersRequest request)
+        {
+            var route = Request.Path.Value;
+            try
+            {
+                var result = this._orderService.getOrderProduct(request.Name,
+                    request.PageFilter, route, request.SortOption, request.Filter);
+                return Ok(result);
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Route("getOrderProductList")]
+        [HttpPost]
+        public IActionResult getOrderProductList(getOrdersRequest request)
+        {
+            var route = Request.Path.Value;
+            try
+            {
+                var result = this._orderService.getOrderProducts(request.Name,
+                    request.PageFilter, route, request.SortOption, request.Filter);
+                return Ok(result);
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Route("getCartOrderProducts")]
+        [HttpPost]
+        public IActionResult getCartOrderProducts()
+        {
+            var route = Request.Path.Value;
+            try
+            {
+                var result = this._orderService.getCartOrderProducts(route);
+                return Ok(result);
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Route("saveOrderCart")]
+        [HttpGet]
+        public async Task<IActionResult> saveOrderCart()
+        {
+            try
+            {
+                await this._orderService.saveOrderCart();
+
+                return Ok(new { IsSuccess = true, Message = "Success: Order has saved." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Route("cancelOrderCart")]
+        [HttpGet]
+        public IActionResult cancelOrderCart()
+        {
+            try
+            {
+                this._orderService.cancelOrderCart();
+
+                return Ok(new { IsSuccess = true, Message = "Success: Order canceled." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [HttpDelete]
+        [Route("deleteOrderProduct/{id}")]
+        public IActionResult deleteOrderProduct(int id)
+        {
+            try
+            {
+                this._orderService.deleteOrderProduct(id);
+
+                return Ok(new { IsSuccess = true, Message = "Success: Order deleted." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+        [Route("GetCartOrderCount")]
+        [HttpGet]
+        public IActionResult GetCartOrderCount()
+        {
+            try
+            {
+                return Ok(this._orderService.GetCartOrderCount());
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
         }
 
         // GET: api/Orders
-        [HttpGet]
-        [Route("GetOrders")]
-        public Task<IEnumerable<Order>> GetOrderProd()
-        {
-            return _orderService.GetOrders();
-        }
+        //[HttpGet]
+        //[Route("GetOrders")]
+        //public Task<IEnumerable<Order>> GetOrderProd()
+        //{
+        //    return _orderService.GetOrders();
+        //}
         // GET: api/Orders/GetOrderProducts
-        [HttpGet]
-        [Route("GetOrderProducts")]
-        public Task<IEnumerable<OrderPDTO>> GetOrderProducts()
-        {
-            return _orderService.GetOrderProduct();
-        }
+        //[HttpGet]
+        //[Route("GetOrderProducts")]
+        //public Task<IEnumerable<OrderPDTO>> GetOrderProducts()
+        //{
+        //    return _orderService.GetOrderProduct();
+        //}
 
         // GET: api/Orders/GetOrderByNameCompany/{nameCompany}
+        //[HttpGet]
+        //[Route("GetOrderByNameCompany/{nameCompany}")]
+        //public Task<IEnumerable<OrderPDTO>> GetOrderByNameCompany(string nameCompany)
+        //{
+        //    return _orderService.GetOrderByNameCompany(nameCompany);
+        //}
+
+        [Route("getOrderNameCompanies")]
         [HttpGet]
-        [Route("GetOrderByNameCompany/{nameCompany}")]
-        public Task<IEnumerable<OrderPDTO>> GetOrderByNameCompany(string nameCompany)
+        public IActionResult getOrderNameCompanies()
         {
-            return _orderService.GetOrderByNameCompany(nameCompany);
+            try
+            {
+                return Ok(this._orderService.getOrderNameCompanies());
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
         }
 
+        [Route("getOrderNameCompaniesByNameCompany")]
+        [HttpGet]
+        public IActionResult getOrderNameCompanies([FromRoute] string nameCompany)
+        {
+            try
+            {
+                return Ok(_orderService.getOrderNameCompanies(nameCompany));
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+
+        [HttpDelete]
+        [Route("deleteCartProduct/{id}")]
+        public  IActionResult DeleteCartProduct(int id)
+        {
+
+            try
+            {
+                _orderService.DeleteCartProduct(id);
+                return Ok(new { IsSuccess = true, Message = "Success: Product has deleted from cart." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Route("getNamesProduct")]
+        [HttpGet]
+        public IActionResult getNamesProduct()
+        {
+            try
+            {
+                return Ok(this._orderService.getNamesProduct());
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+       
         // DELETE: api/Orders/DeleteOrders/5
-        [HttpDelete("DeleteOrders/{id}")]
-        public async Task<IActionResult> DeleteOrders([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpDelete("DeleteOrders/{id}")]
+        //public async Task<IActionResult> DeleteOrders([FromRoute] int id)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var order = await _orderService.DeleteOrders(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
+        //    var order = await _orderService.DeleteOrders(id);
+        //    if (order == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return Ok(order);
-        }
+        //    return Ok(order);
+        //}
     }
 }

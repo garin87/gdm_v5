@@ -12,6 +12,8 @@ namespace gdm5._0.Models
         public string City { get; set; }
         public string CustomerName { get; set; }
         public string MobilePhone { get; set; }
+        public string CustomerNameSecond { get; set; }
+        public string MobilePhoneSecond { get; set; }
         public string Description { get; set; }
         public string Priority { get; set; }
         public string PriorityColor { get; set; }

@@ -1,6 +1,6 @@
 .sidenav-content-container {
   width: 200px;
-  border: 1px solid rgba(0, 0, 0, 0.5);
+  /* border: 1px solid rgba(0, 0, 0, 0.5); */
   padding: 1em;
 }
 .sidenav-filterControl-container{
@@ -9,7 +9,7 @@
 .selected-item{
   font-weight: 800;
 }
-.sidenav-container {
+.app-sidenav-container {
   display: flex;
   height: 100%;
   align-items: center;

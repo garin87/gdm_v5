@@ -64,3 +64,17 @@ mat-form-field.editable-input div.mat-form-field-wrapper div.mat-form-field-flex
   align-items: center;
   justify-content: center;
 }
+
+.field-selector .filter-search-wrapper .filter-search{
+  padding: 4px;
+  margin: 8px;
+  padding-left: 8px;
+}
+
+mat-select.picklist-control > .mat-select-trigger > .mat-select-value {
+  opacity: 0;
+  cursor: pointer;
+}
+.container-picklist-control .mat-form-field-wrapper > .mat-form-field-flex > .mat-form-field-infix{
+  display: flex;
+}

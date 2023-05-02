@@ -7,16 +7,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
-using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace gdm5._0
@@ -33,6 +33,10 @@ namespace gdm5._0
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            IConfigurationRoot configuration = new ConfigurationBuilder()
+                .SetBasePath(Directory.GetCurrentDirectory())
+                .AddJsonFile("appsettings.json")
+                .Build();
             string conString = Configuration["ConnectionStrings:DefaultConnection"];
             services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(conString));
@@ -48,15 +52,19 @@ namespace gdm5._0
                 return new UriService(uri);
             });
 
-            services.AddDefaultIdentity<ApplicationUser>(options => 
-                      options.SignIn.RequireConfirmedAccount = true)
-                     .AddEntityFrameworkStores<ApplicationDbContext>();
+            //services.AddDefaultIdentity<ApplicationUser>(options => 
+            //          options.SignIn.RequireConfirmedAccount = true)
+            //         .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddDefaultTokenProviders();
 
             services.AddIdentityServer()
                     .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
-       
 
+         
             //.AddCookie(config =>
             // {
             //     config.Cookie.Name = "auth";
@@ -116,6 +124,13 @@ namespace gdm5._0
             services.AddTransient<ITokenService, TokenService>();
             services.AddTransient<IMetadataService, MetadataService>();
             services.AddTransient<IProductTypeService, ProductTypeService>();
+            services.AddTransient<IProductService, ProductService>();
+            services.AddTransient<ICustomerService, CustomerService>();
+            services.AddTransient<IWareHouseService, WareHouseService>();
+            services.AddTransient<ICurrencyService, CurrencyService>();
+            services.AddTransient<IComplexPriceListService, ComplexPriceListService>();
+            services.AddTransient<IPriceListService, PriceListService>();
+            services.AddTransient<IPriceListValueService, PriceListValueService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -141,7 +156,14 @@ namespace gdm5._0
             {
                 app.UseSpaStaticFiles();
             }
-
+            //var ci = new CultureInfo("en-US");
+            //ci.DateTimeFormat.LongDatePattern = "MM/dd/yyyy";
+            //app.UseRequestLocalization(new RequestLocalizationOptions
+            //{
+            //    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ci),
+            //    SupportedCultures = new List<CultureInfo> { ci },
+            //    SupportedUICultures = new List<CultureInfo> { ci }
+            //});
             app.UseRouting();
 
             app.UseAuthentication();

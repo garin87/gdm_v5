@@ -1,0 +1,30 @@
+<div class="action-dialog">
+    <h2 mat-dialog-title>{{titleDialog}}</h2>
+    <div mat-dialog-content>
+      <div [ngSwitch]="action">
+        <div *ngSwitchCase="'Edit'">
+            <form-editor [instanceName]="selectedType"></form-editor>
+        </div>
+        <div *ngSwitchCase="'Delete'">
+             
+        </div>
+        <div *ngSwitchCase="'Order'">
+          <form-editor [instanceName]="selectedType"></form-editor>
+        </div>
+        <div *ngSwitchCase="'AddToCart'">
+          <form-editor [instanceName]="selectedType"></form-editor>
+        </div>
+        <div *ngSwitchCase="'Default'">
+             
+        </div>
+    </div>
+        
+    </div>
+    <div mat-dialog-actions class="dialog-footer"> 
+      <button mat-raised-button color="warn" (click)="onNoClick(false)">{{rejectButton}}</button> 
+      <button mat-raised-button color="primary" 
+      (click)="executeAction(true)">{{actionButton}}</button>
+      <!-- <button mat-raised-button color="primary" *ngIf="isActionOrder"
+      (click)="executeAction(true)">{{actionOrderButton}}</button> -->
+    </div>
+</div>

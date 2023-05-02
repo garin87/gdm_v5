@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { AlertService } from '../alert/alert.service';
 import { ApplicationService } from '../common/services/application.service';
+import { CurrenciesService } from '../common/services/currencies.service';
+import { AppStateService } from '../common/services/appState.service';
 
 @Component({
   selector: 'app-home',
@@ -9,7 +11,9 @@ import { ApplicationService } from '../common/services/application.service';
 export class HomeComponent {
 
   constructor(private alertService : AlertService, 
-              private _applicationService: ApplicationService){}
+              private _applicationService: ApplicationService,
+              private _currenciesService: CurrenciesService,
+              private _appStateService: AppStateService){}
   success(){
     this.alertService.success("test alertService - success");
   }
@@ -30,4 +34,14 @@ export class HomeComponent {
   test3(){
     this.alertService.warningModal("eeeeeeeddcc", "Warning");
   }
-}    
+
+  getNBRBCurrencies(){
+    this._currenciesService.getNBRBCurrenciesOnDate("2020-07-07");
+  }
+
+
+  getCurrencyInfoByAbbreviation(){
+    const currency = this._currenciesService.getCurrencyInfoByAbbreviation(this._appStateService.currencyNBRB,"USD");
+    console.log(currency);
+  }
+}

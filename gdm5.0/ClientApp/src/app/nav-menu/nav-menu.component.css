@@ -36,6 +36,12 @@ html {
 .link-active{
   background: rgba(0,0,0,.4);
 }
+
 .box-shadow {
   box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
 }
+
+.countCartProducts > .mat-badge-content.mat-badge-active {
+    top:-4px;
+}
+

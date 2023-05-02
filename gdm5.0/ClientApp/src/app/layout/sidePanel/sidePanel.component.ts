@@ -1,11 +1,9 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import {  Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { debounceTime, map, startWith, tap } from 'rxjs/operators';
-import { appStateService } from 'src/app/common/services/appState.service';
-import { MetadataService } from 'src/app/common/services/metadata.service';
-import { StringLiteralLike } from 'typescript';
+import {  Observable, of } from 'rxjs';
+import { debounceTime} from 'rxjs/operators';
+import { AppStateService,  } from 'src/app/common/services/appState.service';
 
 
 @Component({
@@ -18,6 +16,7 @@ export class SidePanelComponent implements OnInit{
 
   @Input("eventToggle") eventToggle: any;
   @Input("properties") properties: any;
+  @Input("page") page: any;
   @ViewChild("drawer", { static: true }) drawer : MatSidenav;
   @ViewChild("filterContent") textInput: ElementRef;
 
@@ -27,14 +26,16 @@ export class SidePanelComponent implements OnInit{
 
   listProps : Observable<string[]>;
 
-  constructor(private _appStateService:appStateService) { };
+  constructor(private _appStateService:AppStateService) { };
   filterControl = new FormControl();
 
   ngOnInit(){
-
     this._appStateService.detectClickOnPanel.subscribe(data => {
       if(data){
         this.selectedItem = undefined;
+        // if(this.properties){
+        //   this.drawer.toggle();
+        // }
         this.drawer.toggle();
       }
     });
@@ -57,11 +58,18 @@ export class SidePanelComponent implements OnInit{
   select(element){
     console.log("-------- select");
     console.log(element);
-    if(true){//this.selectedItem != element
-       this.selectedItem = element;
-       this._appStateService.selectedSidePanelValue.next(element);
+
+    if(true){
+       if(this.page == "product"){
+        this.selectedItem = element;
+        this._appStateService.selectedSidePanelValue.next(element);
+       }else if(this.page == "modeling"){
+        this.selectedItem = element;
+        this._appStateService.selectedSidePaneModelingValue.next(element);
+       }
     }
-    
+
+    this.dispose();
   }
  
   sidenavToggle(event:any){
@@ -71,6 +79,15 @@ export class SidePanelComponent implements OnInit{
 
   isSelected(element){
     return this.selectedItem == element;
+  }
+
+  onDestroy(){
+    this.dispose();
+  }
+
+  dispose(){
+    this._appStateService.initRightActionPanel = false;
+    this._appStateService.instanceOfProduct = undefined;
   }
 
   private _filter(value: string): string[] {

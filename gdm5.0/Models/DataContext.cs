@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.EntityFrameworkCore;
 
@@ -13,7 +10,10 @@ namespace gdm5._0.Models
         {
         }
 
-        public DataContext(DbContextOptions<DataContext> opts) : base(opts) { }
+        public DataContext(DbContextOptions<DataContext> opts) : base(opts) {
+            //Database.EnsureDeleted();
+            //Database.EnsureCreated();
+        }
 
         public DbSet<Product> Products { get; set; }
         public DbSet<ProductType> ProductTypes { get; set; }
@@ -33,7 +33,15 @@ namespace gdm5._0.Models
         public DbSet<Label> Label { get; set; }
         public DbSet<LabelCategory> LabelCategory { get; set; }
         public DbSet<WareHouse> WareHouse { get; set; }
+        public DbSet<ProductHistory> ProductHistory { get; set; }
+        public DbSet<ProductTypeHistory> ProductTypeHistory { get; set; }
+        public DbSet<ParameterHistory> ParameterHistory { get; set; }
+        public DbSet<ProductParameterHistory> ProductParameterHistory { get; set; }
+        public DbSet<OrderProductHistory> OrderProductHistory { get; set; }
         
+
+
+        public DbSet<OrderStatus> OrderStatus { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Label>()
@@ -102,6 +110,11 @@ namespace gdm5._0.Models
                .HasForeignKey(c => c.CurrencyId)
                .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<OrderProductHistory>()
+              .HasOne(c => c.Order)
+              .WithMany(e => e.OrderProductHistory)
+              .OnDelete(DeleteBehavior.Restrict);
+
             modelBuilder.Entity<OrderProduct>()
                .HasOne(bc => bc.Order)
                .WithMany(b => b.OrderProduct)
@@ -112,7 +125,7 @@ namespace gdm5._0.Models
                .HasOne(bc => bc.Product)
                .WithMany(c => c.OrderProduct)
                .HasForeignKey("ProductId")
-               .OnDelete(DeleteBehavior.Restrict);
+               .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<CurrencyRate>()
                .HasOne(c => c.Currency)
@@ -126,7 +139,6 @@ namespace gdm5._0.Models
                .WithMany(e => e.User)
                .HasForeignKey(c => c.RoleId)
                .OnDelete(DeleteBehavior.Cascade);
-
 
             base.OnModelCreating(modelBuilder);
         }

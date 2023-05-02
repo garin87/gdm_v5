@@ -94,10 +94,16 @@ namespace gdm5._0.Migrations
                     b.Property<string>("CustomerName")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CustomerNameSecond")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("MobilePhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MobilePhoneSecond")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NameCompany")
@@ -191,17 +197,23 @@ namespace gdm5._0.Migrations
                     b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("Markup")
-                        .HasColumnType("float");
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NameCompany")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("TaxNDS")
-                        .HasColumnType("float");
+                    b.Property<string>("OrderCreatedByUser")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("OrderCreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OrderNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OrderStatusId")
+                        .HasColumnType("int");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float");
@@ -211,6 +223,8 @@ namespace gdm5._0.Migrations
                     b.HasIndex("CurrencyId");
 
                     b.HasIndex("CustomerId");
+
+                    b.HasIndex("OrderStatusId");
 
                     b.ToTable("Orders");
                 });
@@ -222,6 +236,9 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<double>("Markup")
+                        .HasColumnType("float");
+
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
@@ -231,6 +248,12 @@ namespace gdm5._0.Migrations
                     b.Property<double>("Quantity")
                         .HasColumnType("float");
 
+                    b.Property<double>("TaxNDS")
+                        .HasColumnType("float");
+
+                    b.Property<double>("TotalPrice")
+                        .HasColumnType("float");
+
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
@@ -238,6 +261,67 @@ namespace gdm5._0.Migrations
                     b.HasIndex("ProductId");
 
                     b.ToTable("OrderProducts");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.OrderProductHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<double>("Markup")
+                        .HasColumnType("float");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductHistoryId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
+
+                    b.Property<double>("TaxNDS")
+                        .HasColumnType("float");
+
+                    b.Property<double>("TotalPrice")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("ProductHistoryId");
+
+                    b.ToTable("OrderProductHistory");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.OrderStatus", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<double>("Color")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OrderStatusName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Rank")
+                        .HasColumnType("float");
+
+                    b.Property<string>("SpareStringField")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("OrderStatus");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.Parameter", b =>
@@ -250,6 +334,12 @@ namespace gdm5._0.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("NameType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductTypeId")
                         .HasColumnType("int");
 
@@ -258,6 +348,38 @@ namespace gdm5._0.Migrations
                     b.HasIndex("ProductTypeId");
 
                     b.ToTable("Parameters");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ParameterHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("DeletedParameterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeletedProductTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NameType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ProductTypeHistoryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductTypeHistoryId");
+
+                    b.ToTable("ParameterHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.PriceList", b =>
@@ -336,10 +458,16 @@ namespace gdm5._0.Migrations
                     b.Property<int>("CurrencyId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("DateOfLastChanged")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DateOfReceipt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastEditedByUser")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Manufacturer")
@@ -349,6 +477,12 @@ namespace gdm5._0.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("PrimeCost")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PrimeCostEUR")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PrimeCostUSD")
                         .HasColumnType("float");
 
                     b.Property<string>("ProductNumber")
@@ -363,6 +497,9 @@ namespace gdm5._0.Migrations
                     b.Property<double>("StandartCost")
                         .HasColumnType("float");
 
+                    b.Property<string>("Supplier")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("WareHouseId")
                         .HasColumnType("int");
 
@@ -375,6 +512,82 @@ namespace gdm5._0.Migrations
                     b.HasIndex("WareHouseId");
 
                     b.ToTable("Products");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ProductHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CurrencyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateOfChange")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateOfReceipt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DeletedProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DeletedProductTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Manufacturer")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("PrimeCost")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PrimeCostEUR")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PrimeCostUSD")
+                        .HasColumnType("float");
+
+                    b.Property<bool>("ProductDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ProductNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("ProductStandartCost")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("ProductTypeHistoryId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
+
+                    b.Property<double>("StandartCost")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Supplier")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("WareHouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CurrencyId");
+
+                    b.HasIndex("ProductTypeHistoryId");
+
+                    b.ToTable("ProductHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.ProductParameter", b =>
@@ -402,6 +615,31 @@ namespace gdm5._0.Migrations
                     b.ToTable("ProductParameters");
                 });
 
+            modelBuilder.Entity("gdm5._0.Models.ProductParameterHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("ParameterHistoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductHistoryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParameterHistoryId");
+
+                    b.HasIndex("ProductHistoryId");
+
+                    b.ToTable("ProductParameterHistory");
+                });
+
             modelBuilder.Entity("gdm5._0.Models.ProductType", b =>
                 {
                     b.Property<int>("Id")
@@ -415,6 +653,24 @@ namespace gdm5._0.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ProductTypes");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ProductTypeHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("DeletedProductTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NameType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductTypeHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.Role", b =>
@@ -482,6 +738,9 @@ namespace gdm5._0.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Sector")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.ToTable("WareHouse");
@@ -531,9 +790,15 @@ namespace gdm5._0.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("gdm5._0.Models.OrderStatus", "OrderStatus")
+                        .WithMany("Orders")
+                        .HasForeignKey("OrderStatusId");
+
                     b.Navigation("Currency");
 
                     b.Navigation("Customer");
+
+                    b.Navigation("OrderStatus");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.OrderProduct", b =>
@@ -547,12 +812,31 @@ namespace gdm5._0.Migrations
                     b.HasOne("gdm5._0.Models.Product", "Product")
                         .WithMany("OrderProduct")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.OrderProductHistory", b =>
+                {
+                    b.HasOne("gdm5._0.Models.Order", "Order")
+                        .WithMany("OrderProductHistory")
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("gdm5._0.Models.ProductHistory", "ProductHistory")
+                        .WithMany("OrderProductHistory")
+                        .HasForeignKey("ProductHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+
+                    b.Navigation("ProductHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.Parameter", b =>
@@ -564,6 +848,15 @@ namespace gdm5._0.Migrations
                         .IsRequired();
 
                     b.Navigation("ProductType");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ParameterHistory", b =>
+                {
+                    b.HasOne("gdm5._0.Models.ProductTypeHistory", "ProductTypeHistory")
+                        .WithMany("ParameterHistory")
+                        .HasForeignKey("ProductTypeHistoryId");
+
+                    b.Navigation("ProductTypeHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.PriceList", b =>
@@ -623,6 +916,23 @@ namespace gdm5._0.Migrations
                     b.Navigation("WareHouse");
                 });
 
+            modelBuilder.Entity("gdm5._0.Models.ProductHistory", b =>
+                {
+                    b.HasOne("gdm5._0.Models.Currency", "Currency")
+                        .WithMany()
+                        .HasForeignKey("CurrencyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("gdm5._0.Models.ProductTypeHistory", "ProductTypeHistory")
+                        .WithMany("ProductHistory")
+                        .HasForeignKey("ProductTypeHistoryId");
+
+                    b.Navigation("Currency");
+
+                    b.Navigation("ProductTypeHistory");
+                });
+
             modelBuilder.Entity("gdm5._0.Models.ProductParameter", b =>
                 {
                     b.HasOne("gdm5._0.Models.Parameter", "Parameter")
@@ -640,6 +950,25 @@ namespace gdm5._0.Migrations
                     b.Navigation("Parameter");
 
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ProductParameterHistory", b =>
+                {
+                    b.HasOne("gdm5._0.Models.ParameterHistory", "Parameter")
+                        .WithMany("ProductParameterHistory")
+                        .HasForeignKey("ParameterHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("gdm5._0.Models.ProductHistory", "ProductHistory")
+                        .WithMany("ProductParameterHistory")
+                        .HasForeignKey("ProductHistoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Parameter");
+
+                    b.Navigation("ProductHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.User", b =>
@@ -685,11 +1014,23 @@ namespace gdm5._0.Migrations
             modelBuilder.Entity("gdm5._0.Models.Order", b =>
                 {
                     b.Navigation("OrderProduct");
+
+                    b.Navigation("OrderProductHistory");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.OrderStatus", b =>
+                {
+                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.Parameter", b =>
                 {
                     b.Navigation("ProductParameters");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ParameterHistory", b =>
+                {
+                    b.Navigation("ProductParameterHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.PriceList", b =>
@@ -706,11 +1047,25 @@ namespace gdm5._0.Migrations
                     b.Navigation("ProductParameters");
                 });
 
+            modelBuilder.Entity("gdm5._0.Models.ProductHistory", b =>
+                {
+                    b.Navigation("OrderProductHistory");
+
+                    b.Navigation("ProductParameterHistory");
+                });
+
             modelBuilder.Entity("gdm5._0.Models.ProductType", b =>
                 {
                     b.Navigation("Parameters");
 
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("gdm5._0.Models.ProductTypeHistory", b =>
+                {
+                    b.Navigation("ParameterHistory");
+
+                    b.Navigation("ProductHistory");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.Role", b =>

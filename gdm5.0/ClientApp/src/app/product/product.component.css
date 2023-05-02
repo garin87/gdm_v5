@@ -19,6 +19,7 @@
 .product-card{
     height: 100%;
     width: 100%;
+    padding-right: 0;
 }
 .product-save-button{
     margin-left: 10px;
@@ -26,6 +27,7 @@
 .product-commands{
     width: 100%;
     margin-bottom: 1px;
+    border-bottom: 1px solid;
 }
 .product-container{
     width: 100%;
@@ -38,4 +40,11 @@
 .instance-product-card,
 .parameters-product-card{
     box-shadow: 0px 0px 0px 0px;
+}
+
+.grid-products-card{
+    display: flex;
+}
+.product-grid-content{
+    width: 100%;
 }

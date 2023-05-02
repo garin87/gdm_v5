@@ -21,7 +21,7 @@ namespace gdm5._0.Services
 
         public IEnumerable<T> GetAll()
         {
-            return  _context.Set<T>().ToList();
+            return  _context.Set<T>().AsNoTracking().ToList();
         }
 
         public async Task<T> GetItem(int id)

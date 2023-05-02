@@ -1,4 +1,4 @@
-<div class="dialog-modalObject">
+<div class="dialog-modalObject">
         <h2 mat-dialog-title class="dialog-title">{{title}}</h2>
         <div mat-dialog-content *ngIf="messageText">
                 <div *ngFor="let text of(messageText)" class="row-property">
@@ -11,7 +11,7 @@
                 </div>              
         </div>
         <div mat-dialog-actions class="dialog-footer"> 
-        <button mat-raised-button color="warn" class="default-btn" (click)="execute('cancel')">{{cancelBtnCaption}}</button>  
-        <button mat-raised-button color="primary" class="primary-btn" (click)="execute('primary')">{{primaryBtnCaption}}</button></div>   
+        <button mat-raised-button color="warn" class="default-btn" (click)="execute('cancel')">{{cancelBtnCaption}}</button>  
+        <button mat-raised-button color="primary" class="primary-btn" (click)="execute('primary')">{{primaryBtnCaption}}</button></div>   
 </div>
 

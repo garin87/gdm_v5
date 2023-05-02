@@ -1,0 +1,30 @@
+.sidenav-content-container {
+  width: 200px;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 1em;
+}
+.sidenav-filterControl-container{
+   display: flex;
+}
+.selected-item{
+  font-weight: 800;
+}
+.sidenav-container {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+}
+.filter-sidenav-content-field{
+  width: 100%;
+}
+.data-property{
+  cursor: pointer;
+}
+.panel-property-row{
+  padding: .5em;
+}
+.panel-property-row:hover{
+  border-bottom: .5px solid rgb(102, 110, 110);
+}
+

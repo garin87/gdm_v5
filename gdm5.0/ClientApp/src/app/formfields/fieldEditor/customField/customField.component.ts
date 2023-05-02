@@ -34,7 +34,7 @@ export class CustomFieldComponent implements OnInit {
 
             this._formEditorService.customProperties.next([newField]);
             
-            let d = new valueUpdatedData(result.parameterName, "", "string", navPriority,undefined, false);
+            let d = new valueUpdatedData(result.parameterName, "", "string","", navPriority,undefined, false);
             this.valueUpdated.next(d);
 
           }

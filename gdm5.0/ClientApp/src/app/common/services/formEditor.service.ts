@@ -1,17 +1,17 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject, Subject } from "rxjs";
 import { IMetadataProperty, valueUpdatedData } from "../objects/common";
-import { ApplicationService } from "./application.service";
-import { DataAccessorsService } from "./dataAccessors.service";
+import { AppStateService } from "./appState.service";
 import { DataValueService } from "./dataValue.service";
 import { MetadataService } from "./metadata.service";
-
+import _ from 'lodash';
 
 @Injectable()
 export class FormEditorService {
     
     customProperties:Subject<any> = new Subject<any>();
     dependentProperties:Subject<any> = new Subject<any>();
+    dependentPropertiesforDialog:Subject<any> = new Subject<any>();
     valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined); 
     instanceProperties:IMetadataProperty[];
     setProperties:any;
@@ -20,7 +20,8 @@ export class FormEditorService {
 
     
     constructor(private _metadataService: MetadataService,
-        private _dataValueService: DataValueService) {
+        private _dataValueService: DataValueService,
+        private _appStateService: AppStateService) {
         this.instanceData = {};
         this.listParameters = {};
         this.setProperties = {}
@@ -64,7 +65,7 @@ export class FormEditorService {
                     name: propName,
                     value: value,
                     type: valueType,
-                    navpriority: navPriority,
+                    navPriority: navPriority,
                     newName: newName,
                     isDeleted: isDeletedProp
                 };
@@ -74,7 +75,7 @@ export class FormEditorService {
                     name: propertyName,
                     value: value,
                     type: valueType,
-                    navpriority: navPriority
+                    navPriority: navPriority
                 }
             }
         }
@@ -98,6 +99,7 @@ export class FormEditorService {
     }
 
     isRequiredValue(id):boolean{
+        if(!document.getElementById(id)) return;
         const controls = document.getElementById(id).querySelectorAll("[required]");
         let isValid = true;
         controls.forEach((element:HTMLInputElement) => {
@@ -116,15 +118,73 @@ export class FormEditorService {
 
     resetValueProperties():void{
         this.customProperties = new Subject<any>();
+        this.dependentProperties = new Subject<any>();
         this.setProperties = {};
         this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
         this.instanceData = {};
         this.listParameters = {};
     }
 
+    resetValueUpdated():void{
+     //   this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
+       // this.instanceData = {};
+    }
+
+
+    populateValue(p: IMetadataProperty ) : void {
+        let v = this.getPropertyValue(p);
+        p.value = v;
+    }
+  
+  
+    private getPropertyValue (p: IMetadataProperty): any {
+
+        if (this._appStateService.instanceOfProduct) {
+            let name = p.name.toLowerCase();
+            let propertyValues = this._appStateService.instanceOfProduct; //this.getPropertyValues();
+            let key = _.findKey(propertyValues, (v, k) => k.toLowerCase() == name);  
+
+            //needs to improve
+            let parametrType;
+            if(key === undefined && propertyValues?.parameters && p.isParameter) {
+                parametrType = propertyValues?.parameters.filter(el=>{        
+                    if(el?.name.toLowerCase() == name.toLowerCase()) return el;
+                });
+            }
+            
+            //needs to improve
+            if ((key && (propertyValues[key] !== undefined )) || parametrType?.length > 0){
+                let pv = propertyValues[key];
+                if(pv === undefined && parametrType?.length > 0){
+                    pv = parametrType[0]["value"]; //needs to improve
+                }
+                // if(typeof pv == "object" &&  _.isEmpty(pv)){
+                //     if(p.editor && p.editor.directive === "enum"){
+                //         pv = p.defaultValue;
+                //     }
+                //     else if(p.originalTypeName == "boolean"){
+                //         pv = false;
+                //     }
+                // }
+                return pv;
+            }
+        }
+  
+        if (p.defaultValue) {
+            let dv = p.defaultValue;
+            return dv;
+        }
+        
+        return null;
+    }
+  
+    // private getPropertyValues(){
+  
+    // }
+
     private setValueProvider(property: IMetadataProperty):void{
         if(property.editor){
-            if(property.editor == "selector"){
+            if(property.editor == "selector" || property.editor == "picklist" ){
                 property.selectableItems = this._dataValueService.getSelectableItems(property,{}); 
             } 
         }

@@ -1,3 +1,34 @@
 .field-selector{
     margin: 4px;
 }
+
+.filter-search-wrapper{
+    display: flex;
+    padding: 8px;
+    border-bottom: 1px solid rgb(0 0 0 / 54%);
+    margin-bottom: 1px;
+}
+.filter-search-wrapper:hover{
+    border-bottom: 2px solid rgb(0 0 0 / 54%);
+    margin-bottom: 0px;
+}
+.filter-search-wrapper:focus{
+    border-bottom: 2px solid #3f51b5;
+    margin-bottom: 0px;
+}
+
+.filter-search-wrapper input{
+    padding-left: 6px;
+}
+
+.field-input-action{
+    display: flex;
+    align-items: center;
+}
+
+.field-input-action > mat-icon{
+    cursor: pointer;
+}
+.field-input-action > mat-icon:hover{
+    color: #797968;
+}

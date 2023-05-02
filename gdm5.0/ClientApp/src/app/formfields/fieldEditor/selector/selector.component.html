@@ -1,9 +1,15 @@
 <div class="field-selector">
     <mat-form-field appearance="fill">
+ 
         <mat-label>{{displayedName}}</mat-label>
         <mat-select #selectedOption (selectionChange)="optionSelected()" [required]="required" 
         [value]="value" [disabled]="readOnly">
-          <mat-option  *ngFor="let item of items | async" [value]="item.value">
+        <div class="filter-search-wrapper">
+            <input type="text" [formControl]="optionFilter" placeholder="Search"
+                   matInput  #filterContent>
+            <mat-icon>search</mat-icon>
+        </div>
+          <mat-option  *ngFor="let item of listOptions | async" [value]="item.value">
             {{item.value}}
           </mat-option>
         </mat-select>

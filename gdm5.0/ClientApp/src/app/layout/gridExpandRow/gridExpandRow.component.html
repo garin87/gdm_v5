@@ -1,0 +1,111 @@
+<div class="mat-elevation-z8" >
+    <app-filterPanel [selectedProduct]="selectedProductName" [typeFilter]="typeFilter" ></app-filterPanel>
+    <div class="loading-shade" *ngIf="isLoadingResults">
+      <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+    </div>
+    <div class="table-container" *ngIf="dataSource.length > 0">
+      <table  #table mat-table [dataSource]="dataSource"  class="mat-elevation-z8" 
+              matSort (matSortChange)="announceSortChange($event)" multiTemplateDataRows>
+
+        <ng-container *ngFor="let column of gridcolumns" [matColumnDef]="column.columnDef">
+          <th mat-header-cell mat-sort-header [disabled]="!column.isSortable"  *matHeaderCellDef>
+            {{column.header}}
+          </th>
+          <td mat-cell *matCellDef="let row; let i = dataIndex">      
+            {{ column.cell(row,column, i)}}
+          </td>
+        </ng-container>
+        
+        <!-- Expanded Column -->
+        <!-- <ng-container matColumnDef="expand">
+          <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+          <td mat-cell *matCellDef="let element">
+            <button mat-icon-button aria-label="expand row" (click)="(expandedElement = expandedElement === element ? null : element); $event.stopPropagation()">
+              <mat-icon *ngIf="expandedElement !== element">keyboard_arrow_down</mat-icon>
+              <mat-icon *ngIf="expandedElement === element">keyboard_arrow_up</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+         -->
+        <ng-container matColumnDef="expandedDetail">
+          <td mat-cell *matCellDef="let element" [attr.colspan]="this.displayedColumns.length" class="td-expandedDetail">
+              <div class="example-element-detail"
+                     [@detailExpand]="element.isExpanded == true ? 'expanded' : 'collapsed'">
+                     <div class="expanded-row-content" >
+                         <section class="plain-grid-section" >
+                          <!-- {{ element.products[0].productName}}
+                          <table class="order-products-table">
+                            <tr>
+                                <td>{{nameLbl}}</td>
+                                <td>{{workspaceLbl}}</td>
+                            </tr>
+                        </table>  -->
+                           <!-- *ngIf="element?.products.length > 0" -->
+                               <gridPlain-control [selectedProduct]="'orderProduct'" [gridData]="element.products" 
+                                 [gridMetadataType]="'OrderProductGrid'" ></gridPlain-control>
+
+                                 <!-- <table mat-table [dataSource]="element.products" class="mat-elevation-z8 sub-grid-products">
+
+                                   Note that these columns can be defined in any order.
+                                        The actual rendered columns are set as a property on the row definition" -->
+                                
+                                  <!-- Position Column -->
+                                  <!-- <ng-container matColumnDef="position">
+                                    <th mat-header-cell *matHeaderCellDef> No. </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.position}} </td>
+                                  </ng-container> -->
+                                
+                                  <!-- Name Column
+                                  <ng-container matColumnDef="productName">
+                                    <th mat-header-cell *matHeaderCellDef> productName </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
+                                  </ng-container>
+                                
+                                   Weight Column 
+                                  <ng-container matColumnDef="productNumber">
+                                    <th mat-header-cell *matHeaderCellDef> productNumber </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.productNumber}} </td>
+                                  </ng-container>
+                                
+                                   Symbol Column 
+                                  <ng-container matColumnDef="quantity">
+                                    <th mat-header-cell *matHeaderCellDef> quantity </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.quantity}} </td>
+                                  </ng-container>
+                                  Symbol Column 
+                                 <ng-container matColumnDef="totalPrice">
+                                  <th mat-header-cell *matHeaderCellDef> totalPrice </th>
+                                  <td mat-cell *matCellDef="let element"> {{element.totalPrice}} </td>
+                                  </ng-container>  -->
+                                 <!-- Symbol Column -->
+                                 <!-- <ng-container matColumnDef="manufacturer"> 
+                                    <th mat-header-cell *matHeaderCellDef> manufacturer</th>
+                                    <td mat-cell *matCellDef="let element"> {{element.manufacturer}} </td>
+                                  </ng-container>
+                                
+                                  <tr mat-header-row *matHeaderRowDef="contentTableColumns"></tr>
+                                  <tr mat-row *matRowDef="let row; columns: contentTableColumns;"></tr>
+                                </table> -->
+                         </section>
+                     </div>  
+              </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="this.displayedColumns" ></tr>
+        <tr mat-row [ngClass]="{ 'table-row-selected': row === selectedRow }" 
+            [class.example-expanded-row]="row.isExpanded == true"
+            (click)="selectRow(row)" *matRowDef="let row; columns : this.displayedColumns"></tr>
+        
+         <tr mat-row *matRowDef="let row; columns: ['expandedDetail']"  
+                         class="example-detail-row"></tr>
+
+      </table>
+      <mat-paginator [length]="totalRecords" [pageSize]="pageSizeDefault" [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons 
+              aria-label="Select page of periodic elements" (page)="handlePage($event)">
+      </mat-paginator>
+    </div>
+  <div *ngIf="dataSource.length == 0">
+    <h3> No data</h3>
+  </div>
+</div>

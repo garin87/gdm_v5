@@ -25,6 +25,8 @@ namespace gdm5._0.DTO
         public bool isDeleted { get; set; }
         public bool? isSortable { get; set; }
         public string newName { get; set; }
-
+        public string OptionOfProvider { get; set; }
+        public string category { get; set; }
+        
     }
 }

@@ -1,5 +1,5 @@
 {
-   "Product":{ 
+   "ProductInitial":{ 
       "Name":{
         "Name": "Name",
         "TypeView":"input",
@@ -7,52 +7,11 @@
         "DefaultValue":"",
         "Required":true
       },
-      "ProductNumber":{
-        "Name": "ProductNumber",
-        "TypeView":"input",
-        "Type":"string",
-        "DefaultValue":"",
-        "DisplayedName":"Product number"
-      },
-      "Quantity":{
-        "Name": "Quantity",
-        "TypeView":"input",
-        "Type":"double",
-        "DefaultValue":"",
-        "Required":true
-      },
-      "StandartCost":{
-        "Name": "StandartCost",
-        "TypeView":"input",
-        "Type":"double",
-        "DefaultValue":"",
-        "DisplayedName":"Product standart cost"
-      },
-      "PrimeCost":{
-        "Name": "PrimeCost",
-        "TypeView":"input",
-        "Type":"double",
-        "DefaultValue":"",
-        "DisplayedName":"Product prime cost"
-      },
-      "Manufacturer":{
-        "Name": "Manufacturer",
-        "TypeView":"input",
-        "Type":"string",
-        "DefaultValue":""
-      },
       "Description":{
         "Name": "Description",
         "TypeView":"input",
         "Type":"string",
         "DefaultValue":""
-      },
-      "DateOfReceipt":{
-        "Name": "DateOfReceipt",
-        "TypeView":"DateTime",
-        "Type":"DateTime",
-        "DefaultValue":"",
-        "DisplayedName":"Date of receipt"
       },
       "Parameter":{
         "Name": "TestParameter",
@@ -61,20 +20,24 @@
         "DefaultValue":"",
         "Order": -2
       },
-      "CurrencyName":{
-        "Name": "CurrencyName",
-        "TypeView":"selector",
-        "Type":"string",
-        "DefaultValue":"BYR",
-        "DisplayedName":"Currency name"
-      },
       "WarehouseName":{  
         "Name": "WarehouseName",
-        "TypeView":"input",
+        "TypeView":"selector",
+        "Editor":"selector",
         "Type":"string",
         "DisplayedName":"Warehouse name",
         "DefaultValue":"",
-        "Required":true
+        "Required":true,
+        "Provider":"loadWarehousesNames"
+      },
+      "CurrencyName":{
+        "Name": "CurrencyName",
+        "TypeView":"selector",
+        "Editor":"selector",
+        "Type":"string",
+        "DefaultValue":"BYR",
+        "Provider":"loadNamesCurrencies",
+        "DisplayedName":"Currency name"
       }
    },
    "EditProductParameters":{ 
@@ -87,20 +50,24 @@
       "DefaultValue":"",
       "Required":true,
       "Accessor":"loadParameterFields",
-      "DisplayedName":"Name"
+      "DisplayedName":"Name",
+      "Order": 9999,
+      "category":"EditProductParameters"
     }
    },
    "AddInstanceProduct":{
     "Name":{
       "Name": "Name",
+      "Order": 9999,
       "TypeView":"selector",
       "Editor":"selector",
       "Provider":"loadProductParameters",
       "Type":"string",
       "DefaultValue":"",
       "Required":true,
-      "Accessor":"loadDependParameters",
-      "DisplayedName":"Name"
+      "Accessor":"createParametersAsPickList",
+      "DisplayedName":"Name",
+      "category":"AddInstanceProduct"
     },
     "ProductNumber":{
       "Name": "ProductNumber",
@@ -136,6 +103,12 @@
       "Type":"string",
       "DefaultValue":""
     },
+    "Supplier":{
+      "Name": "supplier",
+      "TypeView":"input",
+      "Type":"string",
+      "DisplayedName":"Supplier"
+    },
     "Description":{
       "Name": "Description",
       "TypeView":"input",
@@ -152,76 +125,709 @@
     "CurrencyName":{
       "Name": "CurrencyName",
       "TypeView":"selector",
+      "Editor":"selector",
       "Type":"string",
       "DefaultValue":"BYR",
-      "DisplayedName":"Currency name"
+      "Provider":"loadNamesCurrencies",
+      "DisplayedName":"Currency name",
+      "Required":true
     },
     "WarehouseName":{  
       "Name": "WarehouseName",
-      "TypeView":"input",
+      "TypeView":"selector",
+      "Editor":"selector",
       "Type":"string",
       "DisplayedName":"Warehouse name",
+      "DefaultValue":"",
+      "Required":true,
+      "Provider":"loadWarehousesNames"
+    }
+   },
+   "UpdateInstanceProduct":{
+    "Name":{
+      "Name": "Name",
+      "Order": 9999,
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Name",
+      "ReadOnly":true,
+      "Accessor":"loadDependParametersForDialog",
+      "category":"UpdateInstanceProduct"
+    },
+    "productnumber":{
+      "Name": "productnumber",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Product number",
+      "category":"UpdateInstanceProduct"
+    },
+    "quantity":{
+      "Name": "quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "Required":true,
+      "category":"UpdateInstanceProduct"
+    },
+    "standartcost":{
+      "Name": "standartcost",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Product standart cost",
+      "category":"UpdateInstanceProduct"
+    },
+    "primecost":{
+      "Name": "primecost",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Product prime cost",
+      "category":"UpdateInstanceProduct"
+    },
+    "manufacturer":{
+      "Name": "manufacturer",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "category":"UpdateInstanceProduct"
+    },
+    "description":{
+      "Name": "description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "category":"UpdateInstanceProduct"
+    },
+    "dateofreceipt":{
+      "Name": "dateofreceipt",
+      "TypeView":"DateTime",
+      "Type":"DateTime",
+      "DefaultValue":"",
+      "DisplayedName":"Date of receipt",
+      "category":"UpdateInstanceProduct"
+    },
+    "currency":{
+      "Name": "currency",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Type":"string",
+      "DefaultValue":"BYR",
+      "Provider":"loadNamesCurrencies",
+      "DisplayedName":"Currency",
+      "category":"UpdateInstanceProduct"
+    },
+    "warehouse":{  
+      "Name": "warehouse",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Type":"string",
+      "DisplayedName":"Warehouse",
+      "DefaultValue":"",
+      "Required":true,
+      "category":"UpdateInstanceProduct",
+      "Provider":"loadWarehousesNames"
+    }
+   },   
+   "ProductGrid":{
+      "Position":{
+        "Name": "position",
+        "Type":"string",
+        "DisplayedName":"No.",
+        "Order": 1000,
+        "isSortable": false
+      },
+      "Name":{
+        "Name": "name",
+        "Type":"string",
+        "DisplayedName":"Product",
+        "isSortable": false,
+        "Order": 990
+      },
+      "ProductNumber":{
+        "Name": "productNumber",
+        "Type":"string",
+        "DisplayedName":"Prod. No",
+        "isSortable": true,
+        "Order": 980
+      },
+      "Quantity":{
+        "Name": "quantity",
+        "Type":"double",
+        "DisplayedName":"Quantity",
+        "isSortable": true,
+        "Order": 970
+      },
+      "StandartCost":{
+        "Name": "standartCost",
+        "Type":"double",
+        "DisplayedName":"Std cost",
+        "isSortable": true
+      },
+      "PrimeCost":{
+        "Name": "primeCost",
+        "Type":"double",
+        "DisplayedName":"Prime cost",
+        "isSortable": true
+      },
+      "Manufacturer":{
+        "Name": "manufacturer",
+        "Type":"string",
+        "DisplayedName":"Manufacturer",
+        "isSortable": true
+      },
+      "Supplier":{
+        "Name": "supplier",
+        "Type":"string",
+        "DisplayedName":"Supplier",
+        "isSortable": true
+      },
+      "WarehouseName":{  
+        "Name": "wareHouse",
+        "Type":"string",
+        "DisplayedName":"Warehouse",
+        "isSortable": true
+      },
+      "Description":{
+        "Name": "description",
+        "Type":"string",
+        "DisplayedName":"Description",
+        "isSortable": false
+      },
+      "CurrencyName":{
+        "Name": "currency",
+        "Type":"string",
+        "DisplayedName":"Currency",
+        "isSortable": true
+      },
+      "DateOfLastChanged":{
+        "Name": "dateOfLastChanged",
+        "Type":"DateTime",
+        "DisplayedName":"Date Of last changed",
+        "isSortable": false
+      },
+      "DateOfReceipt":{
+        "Name": "dateOfReceipt",
+        "Type":"DateTime",
+        "DisplayedName":"Date of receipt",
+        "isSortable": true
+      },
+      "lastEditedByUser":{
+        "Name": "lastEditedByUser",
+        "Type":"string",
+        "DisplayedName":"User why did last changed",
+        "isSortable": true
+      }
+   },
+   "OptionalOfProduct":{
+      "Manufacturer":{
+        "Name": "Manufacturer",
+        "TypeView":"selector",
+        "Type":"string",
+        "Accessor":"getGridDataByParameter",
+        "Editor":"selector",
+        "Provider":"loadProductManufacturersByProductName",
+        "OptionOfProvider":"{paramertName='Manufacturer', instanceName='product'}",
+        "DefaultValue":"",
+        "category":"OptionalOfProduct"
+      },
+      "WarehouseName":{  
+        "Name": "WarehouseName",
+        "TypeView":"selector",
+        "Type":"string",
+        "Provider":"loadNamesWareHouses",
+        "Accessor":"getGridDataByParameter",
+        "Editor":"selector",
+        "OptionOfProvider":"{paramertName='WarehouseName', instanceName='product'}",
+        "DisplayedName":"Warehouse name",
+        "DefaultValue":"",
+        "category":"OptionalOfProduct"
+      },
+      "productParameters":{
+        "Name": "productParameters",
+        "TypeView":"listparameter",
+        "DefaultValue":"",
+        "category":"OptionalOfProduct"
+      }
+   },
+   "OptionalOfOrder":{
+    "NameCompany":{
+      "Name": "nameCompany",
+      "TypeView":"selector",
+      "Type":"string",
+      "Accessor":"getGridDataByParameter",
+      "Editor":"selector",
+      "Provider":"loadCompanies",
+      "DefaultValue":"",
+      "category":"OptionalOfOrder"
+    },
+    "filterStartDate":{
+      "Name": "filterStartDate",
+      "TypeView":"DateTime",
+      "Accessor":"getGridDataByParameter",
+      "Type":"DateTime",
+      "DefaultValue":"2020-01-01 00:00:00.00",
+      "DisplayedName":"Start date",
+      "category":"OptionalOfOrder"
+    },
+    "filterEndDate":{
+      "Name": "filterEndDate",
+      "TypeView":"DateTime",
+      "Type":"DateTime",
+      "Accessor":"getGridDataByParameter",
+      "DefaultValue":"",
+      "DisplayedName":"End date",
+      "category":"OptionalOfOrder"
+    }
+   }, 
+   "company":{ 
+      "NameCompany":{
+        "Name": "NameCompany",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":""
+      },
+      "AddressCompany":{
+        "Name": "AddressCompany",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Address Company"
+      },
+      "City":{
+        "Name": "City",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"City"
+      },
+      "CustomerName":{
+        "Name": "CustomerName",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Customer Name"
+      },
+      "MobilePhone":{
+        "Name": "MobilePhone",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Mobile Phone"
+      },
+      "CustomerName2":{
+        "Name": "CustomerName2",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Customer Name 2"
+      },
+      "MobilePhone2":{
+        "Name": "MobilePhone2",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Mobile Phone 2"
+      },
+      "Description":{
+        "Name": "Description",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Description"
+      },
+      "Priority":{
+        "Name": "Priority",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Priority"
+      },
+      "PriorityColor":{
+        "Name": "PriorityColor",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"PriorityColor"
+      }
+   },
+   "companyContent":{ 
+      "NameCompany":{
+        "Name": "NameCompany",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "ReadOnly":true
+      },
+      "AddressCompany":{
+        "Name": "AddressCompany",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Address Company",
+        "ReadOnly":true
+      },
+      "City":{
+        "Name": "City",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"City",
+        "ReadOnly":true
+      },
+      "CustomerName":{
+        "Name": "CustomerName",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Customer Name",
+        "ReadOnly":true
+      },
+      "MobilePhone":{
+        "Name": "MobilePhone",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Mobile Phone",
+        "ReadOnly":true
+      },
+      "CustomerName2":{
+        "Name": "CustomerName2",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Customer Name 2",
+        "ReadOnly":true
+      },
+      "MobilePhone2":{
+        "Name": "MobilePhone2",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Mobile Phone 2",
+        "ReadOnly":true
+      },
+      "Description":{
+        "Name": "Description",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Description",
+        "ReadOnly":true
+      },
+      "Priority":{
+        "Name": "Priority",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Priority",
+        "ReadOnly":true
+      },
+      "PriorityColor":{
+        "Name": "PriorityColor",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"PriorityColor",
+        "ReadOnly":true
+      }
+   },
+   "warehouse":{ 
+      "Name":{
+        "Name": "Name",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "Required":true
+      },
+      "Address":{
+        "Name": "Address",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Address warehouse"
+      },
+      "LocationDetails":{
+        "Name": "LocationDetails",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Location Details"
+      },
+      "Sector":{
+        "Name": "sector",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Sector"
+      }
+   },
+   "warehouseContent":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "ReadOnly":true
+    },
+    "Address":{
+      "Name": "Address",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Address warehouse",
+      "ReadOnly":true
+    },
+    "LocationDetails":{
+      "Name": "LocationDetails",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Location Details",
+      "ReadOnly":true
+    },
+    "Sector":{
+      "Name": "sector",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Sector",
+      "ReadOnly":true
+    }
+   },
+   "selectedWarehouse":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true
+    },
+    "Address":{
+      "Name": "Address",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Address warehouse"
+    },
+    "LocationDetails":{
+      "Name": "LocationDetails",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Location Details"
+    },
+    "Sector":{
+      "Name": "sector",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Sector"
+    }
+   },
+   "selectedcompany":{ 
+    "NameCompany":{
+      "Name": "NameCompany",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":""
+    },
+    "AddressCompany":{
+      "Name": "AddressCompany",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Address Company"
+    },
+    "City":{
+      "Name": "City",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"City"
+    },
+    "CustomerName":{
+      "Name": "CustomerName",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Customer Name"
+    },
+    "MobilePhone":{
+      "Name": "MobilePhone",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Mobile Phone"
+    },
+    "CustomerName2":{
+      "Name": "CustomerName2",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Customer Name 2"
+    },
+    "MobilePhone2":{
+      "Name": "MobilePhone2",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Mobile Phone 2"
+    },
+    "Description":{
+      "Name": "Description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Description"
+    },
+    "Priority":{
+      "Name": "Priority",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Priority"
+    },
+    "PriorityColor":{
+      "Name": "PriorityColor",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"PriorityColor"
+    }
+   },
+   "currency":{ 
+    "CurrencyName":{
+      "Name": "CurrencyName",
+      "TypeView":"input",
+      "Type":"string",
       "DefaultValue":"",
       "Required":true
     }
    },
-   "Customer":{
-     "Name":{
-        "Name": "Name",
-        "TypeView":"selector",
-        "Type":"string",
-        "DefaultValue":""
-      },
-      "TestMergeCustomer":{
-        "Name": "TestMergeCustomer",
-        "TypeView":"selector",
-        "Type":"string",
-        "DefaultValue":""
-      }
-   },  
-   "PruductGrid":{
+   "currencyContent":{ 
+    "CurrencyName":{
+      "Name": "CurrencyName",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "ReadOnly":true
+    }
+   },
+   "ProductOrder":{
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Product name",
+      "ReadOnly":true
+    },
+    "ProductNumber":{
+      "Name": "ProductNumber",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Product number",
+      "ReadOnly":true
+    },
+    "Quantity":{
+      "Name": "Quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Product Quantity",
+      "ReadOnly":true
+    },
+    "standartcost":{
+      "Name": "standartcost",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Product standart cost",
+      "category":"OrderProduct",
+      "ReadOnly":true
+    },
+    "quantityOrder":{
+      "Name": "quantityOrder",
+      "DisplayedName":"Quantity order",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "Required":true,
+      "category":"OrderProduct"
+    },
+    "totalprice":{
+      "Name": "totalprice",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Total Price",
+      "category":"OrderProduct",
+      "Required":true
+    },
+    "totalpricends":{
+      "Name": "totalpricends",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Total Price NDS",
+      "category":"OrderProduct",
+      "Required":true,
+      "ReadOnly":true
+    },
+    "markup":{
+      "Name": "markup",
+      "DisplayedName":"Markup",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "category":"OrderProduct"
+    },
+    "company":{
+      "Name": "company",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Type":"string",
+      "DefaultValue":"BYN",
+      "Provider":"loadCompanies",
+      "DisplayedName":"Company",
+      "category":"OrderProduct"
+    },
+    "description":{
+      "Name": "descriptionOrder",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Description",
+      "category":"OrderProduct"
+    }
+  
+   },
+   "OrderGrid":{
     "Position":{
       "Name": "position",
       "Type":"string",
       "DisplayedName":"No.",
-      "Order": 1,
+      "Order": 1000,
       "isSortable": false
     },
-    "Name":{
-      "Name": "name",
+    "NameCompany":{
+      "Name": "nameCompany",
+      "TypeView":"string",
       "Type":"string",
-      "DisplayedName":"Product",
-      "isSortable": false
+      "DisplayedName":"Company",
+      "DefaultValue":"",
+      "category":"OrderProduct"
     },
-    "ProductNumber":{
-      "Name": "productNumber",
-      "Type":"string",
-      "DisplayedName":"Prod. No",
-      "isSortable": true
-    },
-    "Quantity":{
-      "Name": "quantity",
+    "totalprice":{
+      "Name": "totalPrice",
+      "TypeView":"input",
       "Type":"double",
-      "DisplayedName":"Quantity",
-      "isSortable": true
-    },
-    "StandartCost":{
-      "Name": "standartCost",
-      "Type":"double",
-      "DisplayedName":"Std cost",
-      "isSortable": true
-    },
-    "PrimeCost":{
-      "Name": "primeCost",
-      "Type":"double",
-      "DisplayedName":"Prime cost",
-      "isSortable": true
-    },
-    "Manufacturer":{
-      "Name": "manufacturer",
-      "Type":"string",
-      "DisplayedName":"Manufacturer",
-      "isSortable": true
+      "DisplayedName":"Total Price",
+      "category":"OrderProduct",
+      "Required":true
     },
     "Description":{
       "Name": "description",
@@ -229,10 +835,16 @@
       "DisplayedName":"Description",
       "isSortable": false
     },
-    "DateOfReceipt":{
-      "Name": "dateOfReceipt",
-      "Type":"DateTime",
-      "DisplayedName":"Date of receipt",
+    "OrderCreatedTime":{
+      "Name": "orderCreatedTime",
+      "Type":"string",
+      "DisplayedName":"Order Created Time",
+      "isSortable": true
+    },
+    "OrderCreatedByUser":{
+      "Name": "orderCreatedByUser",
+      "Type":"string",
+      "DisplayedName":"Order Created By User",
       "isSortable": true
     },
     "CurrencyName":{
@@ -240,39 +852,64 @@
       "Type":"string",
       "DisplayedName":"Currency",
       "isSortable": true
-    },
-    "WarehouseName":{  
-      "Name": "wareHouse",
-      "Type":"string",
-      "DisplayedName":"Warehouse",
-      "isSortable": true
     }
    },
-   "OptionalOfProduct":{
-      "Manufacturer":{
-        "Name": "Manufacturer",
-        "TypeView":"selector",
-        "Type":"string",
-        "DefaultValue":""
-      },
-      "WarehouseName":{  
-        "Name": "WarehouseName",
-        "TypeView":"selector",
-        "Type":"string",
-        "DisplayedName":"Warehouse name",
-        "DefaultValue":"",
-        "Required":true
-      },
-      "productParameters":{
-        "Name": "productParameters",
-        "TypeView":"selector",
-        "Editor":"selector",
-        "Provider":"loadProductParameters",
-        "Type":"string",
-        "DefaultValue":"",
-        "Required":true,
-        "Accessor":"loadDependParameters",
-        "DisplayedName":"Name"
-      }
+   "OrderProductGrid":{
+    "Position":{
+      "Name": "position",
+      "Type":"string",
+      "DisplayedName":"No.",
+      "Order": 1000,
+      "isSortable": false
+    },
+    "productName":{
+      "Name": "productName",
+      "Type":"string",
+      "DisplayedName":"Product Name",
+      "isSortable": true,
+      "Order": 980
+    },
+    "quantity":{
+      "Name": "quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Quantity",
+      "category":"OrderProduct",
+      "Required":true
+    },
+    "totalprice":{
+      "Name": "totalPrice",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Total Price",
+      "category":"OrderProduct",
+      "Required":true
+    },
+    "manufacturer":{
+      "Name": "manufacturer",
+      "Type":"string",
+      "DisplayedName":"Manufacturer"
+    }
+   },
+   "TestPickList":{
+    "CurrencyName":{
+      "Name": "CurrencyName",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Type":"string",
+      "DefaultValue":"BYR",
+      "Provider":"loadNamesCurrencies",
+      "DisplayedName":"Currency name"
+    },
+    "WarehouseName":{  
+      "Name": "WarehouseName",
+      "TypeView":"picklist",
+      "Editor":"picklist",
+      "Type":"string",
+      "DisplayedName":"Warehouse name",
+      "DefaultValue":"",
+      "Required":true,
+      "Provider":"loadWarehousesNames"
+    }
    }
 }

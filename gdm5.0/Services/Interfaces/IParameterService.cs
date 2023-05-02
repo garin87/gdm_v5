@@ -9,5 +9,6 @@ namespace gdm5._0.Services.Interfaces
     public interface IParameterService : IBaseServices<Parameter>
     {
         Task<Parameter> UpdateParameter(long id, Parameter parameter);
+        List<Parameter> getUniqueNameParameters();
     }
 }

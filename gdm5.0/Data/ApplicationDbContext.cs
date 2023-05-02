@@ -16,6 +16,7 @@ namespace gdm5._0.Data
             DbContextOptions options,
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
         {
+
         }
     }
 }

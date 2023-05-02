@@ -1,0 +1,20 @@
+<div class="field-selector">
+    <mat-form-field appearance="fill" class="container-picklist-control">
+      <input type="text" [formControl]="inputControl" placeholder="Value"
+      matInput  #textInput
+      (keyup)="changeText()" (paste)="changeText()" 
+      (cut)="changeText()" (input)="changeText()">
+        <mat-label>{{displayedName}}</mat-label>
+        <mat-select #selectedOption (selectionChange)="optionSelected()" [required]="required" 
+        [value]="value" [disabled]="readOnly" class="picklist-control" style="width: 40px;">
+        <div class="filter-search-wrapper">
+            <input type="text" [formControl]="optionFilter" placeholder="Search"
+                   matInput  #filterContent>
+            <mat-icon>search</mat-icon>
+        </div>
+          <mat-option  *ngFor="let item of listOptions | async" [value]="item.value">
+            {{item.value}}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+</div>

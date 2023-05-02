@@ -18,6 +18,14 @@
            <customField-editor [property]="property" [valueUpdated]="valueUpdated">
            </customField-editor>
        </div>
+       <div *ngSwitchCase="'listparameter'">
+           <selector-list-parametrs [property]="property" >
+           </selector-list-parametrs>
+        </div>
+        <div *ngSwitchCase="'picklist'">
+            <pickList-editor [items]="property?.selectableItems"  [property]="property"  [valueUpdated]="valueUpdated">
+            </pickList-editor>
+         </div>
         <div *ngSwitchDefault>
              <div class="message-warning"> This type of field not emplimented</div>
         </div>

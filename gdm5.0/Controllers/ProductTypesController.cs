@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
 using gdm5._0.Services.Interfaces;
 using gdm5._0.DTO;
+using gdm5._0.Requests.Product;
 
 namespace gdm5._0.Controllers
 {
@@ -61,8 +62,7 @@ namespace gdm5._0.Controllers
 
         [Route("getProductTypeInstances/{nameType}")]
         [HttpGet]
-        public IActionResult getProductTypeInstances([FromRoute] string nameType, 
-            [FromQuery] PaginationFilterDTO filter, [FromQuery] SortOptionsDTO sortOption = null)
+        public IActionResult getProductTypeInstances([FromRoute] string nameType, [FromQuery] PaginationFilterDTO filter, [FromQuery] SortOptionsDTO sortOption = null)
         {
             var route = Request.Path.Value;
 
@@ -71,7 +71,7 @@ namespace gdm5._0.Controllers
 
             try
             {
-                var result  = this._productTypeService.getProductTypeInstances(nameType, filter, route, sortOption);
+                var result  = this._productTypeService.getProductTypeInstances(nameType, filter, route, sortOption, null);
                 return Ok(result);
             }
             catch (ApplicationException ex)
@@ -79,6 +79,30 @@ namespace gdm5._0.Controllers
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
         }
+
+
+        [Route("getProductTypeInstances2")]
+        [HttpPost]
+        public IActionResult getProductTypeInstances2([FromBody] getProductTypeInstancesRequest request)
+        {
+            var route = Request.Path.Value;
+
+            if (string.IsNullOrEmpty(request.NameProductType))
+                return BadRequest(new { IsSuccess = false, Message = "Incorrect the product name - " + request.NameProductType });
+
+            try
+            {
+                var result = this._productTypeService.getProductTypeInstances(request.NameProductType,
+                    request.PageFilter, route, request.SortOption, request.Filter);
+                return Ok(result);
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+
         // GET: api/GetOtherProductTypes
         [HttpGet]
         [Route("GetOtherProductTypes")]

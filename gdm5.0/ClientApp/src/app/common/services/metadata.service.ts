@@ -7,6 +7,7 @@ export class MetadataService {
     
     private alltypes:any;
     get metadataTypes():any { return this.alltypes};
+
     public loaded:boolean = false;
 
     constructor(private _applicationService: ApplicationService) {
@@ -26,4 +27,9 @@ export class MetadataService {
     getMetadataType(metadataType){
        return this.alltypes[metadataType];
     }
+
+    setMetadataType(typeName, value){ 
+        this.alltypes[typeName] = value
+    };
+    
 }

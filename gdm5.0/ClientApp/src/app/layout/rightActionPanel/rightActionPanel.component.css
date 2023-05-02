@@ -1,0 +1,41 @@
+.rightActionPanel-container {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  padding: 1em;
+  
+  display: contents;
+
+}
+.rightActionPanel-content-container{
+  margin-left: 6px;
+  border-left: 1px solid #ada9a9;
+}
+.rightActionPanel-list-commands{
+  width: 100%;
+  height: 100%;
+}
+
+.rightActionPanel-actions{
+  width: 100%;
+}
+.btn-action-panel{
+  width: 70px;
+  height: 70px;
+  padding: 0px;
+}
+.btn-action-panel-content{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.btn-action-panel-content mat-icon{
+  transform: scale(1.3);
+  margin-top: 10px;
+}
+.container-action-btn{
+  border-bottom: 1px solid #ada9a9;
+}

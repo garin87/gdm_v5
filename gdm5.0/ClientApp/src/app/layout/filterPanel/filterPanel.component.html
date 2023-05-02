@@ -1,0 +1,16 @@
+
+<mat-accordion class="example-headers-align" multi>
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title>
+        Filter data
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <form-editor [instanceName]="typeFilter">
+    </form-editor>
+    <div class="reset-button">
+      <button  mat-raised-button color="primary" (click)="reset()">Reset</button>    
+    </div>
+  </mat-expansion-panel>
+
+</mat-accordion>

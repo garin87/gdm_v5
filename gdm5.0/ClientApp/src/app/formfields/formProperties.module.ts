@@ -22,16 +22,23 @@ import { SelectorComponent } from './fieldEditor/selector/selector.component';
 import {MatDialogModule} from '@angular/material/dialog'
 import { CustomFieldComponent } from './fieldEditor/customField/customField.component';
 import { ParameterDialogComponent } from './fieldEditor/customField/parameterDialog/parameterDialog.component';
-import { FormEditorService } from '../common/services/formEditor.service';
-import { MetadataService } from '../common/services/metadata.service';
 import {MatTableModule} from '@angular/material/table';
-
+import {MatExpansionModule} from '@angular/material/expansion';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import { SidePanelComponent } from "../layout/sidePanel/sidePanel.component";
 import { GridControlComponent } from '../layout/grid/gridControl.component';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
+import { filterPanelComponent } from '../layout/filterPanel/filterPanel.component';
+import { ParameterSelectorsComponent } from './fieldEditor/parametrSelectors/parameterSelectors.component';
+import { rightActionPanelComponent } from '../layout/rightActionPanel/rightActionPanel.component';
+import { ActionDialogComonent } from '../layout/actionDialog/actionDialog.component';
+import { SubSidePanelComponent } from '../layout/subSidePanel/subSidePanel.component';
+import { gridExpandRowComponent } from '../layout/gridExpandRow/gridExpandRow.component';
+import { gridPlainComponent } from '../layout/gridPlain/gridPlain.component';
+import { PickListComponent } from './fieldEditor/pickList/pickList.component';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -50,7 +57,8 @@ import { MatSortModule } from '@angular/material/sort';
     MatTableModule,
     MatProgressSpinnerModule,
     MatPaginatorModule,
-    MatSortModule
+    MatSortModule,
+    MatExpansionModule
   ],
   declarations: [FormEditorComponent, 
                  FieldEditorComponent, 
@@ -59,8 +67,16 @@ import { MatSortModule } from '@angular/material/sort';
                  SelectorComponent,
                  CustomFieldComponent,
                  ParameterDialogComponent,
+                 ParameterSelectorsComponent,
                  SidePanelComponent,
-                 GridControlComponent],
+                 SubSidePanelComponent,
+                 rightActionPanelComponent,
+                 GridControlComponent,
+                 gridExpandRowComponent,
+                 gridPlainComponent,
+                 filterPanelComponent,
+                 ActionDialogComonent,
+                 PickListComponent],
   exports: [FormEditorComponent, 
             FieldEditorComponent, 
             TextEditorComponent, 
@@ -68,8 +84,16 @@ import { MatSortModule } from '@angular/material/sort';
             SelectorComponent,
             CustomFieldComponent,
             ParameterDialogComponent,
+            ActionDialogComonent,
+            ParameterSelectorsComponent,
             SidePanelComponent,
-            GridControlComponent],
+            SubSidePanelComponent,
+            rightActionPanelComponent,
+            GridControlComponent,
+            gridExpandRowComponent,
+            gridPlainComponent,
+            filterPanelComponent,
+            PickListComponent],
   providers: [  
     MatDatepickerModule
   ],

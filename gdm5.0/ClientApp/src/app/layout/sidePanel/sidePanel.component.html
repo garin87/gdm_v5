@@ -1,17 +1,11 @@
 
-<!-- <button mat-icon-button (click)="snav.toggle()"><mat-icon>menu</mat-icon></button>
-<mat-sidenav-container class="sidenav-container">
-   <mat-sidenav-content>
-    <p *ngFor="let content of fillerContent">{{content}}</p>
-   </mat-sidenav-content>
-</mat-sidenav-container> -->
-<mat-drawer-container class="sidenav-container" autosize>
+<mat-drawer-container class="app-sidenav-container" autosize>
   <mat-drawer #drawer class="sidenav-content-container" mode="side" >
     <div class="filter-sidenav-content">
       <mat-form-field class="filter-sidenav-content-field" appearance="fill">
         <!-- <mat-label>Filter product</mat-label> -->
         <div class="sidenav-filterControl-container">
-        <input type="text"  [formControl]="filterControl"
+        <input type="text" [formControl]="filterControl"
                placeholder="Search"
                matInput  #filterContent>
                <mat-icon>search</mat-icon>

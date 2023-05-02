@@ -9,8 +9,12 @@ namespace gdm5._0.Helpers
 {
     public class PaginationHelper
     {
-        public static PagedResponseDTO<List<T>> CreatePagedReponse<T>(List<T> pagedData, PaginationFilterDTO validFilter, int totalRecords, IUriService uriService, string route)
+        public static PagedResponseDTO<List<T>> CreatePagedReponse<T>(List<T> pagedData, 
+            PaginationFilterDTO validFilter, int totalRecords, IUriService uriService, string route)
         {
+            //pagedData.Skip(10).Take(15);
+
+
             var respose = new PagedResponseDTO<List<T>>(pagedData, validFilter.PageNumber, validFilter.PageSize);
             var totalPages = ((double)totalRecords / (double)validFilter.PageSize);
             int roundedTotalPages = Convert.ToInt32(Math.Ceiling(totalPages));
@@ -22,8 +26,8 @@ namespace gdm5._0.Helpers
                 validFilter.PageNumber - 1 >= 1 && validFilter.PageNumber <= roundedTotalPages
                 ? uriService.GetPageUri(new PaginationFilterDTO(validFilter.PageNumber - 1, validFilter.PageSize), route)
                 : null;
-            respose.FirstPage = uriService.GetPageUri(new PaginationFilterDTO(1, validFilter.PageSize), route);
-            respose.LastPage = uriService.GetPageUri(new PaginationFilterDTO(roundedTotalPages, validFilter.PageSize), route);
+            respose.FirstPage = uriService?.GetPageUri(new PaginationFilterDTO(1, validFilter.PageSize), route);
+            respose.LastPage = uriService?.GetPageUri(new PaginationFilterDTO(roundedTotalPages, validFilter.PageSize), route);
             respose.TotalPages = roundedTotalPages;
             respose.TotalRecords = totalRecords;
             return respose;

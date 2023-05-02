@@ -1,0 +1,79 @@
+
+table{
+    width: 100%;
+}
+
+.mat-row:hover .mat-cell {
+    border-color: rgb(0 0 0 / 54%);
+    cursor: pointer;
+}
+.mat-row:hover {
+    cursor: pointer;
+}
+
+.table-row-selected .mat-cell {
+    font-weight: 600;
+    border-color: rgb(0 0 0 / 54%);
+}
+
+.example-element-detail {
+    overflow: hidden;
+    display: flex;
+  }
+  
+  .example-element-diagram {
+    min-width: 80px;
+    border: 2px solid black;
+    padding: 8px;
+    font-weight: lighter;
+    margin: 8px 0;
+    height: 104px;
+  }
+  
+  .example-element-symbol {
+    font-weight: bold;
+    font-size: 40px;
+    line-height: normal;
+  }
+  
+  .example-element-description {
+    padding: 16px;
+  }
+  
+  .example-element-description-attribution {
+    opacity: 0.5;
+  }
+
+  tr.example-element-row:not(.example-expanded-row):hover {
+    background: whitesmoke;
+  }
+  
+  tr.example-element-row:not(.example-expanded-row):active {
+    background: #efefef;
+  }
+  
+  .example-element-row td {
+    border-bottom-width: 0;
+  }
+  tr.example-detail-row {
+    height: 0;
+}
+
+.sub-grid-products{
+    border: 1px solil black;
+
+}
+
+.td-expandedDetail{
+   width: 100%;
+}
+.expanded-row-content{
+    width: 100%;
+}
+
+.sub-grid-products, .plain-grid-section{
+   border-left: 1px solid #a9a9a9; 
+   border-right: 1px solid #a9a9a9;
+   border-top: 1px solid #a9a9a9;
+   margin: 4px;
+}

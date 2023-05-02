@@ -14,7 +14,7 @@ export function tokenGetter() {
 
 const Jwtconfig : JwtConfig  = {
   tokenGetter: tokenGetter,
-  allowedDomains: ["localhost: 5000"],
+  allowedDomains: ["localhost: 5000", "https://www.nbrb.by"],
   disallowedRoutes: [],
 }
 

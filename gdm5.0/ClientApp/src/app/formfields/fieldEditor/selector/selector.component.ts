@@ -1,7 +1,10 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { FormControl, FormGroup } from "@angular/forms";
-import { Observable, Subject } from "rxjs";
+import { element } from "protractor";
+import { Observable, of, Subject } from "rxjs";
+import { debounceTime, filter, map } from "rxjs/operators";
 import { ISelectableItem, valueUpdatedData } from "src/app/common/objects/common";
+import { AppStateService } from "src/app/common/services/appState.service";
 
 @Component({
     selector: 'selector-editor',
@@ -24,27 +27,50 @@ export class SelectorComponent implements OnInit {
     required: boolean;
     readOnly: boolean;
     values: any;
-
-    constructor() {
-       
-    }
+    listOptions:Observable<ISelectableItem[]>;
+    optionFilter = new FormControl();
+    inputControl = new FormControl();
+    
+    localvalueUpdated: any;
+    category:string
+    constructor(private _appStateService:AppStateService) {}
 
     ngOnInit(){
-        console.log(" init DateTimePikerComponent");
+        console.log(" init  SelectorComponent");
         console.log(this._property);
         console.log(this.valueUpdated);
- 
-        this.values = this._property.name == "CurrencyName" ? currencies : [{value: 'dfsdf', viewValue: 'sdfsdf'}];
+        this.localvalueUpdated = this.valueUpdated;
+        this.category = this._property.category;
+        this.listOptions = this._property.name?.toLowerCase() == "currency" ? of(currencies) : this.items;
         this.required = this._property.required != undefined ? this._property.required: false;
         this.readOnly = this._property.readOnly != undefined ? this._property.readOnly: false;
         this.displayedName = this._property.displayedName != undefined ? this._property.displayedName : this._property.name;
         this.name = this._property.name;
-        this.value = this._property.defaultValue;
+        this.value = this._property.value;
+     
 
         if(this.value){
             this.valChanged(this.value)
         }
+        if(this._property.category === "AddInstanceProduct"
+        && (this._property.name === "Name" || this._property.name === "name")){
+            this.value = this._appStateService.selectedProductName;
+        }
+        this.optionFilter.valueChanges.pipe(
+            debounceTime(800)
+         ).subscribe(data=> {
+             this.listOptions = this._filter(data);
+         });
+
+     
     }
+    
+    ngOnChanges(change){
+        if(change["items"]){
+          console.log("------------- -------ngOnChanges ========== items");
+          this.listOptions = this.items;
+        }
+    };
 
     optionSelected(){
         if(this.readOnly) return;
@@ -58,19 +84,54 @@ export class SelectorComponent implements OnInit {
 
     valChanged(tValue:string){
       
+        if(tValue == "---------Not set---------"){
+            tValue = "";
+        }
+        
         let convertedValue: any = tValue;
         this.value = tValue;
-        
-        let d = new valueUpdatedData(this._property.name, convertedValue, this.typeName);
-        this.valueUpdated.next(d);
+        const d = new valueUpdatedData(this._property.name, convertedValue, this.typeName, this.category);
+        this.localvalueUpdated.next(d);
     }
+
+
+    private _filter(value: string):any {
+        const filterValue = value.toLowerCase();
+        return this.items.pipe(
+            map((option:ISelectableItem[]) => {
+               const items = option.filter((item:ISelectableItem)=> item.value.toLowerCase().includes(filterValue));
+               const empty:ISelectableItem = {
+                    "name": "notSet",
+                    "value": "---------Not set---------"
+               };
+               
+               return items.length == 0 ? [empty] : items;
+            })
+        )
+    }
+    // onKey(value) { 
+    //   //  this.listOptions = this.search(value);
+    // }
+    // search(value: string):Observable<ISelectableItem[]> { 
+    //     let filterValue = value.toLowerCase();
+    //     return this.items.pipe(
+    //         filter(
+    //             (option:any) => {
+    //                 if(option.value.toLowerCase().includes(filterValue)){
+    //                     return option
+    //                 }else return;
+    //             }
+    //         )
+    //      )
+    //     // return this.items.filter((option:ISelectableItem) => option.value.toLowerCase().startsWith(filter));
+    // }
     
 }
 
-const currencies = [
-    {value: 'USD', viewValue: 'USD'},
-    {value: 'EUR', viewValue: 'EUR'},
-    {value: 'RUB', viewValue: 'RUB'},
-    {value: 'BYR', viewValue: 'BYR'},
+const currencies:ISelectableItem[] = [
+    {name: 'USD', value: 'USD'},
+    {name: 'EUR', value: 'EUR'},
+    {name: 'RUB', value: 'RUB'},
+    {name: 'BYR', value: 'BYR'},
 ];
 

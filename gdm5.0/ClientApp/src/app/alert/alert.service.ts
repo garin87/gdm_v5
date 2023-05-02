@@ -114,16 +114,16 @@ export class AlertService {
     }
 
     private openModaObjectAlert(alertType: AlertTypes, messageObject: string | IResultStatus | any, title?: string | any, choices?: any[]): Observable<string> {      
-          // let modalAlert = this.createAlert(alertType, txt, true, title);
-           let modalRef = this._dialog.open(AlertModalObjectComponent, {disableClose: true}); 
+           // let modalAlert = this.createAlert(alertType, txt, true, title);
+           let modalRef = this._dialog.open(AlertModalObjectComponent); 
            let am = modalRef.componentInstance;       
-        am.messageText = messageObject;    
-      //  am.messageClass = modalAlert.class;      
-        am.title = title;       
+           am.messageText = messageObject;    
+           //  am.messageClass = modalAlert.class;      
+           am.title = title;       
            am.cancelBtnCaption = 'Cancel' 
            am.primaryBtnCaption = 'OK'
          
-         return modalRef.afterClosed();   
+           return modalRef.afterClosed();   
     }
 
     private openModalAlert(alertType: AlertTypes, txt: string | IResultStatus | any, title?: string | any, choices?: any[]): Observable<string> {      
@@ -131,7 +131,7 @@ export class AlertService {
        let modalRef = this._dialog.open(AlertModalComponent, {disableClose: true}); 
        let am = modalRef.componentInstance;       
        am.messageText = modalAlert.message;    
-       am.messageClass = modalAlert.class;      
+       am.messageClass = modalAlert.class || "teeee";      
        am.title = modalAlert.title;       
        am.cancelBtnCaption = 'Cancel' //(alertType == AlertTypes.choice) ? this._labelService.getLabel('PS_ACTION_CANCEL', 'Cancel') : '';  
        am.primaryBtnCaption = 'OK'//this._labelService.getLabel('PS_ACTION_OK', 'Ok');

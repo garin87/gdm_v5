@@ -5,13 +5,13 @@ import { Directive, ElementRef, AfterViewInit, OnDestroy, Renderer2, Inpu
 })
 
 export class ClosableDirective implements AfterViewInit, OnDestroy {
-    @Input('csi-closable') parentElement : any;   
-    @Output('onClose') onClose = new EventEmitter<any>();
-    spanBtn : any;    
+        @Input('csi-closable') parentElement : any;
+        @Output('onClose') onClose = new EventEmitter<any>();
+        spanBtn : any;    
     foreColor : string = "#1E1E1E";
 
-    constructor( private _element: ElementRef,  
-                 private _rd: Renderer2) {    }
+        constructor( private _element: ElementRef,  
+    private _rd: Renderer2) {    }
 
     ngAfterViewInit(): void {
         const col = window.getComputedStyle(this._element.nativeElement, null).getPropertyValue("color");       
@@ -19,13 +19,13 @@ export class ClosableDirective implements AfterViewInit, OnDestroy {
 
         this.spanBtn = this._rd.createElement("span");        
         this._rd.addClass(this.spanBtn, "close-tab-icon");        
-        this._rd.listen(this.spanBtn, "click", (ev) => this.onClick(ev));        
-        this._rd.appendChild( this.spanBtn, this.createSvg(this._rd));        
-        this._rd.appendChild(this._element.nativeElement, this.spanBtn);  
+        this._rd.listen(this.spanBtn, "click", (ev) => this.onClick(ev));
+        this._rd.appendChild( this.spanBtn, this.createSvg(this._rd));
+        this._rd.appendChild(this._element.nativeElement, this.spanBtn);
      }   
 
     ngOnDestroy(){ 
-        this._rd.removeChild(this._element.nativeElement, this.spanBtn);    
+        this._rd.removeChild(this._element.nativeElement, this.spanBtn);
     }
 
     onClick(ev: Event){  

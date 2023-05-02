@@ -1,0 +1,25 @@
+
+<mat-drawer-container class="subsidenav-container" autosize>
+  <mat-drawer #drawer class="subsidenav-content-container" mode="side" >
+    <div class="filter-subsidenav-content">
+      <mat-form-field class="filter-subsidenav-content-field" appearance="fill">
+        <!-- <mat-label>Filter product</mat-label> -->
+        <div class="subsidenav-filterControl-container">
+        <input type="text" [formControl]="filterControl"
+               placeholder="Search"
+               matInput  #filterContent>
+               <mat-icon>search</mat-icon>
+              </div>
+      </mat-form-field>
+    </div>
+    <div class="subsidenav-list-properties" *ngIf="listProps">
+      <div *ngFor="let element of listProps | async" class="panel-property-row">
+        <div class="data-property" (click)="select(element)" [class.selected-item]="isSelected(element)">
+          {{element}}
+        </div>
+      </div>
+    </div>
+  </mat-drawer>
+
+</mat-drawer-container>
+

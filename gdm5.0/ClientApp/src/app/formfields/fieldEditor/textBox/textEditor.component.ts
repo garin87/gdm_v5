@@ -28,6 +28,8 @@ export class TextEditorComponent implements OnInit {
     isEditable: boolean;
     isDeleted: boolean;
     navPriority:string;
+    category:string;
+    
     min:any = null;
     step:any = null;
 
@@ -46,11 +48,12 @@ export class TextEditorComponent implements OnInit {
         this.navPriority = this._property.navPriority != undefined ? this._property.navPriority : 0;
         this.isEditable = this._property.isEditable;
         this.name = this._property.name;
-        this.value = this._property.defaultValue !== undefined? this._property.defaultValue : "";
+        this.value = this._property.value !== undefined ? this._property.value: "";
         this.isTypeArea = false;
         this.min =  this.typeName == "number" ? "0.001" : null;
         this.step = this.typeName == "number" ? "any" : null;
         this.isDeleted = this._property.isDeleted;
+        this.category = this._property.category;
         if(this.value){
             this.valChanged(this.value)
         }
@@ -68,10 +71,15 @@ export class TextEditorComponent implements OnInit {
         
         console.log(this.textInput);
         if(this.textInput){
+            if(this._property.name == "primecost"){
+
+            }
+            
             this.valChanged(this.textInput.nativeElement.value);
         }
 
     }
+    
     editField(){
         console.log("----- edit field");
         console.log(this._property.name);
@@ -93,7 +101,7 @@ export class TextEditorComponent implements OnInit {
               this.navPriority = result.parameterPriority
               this.displayedName = result.parameterName;
 
-              const updatedData = new valueUpdatedData(propName, "", "string", result.parameterPriority, result.parameterName,true);
+              const updatedData = new valueUpdatedData(propName, "", "string",this.category, result.parameterPriority, result.parameterName,true);
               this.valueUpdated.next(updatedData);
             }
           
@@ -114,7 +122,7 @@ export class TextEditorComponent implements OnInit {
                 this.isEditable = false;
                 this.isDeleted = false;
                 const propName = this._property.newName == ''? this._property.newName : this._property.name;
-                const updatedData = new valueUpdatedData(propName, "", "string",0,"",false,false,true);
+                const updatedData = new valueUpdatedData(propName, "", "string",this.category,0,"",false,false,true);
                 this.valueUpdated.next(updatedData);
             }
           

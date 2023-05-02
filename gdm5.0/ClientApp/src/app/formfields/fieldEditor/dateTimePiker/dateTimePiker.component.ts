@@ -10,7 +10,7 @@ import { valueUpdatedData } from "src/app/common/objects/common";
     styleUrls: ['./dateTimePiker.component.css']
   })
 export class DateTimePikerComponent implements OnInit {
-    @Input() value: string;
+    @Input() value: any;
     @Input("valueUpdated") valueUpdated: Subject<valueUpdatedData>;
 
     @Input("property") _property: any;
@@ -23,11 +23,12 @@ export class DateTimePikerComponent implements OnInit {
     isDateTimeRange: boolean;
     displayedName: string;
     defaultValue: any;
+    category: string;
     required: boolean;
     readOnly: boolean;
-
     campaignOne: FormGroup;
     campaignTwo: FormGroup;
+    localvalueUpdated:any;
   
     constructor() {
       const today = new Date();
@@ -50,17 +51,24 @@ export class DateTimePikerComponent implements OnInit {
         console.log(this._property);
         console.log(this.valueUpdated);
         //this.typeName = this.applyTypeInput(this._property.type);
+        this.localvalueUpdated = this.valueUpdated;
         this.required = this._property.required != undefined ? this._property.required: false;
         this.readOnly = this._property.readOnly != undefined ? this._property.readOnly: false;
         this.displayedName = this._property.displayedName != undefined ? this._property.displayedName : this._property.name;
         this.name = this._property.name;
-        //this.value = ""
+        this.value = this._property.value || this._property.defaultValue;
+        this.date.setValue(this._property.value); 
         this.isDateTimeRange = false;
+        this.category = this._property.category;
+        if(!this.value){
+           this.value = new Date();
+           if(this.name == "filterEndDate"){
+              this.value.setDate(this.value.getDate() + 2);
+           }
+        }
 
-        if(this._property.defaultValue == ""){
-          console.log("------ - -- - -- - - - - - -  this._property.defaultValue" );
-           const date = new Date();
-           this.valChanged(date);
+        if(this.value){
+           this.valChanged(this.value)
         }
     }
     
@@ -77,18 +85,17 @@ export class DateTimePikerComponent implements OnInit {
     }
 
     valChanged(tValue:any){
-      console.log("------------------------------------------ //////////////----- DateTimePikerComponent");
-      console.log(tValue);
         let convertedValue: any = tValue;
-        //this.value = tValue;
-        
         if(tValue){
-          // this.value = new Date(tValue);
-            convertedValue = new Date(tValue).toISOString();;
+          //  convertedValue = new Date(tValue).toISOString();
+            var dTimezone = new Date();
+            var offset = dTimezone.getTimezoneOffset() / 60;
+            convertedValue = new Date(Date.parse(convertedValue));
+            convertedValue.setHours(convertedValue.getHours() + offset);
         }
 
-        let d = new valueUpdatedData(this._property.name, convertedValue, this.typeName);
-        this.valueUpdated.next(d);
+        let d = new valueUpdatedData(this._property.name, convertedValue, this.typeName, this.category);
+        this.localvalueUpdated.next(d);
     }
     
 }

@@ -25,8 +25,12 @@ import { FormPropertiesModule } from "../formfields/formProperties.module";
 import { FormEditorService } from "../common/services/formEditor.service";
 import { DataAccessorsService } from "../common/services/dataAccessors.service";
 import { DataValueService } from "../common/services/dataValue.service";
-import { appStateService } from "../common/services/appState.service";
+import { AppStateService } from "../common/services/appState.service";
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import { ModelingComponent } from "../modeling/modeling.component";
+import { OrderComponent } from "../order/order.component";
+import { MatBadgeModule } from "@angular/material/badge";
+import { CurrenciesService } from "../common/services/currencies.service";
 
 @NgModule({
     declarations: [
@@ -34,6 +38,8 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
       NavMenuComponent,
       HomeComponent,
       ProductComponent,
+      ModelingComponent,
+      OrderComponent
     ],
     imports: [
       HttpClientModule,
@@ -49,6 +55,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
       MatIconModule,
       MatCardModule,
       MatProgressSpinnerModule,
+      MatBadgeModule,
       Routing,
     ],
     providers: [AuthorizeService,
@@ -57,7 +64,8 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
                 FormEditorService, 
                 DataAccessorsService,
                 DataValueService,
-                appStateService]
+                AppStateService,
+                CurrenciesService]
   })
 
   export class CoreModule { }

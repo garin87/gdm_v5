@@ -1,0 +1,21 @@
+
+<mat-drawer-container class="rightActionPanel-container" autosize>
+  <mat-drawer #drawer class="rightActionPanel-content-container" mode="side" >
+    <div class="rightActionPanel-list-commands" *ngIf="executeCommands">
+      <div *ngFor="let command of executeCommands" class="rightActionPanel-actions">
+        <div class = "container-action-btn {{command.command}}">
+          <button mat-raised-button class="btn-action-panel" color="command.type" (click)='actionManager(command)'>
+            <div class="btn-action-panel-content">
+               <mat-icon>{{command.icon}}</mat-icon>
+              <span>{{command.command}}</span>
+            </div>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </mat-drawer>
+
+</mat-drawer-container>
+
+

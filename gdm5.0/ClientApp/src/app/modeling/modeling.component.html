@@ -1,0 +1,57 @@
+
+<div class="modeling-main-container">
+    <app-sidePanel [eventToggle]="sidenavToggle" [properties]="modelingIntems" [page]="'modeling'"></app-sidePanel>
+   
+    <div class="modeling-container">
+        <mat-card class="modeling-card modeling-commands">
+            <mat-card-title>Modeling {{ currentModelNameGet}} {{ currentModelInstanceNameGet}}  </mat-card-title> 
+            <mat-card-actions>
+           
+                <button class="modeling-command-button" mat-raised-button color="primary" [disabled]="!currentModelName"
+                    (click)="activePanel('createModel')">Create</button>
+
+                <!-- <button mat-raised-button class="product-command-button"
+                    color="primary" (click)="onToggleSidenav($event)">
+                   products
+               </button>    
+                <button class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isAddNewProduct')" >Add a new product</button> 
+                <button class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isEditParamProduct')" >Edit product parameters</button>  -->
+            </mat-card-actions>
+        </mat-card>
+    
+        <div class="modeling-content">
+            <app-subSidePanel [eventToggle]="sidenavToggle" [properties]="companyIntems" [page]="'submodeling'"></app-subSidePanel>
+             <div>
+                <mat-card class="modeling-card instance-modeling-card"  *ngIf="isCreateModel">
+                      <div class="">
+                        <mat-card-title>Add a {{currentModelName}}</mat-card-title>
+                        <form-editor  [instanceName]="currentModelName"></form-editor>
+                        <mat-card-actions>
+                            <div class="modeling-save-button">
+                                <button  mat-raised-button color="primary" (click)="saveModel()" >Save a new {{currentModelName}}</button>    
+                            </div>
+                        </mat-card-actions>
+                      </div>
+                </mat-card>
+             </div>
+            
+            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isCompanyPage">
+                <form-editor  [instanceName]="'companyContent'"></form-editor>
+                <rightActionPanel></rightActionPanel>
+            </mat-card>
+           
+            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isWareHousePage">
+                <form-editor  [instanceName]="'warehouseContent'"></form-editor>
+                <rightActionPanel></rightActionPanel>
+            </mat-card>
+
+            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isCurrencyPage">
+                <form-editor  [instanceName]="'currencyContent'"></form-editor>
+                <rightActionPanel></rightActionPanel>
+            </mat-card>
+        </div>  
+
+    </div>
+</div>

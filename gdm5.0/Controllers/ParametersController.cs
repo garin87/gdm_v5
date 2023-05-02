@@ -50,7 +50,21 @@ namespace gdm5._0
             return Ok(parameter);
         }
 
- 
+        [HttpGet]
+        [Route("getUniqueNameParameters")]
+        public IActionResult getUniqueNameParameters( )
+        {
+
+            try
+            {
+                return Ok(this._parameterService.getUniqueNameParameters());
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
         [HttpPost]
         [Route("UpdateProductTypeParameters")]
         public IActionResult UpdateProductTypeParameters(ProductNewDTO ProductDTO)

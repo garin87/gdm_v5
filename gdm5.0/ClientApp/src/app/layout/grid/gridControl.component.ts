@@ -1,3 +1,4 @@
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -6,11 +7,12 @@ import { MatSort, Sort } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { debounceTime, map, startWith, tap } from 'rxjs/operators';
-import { IGridColumnDefinition, IPaginationAction, SortOptions } from 'src/app/common/objects/common';
+import { gridParameter, IgetProductTypeInstancesRequest, 
+  IGridColumnDefinition, IPaginationAction, ISortOption, PageFilter, ProductTypeInstancesRequest,} from 'src/app/common/objects/common';
 import { ApplicationService } from 'src/app/common/services/application.service';
-import { appStateService } from 'src/app/common/services/appState.service';
+import { AppStateService } from 'src/app/common/services/appState.service';
 import { MetadataService } from 'src/app/common/services/metadata.service';
-import { StringLiteralLike } from 'typescript';
+import { CommonUtil } from 'src/app/common/utils/common-utils';
 
 
 @Component({
@@ -23,6 +25,8 @@ export class GridControlComponent implements OnInit{
   @Input("gridData") gridData: any;
   @Input("gridMetadataType") gridMetadataType: any;
   @Input("selectedProduct") selectedProductName: any;
+  @Input("typeFilter") typeFilter: any;
+  
   @ViewChild(MatPaginator) paginator: MatPaginator;
   @ViewChild("table") table!: MatTable<any>;
   
@@ -31,17 +35,20 @@ export class GridControlComponent implements OnInit{
   displayedColumns:any;
   dataSource:any;
   totalRecords:number = 0;
-  pageSizeDefault:number = 5;
+  pageSizeDefault:number = 10;
   currentPageSize:number = this.pageSizeDefault;
   isLoadingResults:boolean = false;
   paginationParameters:any;
-  sortOptionsPublick:SortOptions = null;
-
+  sortOptionsPublick:ISortOption;
+  pageFilterPublick:PageFilter;
+  getProductTypeInstancesRequest:IgetProductTypeInstancesRequest;
+  selectedRow:any;
+  
   @ViewChild(MatSort) sort: MatSort;
   
   listProps : Observable<string[]>;
   constructor(private _metadataService:MetadataService,
-              private _appStateService:appStateService,
+              private _appStateService:AppStateService,
               private _applicationService : ApplicationService) { };
 
   announceSortChange(sortState: Sort) {
@@ -54,7 +61,7 @@ export class GridControlComponent implements OnInit{
       } 
       let paramerts = this.dataSource[0]?.parameters;
       let isParameter = paramerts.some(element => element.name == sortState.active);
-      let sortOptions:SortOptions = {
+      let sortOptions:ISortOption = {
         isParameter: isParameter,
         name: sortState.active,
         direction: sortState.direction
@@ -68,24 +75,40 @@ export class GridControlComponent implements OnInit{
   ngOnInit(){
       this.gridMetadata = this._metadataService.getMetadataType(this.gridMetadataType);
       this.gridcolumns = this.createColumns(this.gridMetadata);
-      this.dataSource = this.gridData?.data;
+      this.dataSource = this.gridData?.data || [];
       this.gridcolumns = this.gridcolumns.concat(this.convertParametersToColumn(this.dataSource));
-      console.log("---------- convertParametersToColumn"); 
-      console.log(this.convertParametersToColumn(this.dataSource));
+      this.gridcolumns = CommonUtil.sortProperties(this.gridcolumns);
       this.displayedColumns = this.gridcolumns.map(c => c.columnDef);
       this.totalRecords = this.gridData?.totalRecords;
       this.sortOptionsPublick = null;
+      this.pageFilterPublick = new PageFilter();
+      this.getProductTypeInstancesRequest = new ProductTypeInstancesRequest();
+
+      this._appStateService.changedGridOption.subscribe(item =>{
+        console.log("--------- -------- ---------changedGridOption.subscribe");
+        this.dispose();
+        if(item){
+          this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
+             this.pageFilterPublick.pageSize = 10, this.sortOptionsPublick, item);
+        }
+      });
+
+
+      this._appStateService.refreshGridData.subscribe(data => {
+        if(data){
+             this.refreshGridData();
+        }
+      })
   };
  
-
-
   ngOnChanges(changes): void {
     console.log("--------------------- -----console.log(changes);");
     console.log(changes);
     if(changes['gridData']) {
-      if( this.gridData?.data ){
+      if( this.gridData?.data || this.gridData?.currentValue){
         this.sortOptionsPublick = null;
-        this.dataSource = this.gridData?.data;
+        this.dataSource = this.gridData?.data || this.gridData?.currentValue;
+        this.totalRecords = this.gridData?.totalRecords || this.gridData?.totalRecords;
       } 
       if( this.table )this.table.renderRows();
     }
@@ -98,45 +121,101 @@ export class GridControlComponent implements OnInit{
    //  this.paginationParameters = this.getPaginationEventName($event);
    console.log(actionName);
    // this._appStateService.changedPageGrid.next(actionName);
+   this.pageFilterPublick.pageNumber = actionName.pageNumber;
+   this.pageFilterPublick.pageSize = actionName.pageSize;
    this.isLoadingResults = true;
-   this.getGridData(this.selectedProductName,actionName.pageNumber,actionName.pageSize, this.sortOptionsPublick);
-    
+   this.getGridData(this.selectedProductName, actionName.pageNumber,
+                    actionName.pageSize, this.sortOptionsPublick);
   }
 
-  getGridData(nameProduct, pageNumber, pageSize, sortOptions:SortOptions = null){
+  getGridData(nameProduct, pageNumber, pageSize, sortOptions:ISortOption = null, filter:gridParameter = null){
+   
+    this.getProductTypeInstancesRequest.NameProductType = nameProduct;
+    this.getProductTypeInstancesRequest.SortOption = {
+      name: sortOptions?.name.trim(),
+      direction: sortOptions?.direction.trim(),
+      isParameter: sortOptions?.isParameter
+    };
+    this.getProductTypeInstancesRequest.PageFilter = {
+      pageNumber : pageNumber,
+      pageSize: pageSize
+    }
 
-    this._applicationService.getProductTypeInstances(nameProduct,pageNumber,pageSize, sortOptions).subscribe(response => {
-      console.log("--------- getProductTypeIntances");
+    if(filter?.isParameter){
+      let isContainParameter:boolean = false;
+
+      this.getProductTypeInstancesRequest.Filter.Parameters.forEach(el =>{
+        if(el.ParameterName == filter.name){
+          el.Value = filter.value;
+          isContainParameter = true;
+        }
+      });
+
+      if(!isContainParameter){
+        this.getProductTypeInstancesRequest.Filter.Parameters.push(
+          {
+            Value:filter.value,
+            ParameterName: filter.name,
+            ProductId: null,
+            ParameterId: null
+          }
+        ); 
+      }
+    
+    }else if(filter){
+      this.getProductTypeInstancesRequest.Filter[filter?.name] = filter.value;
+    }
+        
+    
+    this._applicationService.getProductTypeInstances2(this.getProductTypeInstancesRequest).subscribe(response => {
+      console.log("--------- getGridData ------------ getProductTypeIntances");
       console.log(response);
       this.isLoadingResults = false;
       this.dataSource = response.data;
-      this.table.renderRows();
-   
+      this.totalRecords = this.gridData?.totalRecords;
+      if(this.table){
+        this.table.renderRows();
+      }
+      
     },
     err => {
         this.isLoadingResults = false;
-       // this.alertService.error(err.error.message);
-        console.log("----  error getProductTypeIntances");
         console.log(err);
     });
   }
 
-  convertParametersToColumn(gridData){
-     let paramerts = gridData[0]?.parameters;
+  refreshGridData(){
+    this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
+                     this.pageFilterPublick.pageSize = 10, this.sortOptionsPublick);
+  }
 
-     if(!paramerts) return;
-     return  paramerts.map(element => {
+  convertParametersToColumn(gridData){
+    if(!gridData) return;
+    let parametersData = gridData[0]?.parameters;
+   // let params = parameters.find(item => item.name == column.columnDef)?.value;
+    let unicParameters = [];
+    gridData.forEach(orderData => {
+      orderData.parameters.forEach(param=>{
+           let tempP = unicParameters.find(item => item?.name == param.name)?.value;
+           if(!tempP){
+              unicParameters.push(param);
+           }
+      });
+    })
+    
+     if(!parametersData) return;
+     return  parametersData.map(element => {
         return {
           columnDef : element.name,
           header: element.name,
           isSortable: true,
-          cell: (row, column, i) => `${this.getCellValue(row, column, i)}`, 
+          cell: (row, column, i) => `${this.getCellValue(row, column, i)}`,
+          order: element?.order || element?.priority  
         }
      });
   }
  
   getCellValue(row, column, i){
-
     let startPageNumber;
     if(this.paginator){
       startPageNumber = (this.paginator.pageSize * this.paginator.pageIndex) + i + 1;
@@ -144,6 +223,18 @@ export class GridControlComponent implements OnInit{
 
     let valueColumn = column.columnDef == "position" ? startPageNumber : row[column.columnDef];
     valueColumn = column.columnDef  == "dateOfReceipt"? valueColumn.split("T")[0] : valueColumn;
+    valueColumn = column.columnDef  == "dateOfLastChanged"? valueColumn.split("T")[0] : valueColumn;
+    if(column.columnDef  == "dateOfLastChanged"){
+       if(valueColumn == "01/01/0001 00:00"){
+          valueColumn = "";
+       }
+    }
+    
+    // if(valueColumn == null){
+    //    valueColumn = ""
+    // }
+
+
     if(!valueColumn && valueColumn != 0){
       if(row?.parameters){
         valueColumn = row?.parameters.find(item => item.name == column.columnDef)?.value;
@@ -151,7 +242,7 @@ export class GridControlComponent implements OnInit{
     }
 
     return typeof valueColumn == "undefined" ? null : valueColumn;
-   }
+  }
 
   createColumns(gridMetadata){
     let gridColumns: IGridColumnDefinition[] = [];
@@ -160,27 +251,37 @@ export class GridControlComponent implements OnInit{
         columnDef : element.name,
         header: element.displayedName,
         isSortable: element.isSortable,
-        cell: (row, column, i) => `${this.getCellValue(row, column, i)}`, 
+        cell: (row, column, i) => `${this.getCellValue(row, column, i)}`,
+        order: element?.order || element?.priority
       }
       gridColumns.push(col);
     });
 
-    let t = gridMetadata.map(element => {
+    gridMetadata.map(element => {
       return {
         columnDef : element.name,
         header: element.displayedName,
         isSortable: element.isSortable,
         cell: (item) => `${item}`, 
+        order: element?.order || element?.priority
       }
     });
-
-    console.log("----------------------------- t");
-    console.log(t);
-
     return gridColumns;
   }
 
-  
+  selectRow(row){
+     console.log("-------- grid ------ selectRow");
+     console.log(row);
+     this.selectedRow = row;
+     this._appStateService.initRightActionPanel = false;
+     if(this.gridMetadataType == "ProductGrid"){
+      this._appStateService.initRightActionPanel = true;
+      this._appStateService.instanceOfProduct = row;
+      this._appStateService.selectedRowGrid.next(row);
+     }
+    
+  }
+
   private getPaginationEventName(pEvent):IPaginationAction{
     let actionName: string;
     let paginationData: IPaginationAction = {};
@@ -204,6 +305,16 @@ export class GridControlComponent implements OnInit{
     paginationData.pageNumber = (pEvent.pageSize * pEvent.pageIndex) + 1;
   
     return paginationData;
+  }
+
+  onDestroy(){
+    this.dispose();
+  }
+
+  dispose(){
+    this.selectedRow = null;
+    this._appStateService.initRightActionPanel = false;
+    this._appStateService.instanceOfProduct = undefined;
   }
 }
 
