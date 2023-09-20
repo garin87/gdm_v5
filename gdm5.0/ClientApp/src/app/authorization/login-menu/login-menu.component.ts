@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { AuthorizeService } from '../authorize.service';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
+import { LabelsService } from 'src/app/common/services/labels.service';
 
 @Component({
   selector: 'app-login-menu',
@@ -12,13 +13,16 @@ export class LoginMenuComponent implements OnInit {
   public isAuthenticated: any;
   public isAdministrator: any;
   public userName: Observable<string>;
-
-  constructor(private authorizeService: AuthorizeService, private router: Router) { }
+  get isAdmin(){return this.isAdministrator}
+  constructor(private authorizeService: AuthorizeService,
+              private router: Router,
+              public _labelsService: LabelsService) { }
 
   ngOnInit() {
-    this.authorizeService.isLogin.subscribe( el => this.isAuthenticated = el);
-    this.authorizeService.userRole.subscribe( el => el == "Administrator" ? this.isAdministrator = true : this.isAdministrator = false )
 
+    
+    this.authorizeService.isLogin.subscribe( el => this.isAuthenticated = el);
+    this.authorizeService.userRole.subscribe( el => el == "Admin" ? this.isAdministrator = true : this.isAdministrator = false);    
   }
 
   onLogout(){

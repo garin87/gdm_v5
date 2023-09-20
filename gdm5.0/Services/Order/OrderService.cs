@@ -107,9 +107,10 @@ namespace gdm5._0.Services
             }
             else throw new ApplicationException("Entered name of company does not exist"); ;
 
-            if (product.Quantity >= orderData.quantityorder?.Value.ParseDouble())
+            var roundedQ = Math.Round(product.Quantity, 2);
+            if (roundedQ >= orderData.quantityorder?.Value.ParseDouble())
             {
-                var newQuantity = product.Quantity - orderData.quantityorder?.Value.ParseDouble();
+                var newQuantity = roundedQ - orderData.quantityorder?.Value.ParseDouble();
                 product.Quantity = newQuantity ?? product.Quantity;
                 product.DateOfLastChanged = DateTime.Now;
                 product.LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name;
@@ -120,12 +121,15 @@ namespace gdm5._0.Services
 
             var orderStatusCompleted = _context.OrderStatus.FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Completed);
 
-            int currencyId = 1; //BYN; 
+            int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
+            double orderQ = orderData.quantityorder.Value.ParseDouble();
+            double priceForQ = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQ;
+
             var order = new Order
             {
                 Id = 0,
                 NameCompany = orderData.company?.Value,
-                TotalPrice = orderData.totalprice?.Value.ParseDouble() ?? 0,
+                TotalPrice = priceForQ,
                 OrderCreatedTime = DateTime.Now,
                 OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
                 OrderCreatedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name,
@@ -149,7 +153,7 @@ namespace gdm5._0.Services
                     OrderId = order.Id,
                     ProductId = orderData.ProductId,
                     Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
-                    TotalPrice = orderData.totalprice?.Value.ParseDouble() ?? 0,
+                    TotalPrice = priceForQ,
                     TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
                     Markup = orderData.markup?.Value.ParseDouble() ?? 0,
 
@@ -162,7 +166,10 @@ namespace gdm5._0.Services
                 {
                     OrderId = order.Id,
                     ProductHistoryId = deletedProduct.Id,
-                    Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+                    Quantity = orderData.quantityorder?.Value.ParseFloat() ?? 0,
+                    TotalPrice = priceForQ,
+                 //   TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
+                 //   Markup = orderData.markup?.Value.ParseDouble() ?? 0,
                 };
                 _context.OrderProductHistory.Add(orderProduct);
             }
@@ -185,6 +192,8 @@ namespace gdm5._0.Services
             var cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
 
             int orderId;
+            double orderQ = orderData.quantityorder.Value.ParseDouble();
+            double priceForQ = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQ;
             if (cartOrder == null)
             {
                 if (string.IsNullOrEmpty(orderData.company?.Value))
@@ -200,12 +209,14 @@ namespace gdm5._0.Services
 
                 await CheckAndChangeQuantityProduct(product, orderData);
 
-                int currencyId = 1; //BYN; 
+                int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
+
+               
                 var newOrder = new Order
                 {
                     Id = 0,
                     NameCompany = orderData.company?.Value,
-                    TotalPrice = orderData.totalprice?.Value.ParseDouble() ?? 0,
+                    TotalPrice = priceForQ,
                     OrderCreatedTime = DateTime.Now,
                     OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
                     OrderCreatedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name,
@@ -237,8 +248,8 @@ namespace gdm5._0.Services
                 {
                     OrderId = orderId,
                     ProductId = orderData.ProductId,
-                    Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
-                    TotalPrice = orderData.totalprice?.Value.ParseDouble() ?? 0,
+                    Quantity = orderData.quantityorder?.Value.ParseFloat() ?? 0,
+                    TotalPrice = priceForQ,
                     TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
                     Markup = orderData.markup?.Value.ParseDouble() ?? 0,
 
@@ -251,8 +262,8 @@ namespace gdm5._0.Services
                 {
                     OrderId = orderId,
                     ProductHistoryId = deletedProduct.Id,
-                    Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
-                    TotalPrice = orderData?.totalprice?.Value.ParseDouble() ?? 0,
+                    Quantity = orderData.quantityorder?.Value.ParseFloat() ?? 0,
+                    TotalPrice = priceForQ,
                     Markup = orderData?.markup?.Value.ParseDouble() ?? 0,
                     TaxNDS = orderData?.taxnds?.Value.ParseDouble() ?? 0,
                 };
@@ -264,9 +275,10 @@ namespace gdm5._0.Services
         private async Task CheckAndChangeQuantityProduct(Product product, AddOrderRequest orderData)
         {
 
-            if (product.Quantity >= orderData.quantityorder?.Value.ParseDouble())
+            var roundedQ = Math.Round(product.Quantity, 2);
+            if (roundedQ >= orderData.quantityorder?.Value.ParseDouble())
             {
-                var newQuantity = product.Quantity - orderData.quantityorder?.Value.ParseDouble();
+                var newQuantity = roundedQ - orderData.quantityorder?.Value.ParseDouble();
                 product.Quantity = newQuantity ?? product.Quantity;
                 product.DateOfLastChanged = DateTime.Now;
                 product.LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name;
@@ -310,7 +322,7 @@ namespace gdm5._0.Services
             else throw new ApplicationException("Entered name of company does not exist");
 
             
-            int currencyId = 1; //BYN; 
+            int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
 
             var totalPriceList = orderData.orderProductList.Select(product => product.totalprice.Value.ParseDouble());
             var totalOrderPrice = totalPriceList.Sum();
@@ -336,7 +348,7 @@ namespace gdm5._0.Services
 
                 var product = _context.Products.FirstOrDefault(product => (product.Id == productOrder.ProductId));
 
-                var newQuantity = product.Quantity - productOrder.quantityorder?.Value.ParseDouble();
+                var newQuantity = product.Quantity - productOrder.quantityorder?.Value.ParseFloat();
                 product.Quantity = newQuantity ?? product.Quantity;
                 product.DateOfLastChanged = DateTime.Now;
                 await _context.SaveChangesAsync();
@@ -354,7 +366,7 @@ namespace gdm5._0.Services
                     {
                         OrderId = order.Id,
                         ProductId = productOrder.ProductId,
-                        Quantity = productOrder.quantityorder?.Value.ParseDouble() ?? 0,
+                        Quantity = productOrder.quantityorder?.Value.ParseFloat() ?? 0,
                         TotalPrice = productOrder.totalprice?.Value.ParseDouble() ?? 0,
                         TaxNDS = productOrder.taxnds?.Value.ParseDouble() ?? 0,
                         Markup = productOrder.markup?.Value.ParseDouble() ?? 0,
@@ -367,7 +379,7 @@ namespace gdm5._0.Services
                     {
                         OrderId = order.Id,
                         ProductHistoryId = deletedProduct.Id,
-                        Quantity = productOrder.quantityorder?.Value.ParseDouble() ?? 0,
+                        Quantity = productOrder.quantityorder?.Value.ParseFloat() ?? 0,
                         TotalPrice = productOrder.totalprice?.Value.ParseDouble() ?? 0,
                         TaxNDS = productOrder.taxnds?.Value.ParseDouble() ?? 0,
                         Markup = productOrder.markup?.Value.ParseDouble() ?? 0,
@@ -453,6 +465,7 @@ namespace gdm5._0.Services
                     OCurrency = order.Currency.CurrencyName;
                     OProductName = order.OrderProduct.Select(orderProduct => orderProduct.Product.Name).FirstOrDefault();
                     OQuantity = order.OrderProduct.Select(orderProduct => orderProduct.Quantity).FirstOrDefault();
+                    OQuantity = Math.Round(OQuantity, 2);
                 }
                 if (orderPH.Count() > 0)
                 {
@@ -460,7 +473,9 @@ namespace gdm5._0.Services
                     OManufacturer = order.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory.Manufacturer).FirstOrDefault();
                    // OCurrency = product.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory..CurrencyName).FirstOrDefault();
                     OProductName = order.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory.Name).FirstOrDefault();
+                   
                     OQuantity = order.OrderProductHistory.Select(orderProduct => orderProduct.Quantity).FirstOrDefault();
+                    OQuantity = Math.Round(OQuantity, 2);
                 }
 
                 var taxNDS = order.OrderProduct.Select(orderPrduct => orderPrduct.TaxNDS).FirstOrDefault();
@@ -560,8 +575,8 @@ namespace gdm5._0.Services
                         var oProduct = new OrderProductDomain()
                         {
                             ProductId = orderProduct.ProductId,
-                            TotalPrice = orderProduct.TotalPrice,
-                            Quantity = orderProduct.Quantity,
+                            TotalPrice = Math.Round(orderProduct.TotalPrice, 2),
+                            Quantity = Math.Round(orderProduct.Quantity, 2),
                             TaxNDS = taxNDS,
                             Markup = orderProduct.Markup,
                             ProductNumber = orderProduct.Product.ProductNumber,
@@ -587,8 +602,8 @@ namespace gdm5._0.Services
                         var oProduct = new OrderProductDomain()
                         {
                             ProductId = orderProductHistory.ProductHistoryId,
-                            TotalPrice = orderProductHistory.TotalPrice,
-                            Quantity = orderProductHistory.Quantity,
+                            TotalPrice = Math.Round(orderProductHistory.TotalPrice, 2),
+                            Quantity = Math.Round(orderProductHistory.Quantity, 2),
                             TaxNDS = taxNDS,
                             Markup = orderProductHistory.Markup,
                             ProductNumber = orderProductHistory.ProductHistory.ProductNumber,
@@ -614,7 +629,7 @@ namespace gdm5._0.Services
                 {
                     OrderId = order.Id,
                     NameCompany = order.NameCompany,
-                    TotalPrice = orderProductListDTO.Sum(product => product.TotalPrice),
+                    TotalPrice = Math.Round(orderProductListDTO.Sum(product => product.TotalPrice),2),
                     Description = order.Description,
                     OrderCreatedTime = order.OrderCreatedTime.ToString("MM/dd/yyyy HH:mm"),
                     OrderCreatedByUser = order.OrderCreatedByUser,
@@ -675,8 +690,9 @@ namespace gdm5._0.Services
                         var oProduct = new OrderProductDomain()
                         {
                             ProductId = orderProduct.ProductId,
-                            TotalPrice = orderProduct.TotalPrice,
-                            Quantity = orderProduct.Quantity,
+                            TotalPrice = Math.Round(orderProduct.TotalPrice, 2),
+                            Quantity = Math.Round(orderProduct.Quantity, 2),
+                   
                             TaxNDS = taxNDS,
                             Markup = orderProduct.Markup,
                             ProductNumber = orderProduct.Product.ProductNumber,
@@ -702,8 +718,8 @@ namespace gdm5._0.Services
                         var oProduct = new OrderProductDomain()
                         {
                             ProductId = orderProductHistory.ProductHistoryId,
-                            TotalPrice = orderProductHistory.TotalPrice,
-                            Quantity = orderProductHistory.Quantity,
+                            TotalPrice = Math.Round(orderProductHistory.TotalPrice,2),
+                            Quantity = Math.Round(orderProductHistory.Quantity, 2),
                             TaxNDS = taxNDS,
                             Markup = orderProductHistory.Markup,
                             ProductNumber = orderProductHistory.ProductHistory.ProductNumber,
@@ -730,7 +746,7 @@ namespace gdm5._0.Services
                 {
                     OrderId = order.Id,
                     NameCompany = order.NameCompany,
-                    TotalPrice = orderProductListDTO.Sum(product=>product.TotalPrice),
+                    TotalPrice = Math.Round(orderProductListDTO.Sum(product=>product.TotalPrice), 2),
                     Description = order.Description,
                     OrderCreatedTime = order.OrderCreatedTime.ToString("MM/dd/yyyy HH:mm"),
                     OrderCreatedByUser = order.OrderCreatedByUser,
@@ -826,7 +842,7 @@ namespace gdm5._0.Services
             if(product.Quantity >= orderDTO.Quantity)
             {
                 var newAmout = product.Quantity - orderDTO.Quantity;
-                product.Quantity = Math.Round(newAmout, 2);
+                product.Quantity = newAmout;
                 await _context.SaveChangesAsync();
             }
             else
@@ -847,7 +863,7 @@ namespace gdm5._0.Services
                  .FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
 
             if (cartOrder == null)
-                throw new ApplicationException("Cart is empty");
+                throw new Exception("Cart is empty");
 
 
             if (cartOrder.OrderProduct.Any())
@@ -871,7 +887,7 @@ namespace gdm5._0.Services
 
             if(cartOrder.OrderProductHistory.Count() > 0 && cartOrder.OrderProduct.Count() > 0)
             {
-                throw new ApplicationException("Cart is empty");
+                throw new Exception("Cart is empty");
             }
                
 
@@ -932,6 +948,8 @@ namespace gdm5._0.Services
             if(deletedOrderProduct != null)
             {
                 deletedOrderProduct.Product.Quantity = deletedOrderProduct.Product.Quantity + deletedOrderProduct.Quantity;
+
+                deletedOrderProduct.Product.Quantity = Math.Round(deletedOrderProduct.Product.Quantity, 2);
                 _context.OrderProducts.Remove(deletedOrderProduct);
             }
             else
@@ -948,7 +966,7 @@ namespace gdm5._0.Services
                         ProductTypeId = idProductType,
                         Name = deletedOrderProductHistory.ProductHistory.Name,
                         ProductNumber = deletedOrderProductHistory.ProductHistory.ProductNumber,
-                        Quantity = deletedOrderProductHistory.Quantity,
+                        Quantity = Math.Round(deletedOrderProductHistory.Quantity, 2),
                         StandartCost = deletedOrderProductHistory.ProductHistory.StandartCost,
                         Manufacturer = deletedOrderProductHistory.ProductHistory.Manufacturer,
                         Description = deletedOrderProductHistory.ProductHistory.Description,
@@ -1228,6 +1246,32 @@ namespace gdm5._0.Services
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        private int GetOrCreateCurrency(string currencyName)
+        {
+            var currency = _context.Currencies.FirstOrDefault(c => c.CurrencyName == currencyName);
+            var currencyId = 0;
+
+            if (currency == null)
+            {
+                var newCurrency = new Currency()
+                {
+                    Id = currencyId,
+                    CurrencyName = currencyName
+                };
+
+                _context.Currencies.Add(newCurrency);
+                _context.SaveChanges();
+
+                currencyId = newCurrency.Id;
+            }
+            else
+            {
+                currencyId = currency.Id;
+            }
+
+            return currencyId;
         }
     }
 }

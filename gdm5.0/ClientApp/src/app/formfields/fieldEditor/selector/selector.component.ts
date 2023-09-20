@@ -1,8 +1,7 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import { FormControl, FormGroup } from "@angular/forms";
-import { element } from "protractor";
+import { Component, Input, OnInit, ViewChild } from "@angular/core";
+import { UntypedFormControl} from "@angular/forms";
 import { Observable, of, Subject } from "rxjs";
-import { debounceTime, filter, map } from "rxjs/operators";
+import { debounceTime, map } from "rxjs/operators";
 import { ISelectableItem, valueUpdatedData } from "src/app/common/objects/common";
 import { AppStateService } from "src/app/common/services/appState.service";
 
@@ -17,7 +16,8 @@ export class SelectorComponent implements OnInit {
     @Input("property") _property: any;
     @Input("items") items: Observable<ISelectableItem[]>;
     @ViewChild("selectedOption") selectedOption: any;
-
+    @ViewChild("filterContent") filterInput: any;
+    @Input("listCreatedField") _listCreatedField: any;
 
     name: string;
     typeName:string;
@@ -28,8 +28,8 @@ export class SelectorComponent implements OnInit {
     readOnly: boolean;
     values: any;
     listOptions:Observable<ISelectableItem[]>;
-    optionFilter = new FormControl();
-    inputControl = new FormControl();
+    optionFilter = new UntypedFormControl();
+    inputControl = new UntypedFormControl();
     
     localvalueUpdated: any;
     category:string
@@ -72,6 +72,14 @@ export class SelectorComponent implements OnInit {
         }
     };
 
+    ngAfterViewInit(){
+        let p = {
+            propertyName: this.name,
+            htmlRef: this.selectedOption
+        }
+        this._listCreatedField.push(p);
+    }
+
     optionSelected(){
         if(this.readOnly) return;
         
@@ -94,7 +102,12 @@ export class SelectorComponent implements OnInit {
         this.localvalueUpdated.next(d);
     }
 
-
+    clickBySelect(){
+        setTimeout(()=>{
+            this.filterInput.nativeElement.focus()
+        }, 400)
+       
+    }
     private _filter(value: string):any {
         const filterValue = value.toLowerCase();
         return this.items.pipe(

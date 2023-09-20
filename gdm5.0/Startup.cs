@@ -14,9 +14,11 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace gdm5._0
@@ -37,6 +39,7 @@ namespace gdm5._0
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json")
                 .Build();
+
             string conString = Configuration["ConnectionStrings:DefaultConnection"];
             services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(conString));
@@ -60,7 +63,8 @@ namespace gdm5._0
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddIdentityServer()
+            services.AddIdentityServer()        
+                    //.AddSigningCredential(cert)
                     .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
 
@@ -106,7 +110,8 @@ namespace gdm5._0
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
-                configuration.RootPath = "ClientApp/dist";
+                configuration.RootPath = "ClientApp/dist/gdm5._0";
+             //   configuration.RootPath = "ClientApp/dist";
             });
 
             services.AddCors(options =>
@@ -141,21 +146,23 @@ namespace gdm5._0
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
             }
-            else
-            {
-                app.UseExceptionHandler("/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+            //else
+            //{
+            //    app.UseExceptionHandler("/Error");
+            //    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+            //    app.UseHsts();
+            //    app.UseDeveloperExceptionPage();
+            //}
 
             app.UseCors("EnableCORS");
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            app.UseIdentityServer();
             if (!env.IsDevelopment())
             {
                 app.UseSpaStaticFiles();
             }
+         
             //var ci = new CultureInfo("en-US");
             //ci.DateTimeFormat.LongDatePattern = "MM/dd/yyyy";
             //app.UseRequestLocalization(new RequestLocalizationOptions
@@ -177,19 +184,35 @@ namespace gdm5._0
                     pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
             });
-
             app.UseSpa(spa =>
             {
                 // To learn more about options for serving an Angular SPA from ASP.NET Core,
                 // see https://go.microsoft.com/fwlink/?linkid=864501
-
-                spa.Options.SourcePath = "ClientApp";
+                //  spa.Options.SourcePath = "ClientApp";
+                spa.Options.SourcePath = "ClientApp/dist";
 
                 if (env.IsDevelopment())
                 {
                     spa.UseAngularCliServer(npmScript: "start");
                 }
+
+                //   spa.UseAngularCliServer(npmScript: "start");
             });
+
+            //app.UseSpa(spa =>
+            //{
+            //    // To learn more about options for serving an Angular SPA from ASP.NET Core,
+            //    // see https://go.microsoft.com/fwlink/?linkid=864501
+
+            //    spa.Options.SourcePath = "ClientApp";
+
+            //    if (env.IsDevelopment())
+            //    {
+            //        spa.UseAngularCliServer(npmScript: "start");
+            //    }
+
+            //   // spa.UseAngularCliServer(npmScript: "start");
+            //});
         }
     }
 }

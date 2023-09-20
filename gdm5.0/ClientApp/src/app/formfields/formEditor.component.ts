@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, Input, OnInit } from "@angular/core";
-import { BehaviorSubject, of } from "rxjs";
-import { IMetadataProperty, valueUpdatedData } from "../common/objects/common";
+import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
+import { BehaviorSubject, Subscription, of } from "rxjs";
+import { IDependentProperties, IMetadataProperty, valueUpdatedData } from "../common/objects/common";
 import { DataAccessorsService } from "../common/services/dataAccessors.service";
 import { FormEditorService } from "../common/services/formEditor.service";
 
@@ -10,20 +10,24 @@ import { FormEditorService } from "../common/services/formEditor.service";
     styleUrls: ['./formEditor.component.css']
 })
 
-export class FormEditorComponent implements OnInit {
+export class FormEditorComponent implements OnInit, OnDestroy {
 
-    @Input("instanceName") instanceName: string;
+    @Input("instanceName") metadataTypeName: string;
     @Input("selectedInstance") selectedInstance: string;
     
     properties = new BehaviorSubject<IMetadataProperty[]>(undefined);
-    
+    private valueUpdatedSubscription$:Subscription;
+    private customPropertiesSubscription$:Subscription;
+    private dependentPropertiesSubscription$:Subscription;
+    private dependentPropertiesforDialog$:Subscription;
+    customProperties
     lodedOptionalFilter:boolean = false;
     constructor( private _formEditorService: FormEditorService,
                  private _dataAccessorsService: DataAccessorsService){}
 
     ngOnInit(){
        //.pipe(debounceTime(500))
-       this._formEditorService.valueUpdated.subscribe((el:valueUpdatedData)=>{
+        this.valueUpdatedSubscription$ = this._formEditorService.valueUpdated.subscribe((el:valueUpdatedData)=>{
           if(el){
             console.log("-------- ------ --  valueUpdated.subscribe");
             console.log(el);
@@ -31,13 +35,10 @@ export class FormEditorComponent implements OnInit {
             .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase());
 
             if(el.category && this._formEditorService?.setProperties[el.category]){
-
                prop = this._formEditorService?.setProperties[el.category]
-              .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase())
-             
+              .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase())  
             }
            
-
             if(prop[0]){
               let contextProp = {category: el.category}
               const accessor = prop[0]?.accessor;
@@ -54,48 +55,49 @@ export class FormEditorComponent implements OnInit {
           }   
         });
 
-
         this.applyProps([]);
-        this._formEditorService.customProperties.subscribe( customProps =>{
-                console.log("---- call customProperties.subscribe");  
+        this.customPropertiesSubscription$ = this._formEditorService.customProperties.subscribe( customProps =>{ 
                 this.applyProps(customProps);
            }
         );
 
-        this._formEditorService.dependentProperties.subscribe( dependentProps => {
-               this.applyProps(dependentProps, true);
-               
-               if(this.instanceName == "OptionalOfProduct"){
+        this.dependentPropertiesSubscription$ = this._formEditorService.dependentProperties
+        .subscribe( (dependentProps) => {   
+               if(dependentProps.metadataTypeName){
+                  this.metadataTypeName = dependentProps.metadataTypeName
+               }
+               this.applyProps(dependentProps.properties, true);
+               if(this.metadataTypeName == "OptionalOfProduct"){
                   this.lodedOptionalFilter = true;
                }
-
-              // this.lodedOptionalFilter
-               //this.instanceName = undefined;
         });
 
-        this._formEditorService.dependentPropertiesforDialog.subscribe( dependentProps => {
+        this.dependentPropertiesforDialog$ = this._formEditorService.dependentPropertiesforDialog.subscribe( dependentProps => {
           this.applyProps(dependentProps, true);
           
           //this.instanceName = undefined;
           //this.instanceName == "OptionalOfProduct" && customProps[0].TypeView == undefined
         });
-
-
-        
     };
     
    
     applyProps(customProps:any[], isDependentProps:boolean = false){
       if(!this.lodedOptionalFilter){
-        if(this.instanceName){
-          let instanceProps = this._formEditorService.createListProperties(this.instanceName, customProps, isDependentProps);
+        if(this.metadataTypeName){
+          let instanceProps = this._formEditorService.createListProperties(this.metadataTypeName, customProps, isDependentProps);
           instanceProps.forEach(p=> this._formEditorService.populateValue(p));
-          console.log(" ----------- instanceProps applyProps");
           instanceProps = this._formEditorService.sortProperties(instanceProps);
           this.properties.next(instanceProps);
         }
-        
       }
+    }
+
+    ngOnDestroy(){
+      console.log("---------------- ngOnDestroy formfield");
+      this.valueUpdatedSubscription$.unsubscribe();
+      this.customPropertiesSubscription$.unsubscribe();
+      this.dependentPropertiesSubscription$.unsubscribe();
+      this.dependentPropertiesforDialog$.unsubscribe();
     }
   
 }

@@ -1,19 +1,16 @@
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatSidenav } from '@angular/material/sidenav';
-import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
-import { debounceTime, map, startWith, tap } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Subscription } from 'rxjs';
 import { AlertService } from 'src/app/alert/alert.service';
 import { ExecuteCommand, IExecuteCommand, valueUpdatedData } from 'src/app/common/objects/common';
 import { ApplicationService } from 'src/app/common/services/application.service';
 import { AppStateService,  } from 'src/app/common/services/appState.service';
 import { FormEditorService } from 'src/app/common/services/formEditor.service';
-import { MetadataService } from 'src/app/common/services/metadata.service';
-import { StringLiteralLike } from 'typescript';
 import { ActionDialogComonent } from '../actionDialog/actionDialog.component';
 import { ActionManager } from './actionManager';
 import { CurrenciesService } from 'src/app/common/services/currencies.service';
+import { LabelsService } from 'src/app/common/services/labels.service';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'rightActionPanel',
@@ -32,22 +29,24 @@ export class rightActionPanelComponent implements OnInit{
   private _actionManager: ActionManager;
   get actionManagerService(): ActionManager { return this._actionManager; }
   private selectedPage: string = "";
-
+  private selectedRowGridSubscription$:Subscription;
+  private selectedSideSubPanelValueSubscription$:Subscription;
 
   constructor(private _appStateService:AppStateService,
     private _formEditorService:FormEditorService,
     private _applicationService : ApplicationService,
     private _alertService: AlertService, 
     private _currenciesService: CurrenciesService,
-    public dialog: MatDialog) { 
-   // setTimeout(()=>{this.drawer.toggle()}, 500)
-   this._actionManager = new ActionManager(this._appStateService, 
+    public dialog: MatDialog,
+    public _labelsService: LabelsService) { 
+    // setTimeout(()=>{this.drawer.toggle()}, 500)
+    this._actionManager = new ActionManager(this._appStateService, 
     this._formEditorService, this._applicationService, this._alertService, this._currenciesService);
   };
 
   ngOnInit(){
 
-    this._appStateService.selectedRowGrid.subscribe(data => {
+   this.selectedRowGridSubscription$ = this._appStateService.selectedRowGrid.subscribe(data => {
       if(!data) return;
       this.disposeFormProperties();
       this.executeCommands = this.productActions;
@@ -61,9 +60,10 @@ export class rightActionPanelComponent implements OnInit{
           this.drawer.open();
       }
     });
-    this._appStateService.selectedSideSubPanelValue.subscribe(data=>{
+
+    this.selectedSideSubPanelValueSubscription$ = this._appStateService.selectedSideSubPanelValue.subscribe(data=>{
       if(!data) return;
-      this.disposeFormProperties();
+    //  this.disposeFormProperties();
       this.selectedPage = data?.page;
       if(this._appStateService?.selectedInstancePanel == "Company") {
         this.executeCommands = this.companyActions; 
@@ -92,7 +92,7 @@ export class rightActionPanelComponent implements OnInit{
     console.log(command);
 
     const dialogRef = this.dialog.open(ActionDialogComonent, {
-      width: '900px',
+      width: '930px',
       data: {commandName: command.command, 
              typeInstance: command.data?.typeInstance,
              actionName: command.data?.actionName, 
@@ -106,7 +106,7 @@ export class rightActionPanelComponent implements OnInit{
       console.log(command.data.typeInstance);
       console.log(result);
       if(result){
-        const excommand = new ExecuteCommand(command.command,"","", 
+        const excommand = new ExecuteCommand(command.command,"","","", 
         {data: this._formEditorService.instanceData, typeInstance: command.data.typeInstance,
            actionName:"",parentType: command.data?.parentType});
 
@@ -119,11 +119,15 @@ export class rightActionPanelComponent implements OnInit{
       this._formEditorService.instanceData = {};
       this._formEditorService.listParameters = {};
     });
+    this._labelsService.labels.modelingActionPopUp_DeleteOrder
+
 
   }
   
-  onDestroy(){
+  ngOnDestroy(){
     this.dispose();
+    this.selectedRowGridSubscription$.unsubscribe();
+    this.selectedSideSubPanelValueSubscription$.unsubscribe();
   }
 
   dispose(){
@@ -141,51 +145,53 @@ export class rightActionPanelComponent implements OnInit{
   }
 
   private cartProductActions: any = [
-    new ExecuteCommand("Delete","delete","", 
-    {typeInstance:'selectedCartProduct', actionName: "Delete Product", actiontitle:"Delete product from cart", 
-    actionButton:"Delete Product", parentType:"cartProduct"})
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", 
+    {typeInstance:'selectedCartProduct', actionName: "Delete Product", actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteProductFromCart, 
+    actionButton: this._labelsService.labels.productActionPopUpButton_Delete, parentType:"cartProduct"})
   ];
+
   private orderActions: any = [
-    new ExecuteCommand("Delete","delete","", 
-    {typeInstance:'selectedOrder', actionName: "Delete order", actiontitle:"Delete order", 
-    actionButton:"Delete Order", parentType:"orderProduct"})
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", 
+    {typeInstance:'selectedOrder', actionName: "Delete order", actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteOrder, 
+    actionButton: this._labelsService.labels.productActionPopUpButton_Delete, parentType:"orderProduct"})
   ];
+
   private companyActions: any = [
-    new ExecuteCommand("Edit","edit","", 
-    {typeInstance:'selectedcompany', actionName: "Edit", actiontitle:"Update company instance", 
-    actionButton:"Update", parentType:"company"}),
-    new ExecuteCommand("Delete","delete","", {actionName: "Delete", actiontitle:"Delete the company", typeInstance:'',
-    actionButton:"Delete", parentType:"company"}),
+    new ExecuteCommand("Edit",this._labelsService.labels.productActionMenu_Edit,"edit","", 
+    {typeInstance:'selectedcompany', actionName: "Edit", actiontitle:this._labelsService.labels.modelingActionPopUp_UpdateCompany, 
+    actionButton:this._labelsService.labels.productActionPopUpButton_Update, parentType:"company"}),
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", {actionName: "Delete", actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteCompany, typeInstance:'',
+    actionButton:this._labelsService.labels.productActionPopUpButton_Delete, parentType:"company"}),
   ];
 
   private wareHouseActions: any = [
-    new ExecuteCommand("Edit","edit","", 
-    {typeInstance:'selectedWarehouse', actionName: "Edit", actiontitle:"Update warehouse instance", 
-    actionButton:"Update", parentType:"warehouse"}),
-    new ExecuteCommand("Delete","delete","", {actionName: "Delete", actiontitle:"Delete the warehouse", typeInstance:'',
-    actionButton:"Delete", parentType:"warehouse"}),
+    new ExecuteCommand("Edit",this._labelsService.labels.productActionMenu_Edit,"edit","", 
+    {typeInstance:'selectedWarehouse', actionName: "Edit", actiontitle:this._labelsService.labels.modelingActionPopUp_UpdateWarehouse, 
+    actionButton:this._labelsService.labels.productActionPopUpButton_Update, parentType:"warehouse"}),
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", {actionName: "Delete", actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteWarehouse, typeInstance:'',
+    actionButton:this._labelsService.labels.productActionPopUpButton_Delete, parentType:"warehouse"}),
   ];
 
   private currencyActions: any = [
-    new ExecuteCommand("Edit","edit","", 
-      {typeInstance:'currency', actionName: "Edit", actiontitle:"Update currency instance", 
-      actionButton:"Update", parentType:"currency"}),
-    new ExecuteCommand("Delete","delete","", {actionName: "Delete", actiontitle:"Delete the currency", typeInstance:'',
-      actionButton:"Delete", parentType:"currency"}),
+    new ExecuteCommand("Edit",this._labelsService.labels.productActionMenu_Edit,"edit","", 
+      {typeInstance:'currency', actionName: "Edit", actiontitle:this._labelsService.labels.modelingActionPopUp_UpdateCurrency, 
+      actionButton:this._labelsService.labels.productActionPopUpButton_Update, parentType:"currency"}),
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", {actionName: "Delete", actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteCurrency, typeInstance:'',
+      actionButton:this._labelsService.labels.productActionPopUpButton_Delete, parentType:"currency"}),
   ];
 
-
+  
   private productActions: any = [
-    new ExecuteCommand("Order","shopping_cart","",
-      {typeInstance:'ProductOrder', actionName: "Order", actiontitle:"Order product",
-      actionButton:"Quick Order", parentType:"product"}),
-    new ExecuteCommand("AddToCart","add_shopping_cart","",
-      {typeInstance:'ProductOrder', actionName: "AddToCart", actiontitle:"Add to Cart",
-      actionButton:"Add to Cart", parentType:"product"}),
-    new ExecuteCommand("Edit","edit","", {typeInstance:'UpdateInstanceProduct', actionName: "Edit", 
-      actiontitle:"Update company instance", actionButton:"Update", parentType:"product"}),
-    new ExecuteCommand("Delete","delete","", {actionName: "Delete", typeInstance:"", actiontitle:"Delete the company", 
-      actionButton:"Delete", parentType:"product"})
+    new ExecuteCommand("Order",this._labelsService.labels.productActionMenu_Order,"shopping_cart","",
+      {typeInstance:'ProductOrder', actionName: "Order", actiontitle: this._labelsService.labels.productActionPopUp_OrderProduct,
+      actionButton:this._labelsService.labels.productActionPopUpButton_QuickOrder, parentType:"product"}),
+    new ExecuteCommand("AddToCart",this._labelsService.labels.productActionMenu_AddToCart,"add_shopping_cart","",
+      {typeInstance:'ProductOrder', actionName: "AddToCart", actiontitle: this._labelsService.labels.productActionPopUp_AddToCart,
+      actionButton:this._labelsService.labels.productActionPopUpButton_AddToCart, parentType:"product"}),
+    new ExecuteCommand("Edit",this._labelsService.labels.productActionMenu_Edit,"edit","", {typeInstance:'UpdateInstanceProduct', actionName: "Edit", 
+      actiontitle:this._labelsService.labels.productActionPopUp_UpdateProduct, actionButton:this._labelsService.labels.productActionPopUpButton_Update, parentType:"product"}),
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", {actionName: "Delete", typeInstance:"", actiontitle:this._labelsService.labels.productActionPopUp_DeleteProduct, 
+      actionButton:this._labelsService.labels.productActionPopUpButton_Delete, parentType:"product"})
   ];
 
 }

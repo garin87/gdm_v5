@@ -1,9 +1,11 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, HostListener, Input, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
 import { AppStateService } from 'src/app/common/services/appState.service';
 import {MatAccordion} from '@angular/material/expansion';
 import { Observable } from 'rxjs';
+import { LabelsService } from 'src/app/common/services/labels.service';
+import { FormEditorService } from 'src/app/common/services/formEditor.service';
 
 @Component({
   selector: 'app-filterPanel',
@@ -22,22 +24,33 @@ export class filterPanelComponent implements OnInit{
 
   listProps : Observable<string[]>;
 
-  constructor(private _appStateService:AppStateService) { };
-  filterControl = new FormControl();
+  constructor(private _appStateService:AppStateService,
+    public _labelsService: LabelsService,
+    public _FormEditorService: FormEditorService) { };
 
-  ngOnInit(){
-   // this.accordion.openAll();
-    //this.sidePanel.open();
-  };
+  filterControl = new UntypedFormControl();
 
+  readonly mobileMaxSize = 820;
+
+  ngOnInit(){};
+
+  ngAfterViewInit(){
+    if(window.innerWidth < this.mobileMaxSize){
+       if(this.accordion){
+          this.accordion.closeAll();
+       }
+    }
+  }
+  
   ngOnChanges(change){
     if(change["properties"]){}
   };
 
-  select(element){}
-
   reset(){
-    console.log("--- reset --");
+    this._appStateService.listFilterParameters = [];
+    this._appStateService.filter_TileFilterParameters = [];
+    this._FormEditorService.listCreatedField = [];
+    this._appStateService.changedGridOption.next(undefined);
     if(this.typeFilter === "OptionalOfOrder"){
       this._appStateService.resetOrderTable.next(true);
     }
@@ -46,4 +59,5 @@ export class filterPanelComponent implements OnInit{
     }
   }
 
+  ngOnDestroy(){};
 }

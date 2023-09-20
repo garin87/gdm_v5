@@ -5,30 +5,20 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 
 import { ReactiveFormsModule } from '@angular/forms';
-import { MatInputModule} from '@angular/material/input';
 import { MatIconModule} from '@angular/material/icon';
-import { MatFormFieldModule} from '@angular/material/form-field';
-import { MatButtonModule} from '@angular/material/button';
-import { MatCardModule} from '@angular/material/card';
-import { MatMenuModule } from '@angular/material/menu';
-import { MatNativeDateModule, MatRippleModule } from '@angular/material/core';
-import { MatSelectModule} from '@angular/material/select';
+import { MatNativeDateModule } from '@angular/material/core';
 import { FormEditorComponent } from './formEditor.component';
 import { FieldEditorComponent } from './fieldEditor/fieldEditor.component';
 import { TextEditorComponent } from './fieldEditor/textBox/textEditor.component';
 import {MatDatepickerModule} from '@angular/material/datepicker'
 import { DateTimePikerComponent } from './fieldEditor/dateTimePiker/dateTimePiker.component';
 import { SelectorComponent } from './fieldEditor/selector/selector.component';
-import {MatDialogModule} from '@angular/material/dialog'
 import { CustomFieldComponent } from './fieldEditor/customField/customField.component';
 import { ParameterDialogComponent } from './fieldEditor/customField/parameterDialog/parameterDialog.component';
-import {MatTableModule} from '@angular/material/table';
 import {MatExpansionModule} from '@angular/material/expansion';
 import {MatSidenavModule} from '@angular/material/sidenav';
 import { SidePanelComponent } from "../layout/sidePanel/sidePanel.component";
 import { GridControlComponent } from '../layout/grid/gridControl.component';
-import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
-import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { filterPanelComponent } from '../layout/filterPanel/filterPanel.component';
 import { ParameterSelectorsComponent } from './fieldEditor/parametrSelectors/parameterSelectors.component';
@@ -38,6 +28,16 @@ import { SubSidePanelComponent } from '../layout/subSidePanel/subSidePanel.compo
 import { gridExpandRowComponent } from '../layout/gridExpandRow/gridExpandRow.component';
 import { gridPlainComponent } from '../layout/gridPlain/gridPlain.component';
 import { PickListComponent } from './fieldEditor/pickList/pickList.component';
+import { FilterTileComponent } from '../layout/filterTile/filterTile.component';
+import { BaseFilterPanelComponent } from '../layout/baseFilterPanel/baseFilterPanel.component';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatButtonModule } from '@angular/material/button';
+import { MatTableModule } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   imports: [
@@ -75,6 +75,8 @@ import { PickListComponent } from './fieldEditor/pickList/pickList.component';
                  gridExpandRowComponent,
                  gridPlainComponent,
                  filterPanelComponent,
+                 FilterTileComponent,
+                 BaseFilterPanelComponent,
                  ActionDialogComonent,
                  PickListComponent],
   exports: [FormEditorComponent, 
@@ -93,6 +95,8 @@ import { PickListComponent } from './fieldEditor/pickList/pickList.component';
             gridExpandRowComponent,
             gridPlainComponent,
             filterPanelComponent,
+            FilterTileComponent,
+            BaseFilterPanelComponent,
             PickListComponent],
   providers: [  
     MatDatepickerModule

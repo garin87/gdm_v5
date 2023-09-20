@@ -1,8 +1,10 @@
 ﻿using gdm5._0.DTO;
 using gdm5._0.Models;
 using gdm5._0.Requests.Product;
+using gdm5._0.Responses;
 using gdm5._0.Services;
 using gdm5._0.Services.Interfaces;
+using gdm5._0.Shared.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -108,23 +110,25 @@ namespace gdm5._0
         }
 
         [Route("getInstancesOfProductParameter")]
-        [HttpGet]
-        public IActionResult getInstancesOfProductParameter([FromQuery] ParameterDTO parameterOption)
+        [HttpPost]
+        public IActionResult getInstancesOfProductParameter([FromBody] getInstancesOfProductParameterRequest parameterOption)
         {
-            string nameParam = parameterOption.Name;
-            string nameType = parameterOption.ProductTypeName;
-            bool isParameter = parameterOption.isParameter;
-
-            if (string.IsNullOrEmpty(nameParam))
+            //string nameParam = parameterOption.Name;
+            //string nameType = parameterOption.ProductTypeName;
+            //bool isParameter = parameterOption.isParameter;
+             
+            if (string.IsNullOrEmpty(parameterOption.NameParameter))
                 return BadRequest(new { IsSuccess = false,
-                       Message = "Incorrect the product name parameter - " + nameParam });
+                       Message = "Incorrect the product name parameter - " + parameterOption.NameParameter });
 
             try
             {
-                var result = _productService.getInstancesOfProductParameter(nameType, nameParam, isParameter);
+               // var result = _productService.getInstancesOfProductParameter(parameterOption);
+                var result = _productService.GetInstancesOfProductParameterUpdated(parameterOption);
+                
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -161,7 +165,7 @@ namespace gdm5._0
                 var result = _productService.AddOtherProducts(Product);
                 return Ok(new { IsSuccess = true, Message = "Success: " + result.Name.Value + " has cteated."});
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -178,16 +182,16 @@ namespace gdm5._0
 
             try
             {
-                for (var index = 1; index < 3; index++)
-                {
+                //for (var index = 1; index < 3; index++)
+                //{
                     
-                    ProductDTO.ProductNumber.Value = ProductDTO?.ProductNumber == null ? " t-" + index : ProductDTO?.ProductNumber.Value + " t-" + index;
-                    _productService.AddInstanceProduct(ProductDTO);
-                }
+                //    ProductDTO.ProductNumber.Value = ProductDTO?.ProductNumber == null ? " t-" + index : ProductDTO?.ProductNumber.Value + " t-" + index;
+                //    _productService.AddInstanceProduct(ProductDTO);
+                //}
                 var result = _productService.AddInstanceProduct(ProductDTO);
                 return Ok(new { IsSuccess = true, Message = "Success: " + result.Name.Value + " has cteated." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -204,7 +208,7 @@ namespace gdm5._0
                 var result = await _productService.UpdateProduct(ProductDTO);
                 return Ok(new { IsSuccess = true, Message = "Success: " + result.name.Value + " has updated." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -220,7 +224,7 @@ namespace gdm5._0
                 var result = await _productService.DeleteProductInstance(id);
                 return Ok(new { IsSuccess = true, Message = "Success: " + result.Name + " Product Number " + result.ProductNumber + " has deleted." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -235,7 +239,7 @@ namespace gdm5._0
             {
                 return Ok(this._productService.GetProductManufacturers());
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -249,7 +253,7 @@ namespace gdm5._0
             {
                 return Ok(this._productService.GetProductManufacturers(productName));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -263,7 +267,7 @@ namespace gdm5._0
             {
                 return Ok(this._productService.GetProductSuppliers());
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -275,42 +279,57 @@ namespace gdm5._0
         {
             try
             {
-                return Ok(this._productService.GetProductSuppliers(productName));
+                return Ok(_productService.GetProductSuppliers(productName));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
         }
 
-        //  [Authorize(Roles = "Admin")]
-        //[HttpGet]
-        //[Route("SortProducts/{id}")]
-        //public async Task<IEnumerable<ProductDTO>> SortProducts([FromRoute] int id)
-        //{
-        //    return await _productService.SortProducs(id);
-        //}
 
-        //[HttpGet]
-        //[Route("SortProducsByParameters/{id}")]
-        //public async Task<IEnumerable<ProductDTO>> SortProducsByParameters([FromRoute] int id, [FromQuery] bool StateOrder)
-        //{
-        //    return await _productService.SortProducsByParameters(id, StateOrder);
-        //}
+        [Route("getParametersByName")]
+        [HttpPost]
+        public IActionResult getParametersByName([FromBody] getInstancesOfProductParameterRequest parameterOption)
+        {
+            if (string.IsNullOrEmpty(parameterOption.NameParameter))
+                return BadRequest(new {
+                    IsSuccess = false,
+                    Message = "Incorrect the product name parameter - " + parameterOption.NameParameter
+                });
 
-        //[HttpGet]
-        //[Route("GetProductParam/{id}")]
-        //public async Task<IEnumerable<ProductDTO>> GetProductParam([FromRoute] int id)
-        //{
-        //    return await _productService.GetProductParam(id);
-        //}
+            try
+            {
+                //  var result = _productService.getParametersByName(parameterOption);
+                var result = "";
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
 
-        //[HttpGet]
-        //[Route("GetParamForOrder/{id}")]
-        //public async Task<IEnumerable<ProductOrderDTO>> GetParamForOrder([FromRoute] int id)
-        //{
-        //    return await _productService.GetParamForOrder(id);
-        //}
+        }
 
+        [Route("loadReport")]
+        [HttpGet]
+        public ApplicationResponse GenerateReportAsync()
+        {
+            return GenerateReportBaseAsync();
+        }
+
+
+        protected ApplicationResponse GenerateReportBaseAsync()
+        {
+            try
+            {
+                var bytes =  _productService.GeneratePDF();
+                return new ApplicationResponseGeneric<FileContentResult> { Data = File(bytes, "application/pdf") };
+            }
+            catch (Exception ex)
+            {
+                return new ApplicationResponse(StatusCodeEnum.Unknown);
+            }
+        }
     }
 }

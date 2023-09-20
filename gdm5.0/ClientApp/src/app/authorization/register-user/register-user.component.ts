@@ -2,10 +2,11 @@
 
 import { AuthorizeService, } from '../authorize.service';
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { UserForRegistrationDto, userRole } from 'src/app/common/objects/common';
 import { AlertService } from 'src/app/alert/alert.service';
 import { ApplicationService } from 'src/app/common/services/application.service';
+import { LabelsService } from 'src/app/common/services/labels.service';
 
 @Component({
   selector: 'app-register-user',
@@ -14,26 +15,29 @@ import { ApplicationService } from 'src/app/common/services/application.service'
 })
 
 export class RegisterUserComponent implements OnInit {
-  public registerForm: FormGroup;
+  public registerForm: UntypedFormGroup;
   public hidePassword = true;
   public hidepasswordConfirm = true;
   public isPasswordMatch:boolean = true;
 
-  username  = new FormControl( '', [Validators.required, Validators.minLength(4)]);
-  email  = new FormControl( '', [Validators.required, Validators.email]);
-  password = new FormControl( '', [Validators.required, Validators.minLength(4)]);
-  passwordConfirm = new FormControl( '', [Validators.required, Validators.minLength(4)]);
-  userRole = new FormControl( '', [Validators.required]);
+  username  = new UntypedFormControl( '', [Validators.required, Validators.minLength(4)]);
+  email  = new UntypedFormControl( '', [Validators.required, Validators.email]);
+  password = new UntypedFormControl( '', [Validators.required, Validators.minLength(4)]);
+  passwordConfirm = new UntypedFormControl( '', [Validators.required, Validators.minLength(4)]);
+  userRole = new UntypedFormControl( '', [Validators.required]);
 
   userRoles: userRole[] = [
     {value: 'Administrator', viewValue: 'Administrator'},
     {value: 'User', viewValue: 'User'},
   ];
   constructor(private _applicationService: ApplicationService,
-              private alertService:AlertService ) { }
+              private alertService:AlertService,
+              public _labelsService: LabelsService ) { }
 
   ngOnInit(): void {
-    this.registerForm = new FormGroup({
+    this._labelsService.labels.userRegistration_LableButton
+
+    this.registerForm = new UntypedFormGroup({
       username: this.username,
       email: this.email,
       password: this.password,
@@ -42,7 +46,7 @@ export class RegisterUserComponent implements OnInit {
     }, this.passwordMatchValidator);
   }
 
-  public passwordMatchValidator(g: FormGroup) {
+  public passwordMatchValidator(g: UntypedFormGroup) {
     let password = g.get('password').value;
     let passwordConfirm = g.get('passwordConfirm').value;
     

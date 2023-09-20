@@ -4,12 +4,12 @@
     <div class="filter-subsidenav-content">
       <mat-form-field class="filter-subsidenav-content-field" appearance="fill">
         <!-- <mat-label>Filter product</mat-label> -->
-        <div class="subsidenav-filterControl-container">
-        <input type="text" [formControl]="filterControl"
-               placeholder="Search"
+        <div class="subsidenav-filterControl-container filter-search-wrapper"> 
+              <input type="text" [formControl]="filterControl" class=""
+               placeholder="{{this._labelsService.labels.sidePanel_Search}}"
                matInput  #filterContent>
                <mat-icon>search</mat-icon>
-              </div>
+          </div>
       </mat-form-field>
     </div>
     <div class="subsidenav-list-properties" *ngIf="listProps">

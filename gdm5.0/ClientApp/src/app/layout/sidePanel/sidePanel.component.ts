@@ -1,9 +1,12 @@
-import {  Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
-import {  Observable, of } from 'rxjs';
-import { debounceTime} from 'rxjs/operators';
+import { Observable, Subscription, of } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { commonConst } from 'src/app/common/objects/commonConst';
+
 import { AppStateService,  } from 'src/app/common/services/appState.service';
+import { LabelsService } from 'src/app/common/services/labels.service';
 
 
 @Component({
@@ -25,22 +28,34 @@ export class SidePanelComponent implements OnInit{
   public selectedItem:String;
 
   listProps : Observable<string[]>;
-
-  constructor(private _appStateService:AppStateService) { };
-  filterControl = new FormControl();
+  private detectClickOnPanelSubscription$:Subscription;
+  private valueChangesSubscription$:Subscription;
+  readonly mobileMaxSize = 820;
+  constructor(private _appStateService:AppStateService,
+    public _labelsService: LabelsService) { };
+  filterControl = new UntypedFormControl();
 
   ngOnInit(){
-    this._appStateService.detectClickOnPanel.subscribe(data => {
+    
+    this.detectClickOnPanelSubscription$ = this._appStateService.detectClickOnPanel.subscribe(data => {
       if(data){
         this.selectedItem = undefined;
         // if(this.properties){
         //   this.drawer.toggle();
         // }
+        if(this.page == "product" || this.page == "modeling"){
+          
+          if(window.innerWidth < commonConst.mobileMaxSize){
+             this.drawer.mode = "over";
+          }  
+        }
+       
+        
         this.drawer.toggle();
       }
     });
 
-   this.filterControl.valueChanges.pipe(
+  this.valueChangesSubscription$ = this.filterControl.valueChanges.pipe(
        debounceTime(800)
     ).subscribe(data=> {
         this.listProps = of(this._filter(data));
@@ -63,7 +78,15 @@ export class SidePanelComponent implements OnInit{
        if(this.page == "product"){
         this.selectedItem = element;
         this._appStateService.selectedSidePanelValue.next(element);
+
+        if(window.innerWidth < this.mobileMaxSize){
+           this.drawer.close();
+        }
        }else if(this.page == "modeling"){
+
+        if(window.innerWidth < this.mobileMaxSize){
+          this.drawer.close();
+        }
         this.selectedItem = element;
         this._appStateService.selectedSidePaneModelingValue.next(element);
        }
@@ -81,8 +104,10 @@ export class SidePanelComponent implements OnInit{
     return this.selectedItem == element;
   }
 
-  onDestroy(){
+  ngOnDestroy(){
     this.dispose();
+    this.detectClickOnPanelSubscription$.unsubscribe();
+    this.valueChangesSubscription$.unsubscribe();
   }
 
   dispose(){
@@ -92,6 +117,6 @@ export class SidePanelComponent implements OnInit{
 
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
-    return this.properties.filter(option => option.toLowerCase().includes(filterValue));
+    return this.properties.filter(option => option.Name.toLowerCase().includes(filterValue));
   }
 }

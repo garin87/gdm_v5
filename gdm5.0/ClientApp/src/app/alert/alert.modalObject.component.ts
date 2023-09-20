@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({   
      selector: 'csi-alert-modal',   
@@ -18,7 +18,6 @@ export class AlertModalObjectComponent {
     constructor(private dialogRef: MatDialogRef<AlertModalObjectComponent>) { }
    
     execute(answer: string): void {   
-       console.log("----------- alert AlertModalObjectComponent");    
        this.dialogRef.close(answer);    
     }
 

@@ -1,6 +1,9 @@
 ﻿using gdm5._0.Models;
+using gdm5._0.Requests.PriceList;
+using gdm5._0.Requests.Product;
 using gdm5._0.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
 namespace gdm5._0
@@ -20,6 +23,7 @@ namespace gdm5._0
 
         // GET: api/pricelist/GetAll
         [HttpGet]
+        [Route("GetAll")]
         public IActionResult GetAll()
         {
             
@@ -47,7 +51,7 @@ namespace gdm5._0
 
         // POST: api/pricelist/AddPriceList
         [HttpPost]
-        public async Task<IActionResult> AddPriceList(PriceList piceList)
+        public async Task<IActionResult> Add(PriceList piceList)
         {    
             if (!ModelState.IsValid)
             {
@@ -61,7 +65,7 @@ namespace gdm5._0
 
         // DELETE: api/pricelist/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePriceList([FromRoute] int id)
+        public async Task<IActionResult> Delete([FromRoute] int id)
         {
             if (!ModelState.IsValid)
             {
@@ -78,6 +82,112 @@ namespace gdm5._0
         }
 
 
+        [HttpPost]
+        [Route("addPriceList")]
+        public IActionResult AddPriceList(addPriceListRequest addPriceList)
+        {
+
+            if (addPriceList == null || !ModelState.IsValid)
+                return BadRequest(new { IsSuccess = false, Message = "Incorrect data" });
+
+            try
+            {
+                _priceListService.AddPriceList(addPriceList);
+                return Ok(new { IsSuccess = true, Message = "Success: " + addPriceList.Name.Value + " has cteated." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Route("updatePriceList")]
+        [HttpPost]
+        public IActionResult UpdatePriceList(addPriceListRequest addPriceList)
+        {
+
+            try
+            {
+                _priceListService.UpdatePriceList(addPriceList);
+                return Ok(new { IsSuccess = true, Message = "Success: " + addPriceList.Name.Value + " has updated." });
+            }
+            catch (ApplicationException ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+      
+        [Route("getPriceListWithValuesByName/{namePriceList}")]
+        public IActionResult GetPriceListWithValues([FromRoute] string namePriceList)
+        {
+            try
+            {
+                PriceListWithValues priceListValues = _priceListService.GetPriceListWithValues(namePriceList);
+
+                if (priceListValues == null)
+                {
+                    return NotFound("No price list values found for the specified price list ID.");
+                }
+
+                return Ok(priceListValues);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+
+        //[Route("getPriceListWithValues/{priceListId}")]
+        //public IActionResult GetPriceListWithValues(int priceListId)
+        //{
+        //    try
+        //    {
+        //        PriceListWithValues priceListValues = _priceListService.GetPriceListWithValues(priceListId);
+
+        //        if (priceListValues == null)
+        //        {
+        //            return NotFound("No price list values found for the specified price list ID.");
+        //        }
+
+        //        return Ok(priceListValues);
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (Exception)
+        //    {
+        //        return StatusCode(500, "An error occurred while processing the request.");
+        //    }
+        //}
+
+        [HttpDelete]
+        [Route("deletePriceList")]
+        public IActionResult DeletePriceList(int priceListValueIds)
+        {
+            try
+            {
+                _priceListService.DeletePriceList(priceListValueIds);
+
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (ApplicationException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
 
 
     }

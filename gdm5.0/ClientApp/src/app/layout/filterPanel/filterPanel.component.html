@@ -2,15 +2,14 @@
 <mat-accordion class="example-headers-align" multi>
   <mat-expansion-panel [expanded]="true">
     <mat-expansion-panel-header>
-      <mat-panel-title>
-        Filter data
+      <mat-panel-title class="filter-panel-title">
+        {{this._labelsService.labels.filterPanel_Title}}
       </mat-panel-title>
     </mat-expansion-panel-header>
     <form-editor [instanceName]="typeFilter">
     </form-editor>
     <div class="reset-button">
-      <button  mat-raised-button color="primary" (click)="reset()">Reset</button>    
+      <button  mat-raised-button color="primary" (click)="reset()">{{this._labelsService.labels.filterPanel_Reset}}</button>    
     </div>
   </mat-expansion-panel>
-
 </mat-accordion>

@@ -1,7 +1,7 @@
 .sidenav-content-container {
   width: 200px;
   /* border: 1px solid rgba(0, 0, 0, 0.5); */
-  padding: 1em;
+  padding: 4px;
 }
 .sidenav-filterControl-container{
    display: flex;
@@ -28,3 +28,6 @@
   border-bottom: .5px solid rgb(102, 110, 110);
 }
 
+.sidenav-list-properties{
+  font-size: 1.1em;
+}

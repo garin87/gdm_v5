@@ -1,18 +1,15 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSidenav } from '@angular/material/sidenav';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { debounceTime, map, startWith, tap } from 'rxjs/operators';
-import { gridParameter, IGetOrderInstancesRequest, IgetProductTypeInstancesRequest, 
-  IGridColumnDefinition, IPaginationAction, ISortOption, OrdersRequest, PageFilter, ProductTypeInstancesRequest,} from 'src/app/common/objects/common';
+import { Observable, Subscription } from 'rxjs';
+import { gridParameter, IGetOrderInstancesRequest, 
+  IGridColumnDefinition, IPaginationAction, ISortOption, OrdersRequest, PageFilter } from 'src/app/common/objects/common';
 import { ApplicationService } from 'src/app/common/services/application.service';
 import { AppStateService } from 'src/app/common/services/appState.service';
 import { MetadataService } from 'src/app/common/services/metadata.service';
-import { CommonUtil } from 'src/app/common/utils/common-utils';
+
 
 @Component({
   selector: 'gridExpandRow-control',
@@ -52,7 +49,9 @@ export class gridExpandRowComponent implements OnInit{
   pageFilterPublick:PageFilter;
   GetOrdersRequest:IGetOrderInstancesRequest;;
   selectedRow:any;
-  
+  private changedGridOptionSubscription$:Subscription;
+  private refreshGridDataSubscription$:Subscription;
+  private loadingGridResultsSubscription$:Subscription;
   @ViewChild(MatSort) sort: MatSort;
   
   listProps : Observable<string[]>;
@@ -100,16 +99,16 @@ export class gridExpandRowComponent implements OnInit{
       this.pageFilterPublick = new PageFilter();
       this.GetOrdersRequest = new OrdersRequest();
 
-      this._appStateService.changedGridOption.subscribe(item =>{
+      this.changedGridOptionSubscription$ = this._appStateService.changedGridOption.subscribe(item =>{
         console.log("--------- -------- ---------changedGridOption.subscribe");
         this.dispose();
         if(item){
           this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
-             this.pageFilterPublick.pageSize = 10, this.sortOptionsPublick, item);
+             this.pageFilterPublick.pageSize = 20, this.sortOptionsPublick, item);
         }
       });
 
-      this._appStateService.refreshGridData.subscribe(data => {
+      this.refreshGridDataSubscription$ = this._appStateService.refreshGridData.subscribe(data => {
         if(data){
              this.refreshGridData();
         }
@@ -186,7 +185,7 @@ export class gridExpandRowComponent implements OnInit{
 
   refreshGridData(){
     this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
-                     this.pageFilterPublick.pageSize = 10, this.sortOptionsPublick);
+                     this.pageFilterPublick.pageSize = 20, this.sortOptionsPublick);
   }
 
   convertParametersToColumn(gridData){
@@ -300,8 +299,10 @@ export class gridExpandRowComponent implements OnInit{
     return paginationData;
   }
 
-  onDestroy(){
+  ngOnDestroy(){
     this.dispose();
+    this.changedGridOptionSubscription$.unsubscribe();
+    this.refreshGridDataSubscription$.unsubscribe();
   }
 
   dispose(){

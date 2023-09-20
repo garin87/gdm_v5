@@ -9,6 +9,13 @@ using gdm5._0.Services.Interfaces;
 using gdm5._0.Requests.Product;
 using Microsoft.AspNetCore.Http;
 
+
+using System.IO;
+using PdfSharpCore.Pdf;
+using PdfSharpCore.Drawing;
+using System.Linq.Expressions;
+using gdm5._0.Domain.Models.ProductParameter;
+
 namespace gdm5._0.Services
 {
     public class ProductService : BaseService<Product>, IProductService
@@ -135,7 +142,8 @@ namespace gdm5._0.Services
                     continue;
 
                 var param = new ProductParameter()
-                { ProductId = product.Id,
+                {
+                    ProductId = product.Id,
                     ParameterId = paramDTO.ParameterId,
                     Value = paramDTO.Value
                 };
@@ -183,7 +191,8 @@ namespace gdm5._0.Services
                 DateOfReceipt = DateOfReceipt,
                 WareHouseId = idWarehouse,
                 PrimeCost = PrimeCost,
-                CurrencyId = currencyId
+                CurrencyId = currencyId,
+                LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name
             };
 
             _context.Products.Add(instanceProduct);
@@ -442,8 +451,9 @@ namespace gdm5._0.Services
                 PrimeCost = PrimeCost,
                 PrimeCostEUR = PrimeCostEUR,
                 PrimeCostUSD = PrimeCostUSD,
-                CurrencyId = currencyId
-            };
+                CurrencyId = currencyId,
+                LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name
+        };
 
             _context.Products.Add(instanceProduct);
             _context.SaveChanges();
@@ -483,50 +493,40 @@ namespace gdm5._0.Services
             return productNewDTO;
         }
 
-        public List<ProductParametrDTO> getInstancesOfProductParameter(string nameType, string nameParam, bool isParameter)
+        public List<ProductParametrDTO> getInstancesOfProductParameter(getInstancesOfProductParameterRequest requestParameters)
         {
 
-            var productType = _context.ProductTypes.Where(type => type.NameType == nameType.Trim()).FirstOrDefault();
+            var productType = _context.ProductTypes.Where(type => type.NameType == requestParameters.NameType.Trim()).FirstOrDefault();
 
             if (productType == null)
-                throw new ApplicationException("Product name " + nameType + " does not exist");
+                throw new ApplicationException("Product name " + requestParameters.NameType + " does not exist");
 
 
-            SortOptionsDTO parametrOption = new SortOptionsDTO() {
+            SortOptionsDTO parametrOption = new SortOptionsDTO()
+            {
                 IsParameter = false
-
             };
-            parametrOption.Name = nameParam.Trim().ToLower();
-            parametrOption.IsParameter = isParameter;
+            parametrOption.Name = requestParameters.NameParameter.Trim().ToLower();
+            parametrOption.IsParameter = requestParameters.IsParameter;
             var productParameters = new List<ProductParameter>();
             var parameters = new List<Parameter>();
             List<dynamic> parameterValues = new List<dynamic>();
-            if (isParameter)
+            if (requestParameters.IsParameter)
             {
-                //var parametrs = _context.Parameters.Where(param => param.ProductTypeId == productType.Id).ToList();
                 var paramId = _context.Parameters.Where(param => param.ProductTypeId == productType.Id)
                                                  .Where(el => el.Name.Trim().ToLower() == parametrOption.Name).FirstOrDefault()?.Id;
 
                 if (paramId != null)
                 {
-                    // productParameters = _context.ProductParameters.Where(type => type.ParameterId == paramId).ToList();
                     parameterValues = _context.ProductParameters.Where(type => type.ParameterId == paramId && !string.IsNullOrEmpty(type.Value))
-                                                                // .Where(el => !string.IsNullOrEmpty(el.Value))
                                                                 .Select(field => field.Value as dynamic).Distinct().ToList();
                 }
             }
             else
             {
-                //var temp = _context.Products.Where(param => param.ProductTypeId == productType.Id).ToList();
-                // var fields = _context.Products.Where(param => param.ProductTypeId == productType.Id)
-                //.Select( el => el.getSortField(parametrOption, parameters) ).Distinct().ToList();
-
                 parameterValues = _context.Products.Where(param => param.ProductTypeId == productType.Id)
                                           .Select(el => el.getSortField(parametrOption, parameters)).Distinct().ToList();
             }
-
-
-
 
             List<ProductParametrDTO> PproductParameters = new List<ProductParametrDTO>();
 
@@ -536,11 +536,344 @@ namespace gdm5._0.Services
                 foreach (var value in parameterValues)
                 {
                     if (value != null)
-                        PproductParameters.Add(new ProductParametrDTO { Name = nameParam, Value = value });
+                    {
+                        double orgValue = 0;
+                        double parsedValue = 0;
+                        if (double.TryParse(value, out parsedValue))
+                        {
+                            orgValue = parsedValue;
+                        }
+
+                        PproductParameters.Add(new ProductParametrDTO { Name = requestParameters.NameParameter, Value = value, ValueDouble = orgValue});
+                    }
+                        
                 };
             }
 
+            if (PproductParameters.FirstOrDefault().ValueDouble != 0)
+            {
+                return PproductParameters.OrderBy(el => el.ValueDouble).ToList<ProductParametrDTO>();
+            }
             return PproductParameters.OrderBy(el => el.Value).ToList<ProductParametrDTO>();
+        }
+        //public List<ProductParametrDTO> getParametersByName(getInstancesOfProductParameterRequest requestParameters)
+        //{
+        //    var productType = getProductTypeByName(requestParameters.NameType);
+
+        //    List<ProductParametrDTO> productParameters = GetProductParameters(productType, requestParameters);
+
+        //    return OrderProductParameters(productParameters);
+        //}
+
+        public List<ProductParametrDTO> GetInstancesOfProductParameterUpdated(getInstancesOfProductParameterRequest requestParameters)
+        {
+            var productType = getProductTypeByName(requestParameters.NameType);
+        
+            List<ProductParametrDTO> productParameters = GetProductParameters(productType, requestParameters);
+
+            return OrderProductParameters(productParameters);
+        }
+
+
+  
+        private ProductType getProductTypeByName(string typeName)
+        {
+            var productType = _context.ProductTypes.FirstOrDefault(type => type.NameType.Trim() == typeName.Trim());
+
+            if (productType == null)
+            {
+                throw new ArgumentException("Product name " + typeName + " does not exist");
+            }
+
+            return productType;
+        }
+
+        private List<ProductParametrDTO> GetProductParameters(ProductType productType, getInstancesOfProductParameterRequest parametrOption)
+        {
+
+            var parameterValues = parametrOption.IsParameter
+                ? GetParameterValues(productType, parametrOption)
+                : GetProductPropertyValues(productType, parametrOption);
+
+            return parameterValues
+                .Select(value => new ProductParametrDTO
+                {
+                    Name = parametrOption.NameParameter,
+                    Value = value,
+                    ValueDouble = TryParseDouble(value)
+                })
+                .ToList();
+        }
+
+        private List<string> GetParameterValues(ProductType productType, getInstancesOfProductParameterRequest parametrOption)
+        {
+            var param = _context.Parameters
+                  .Where(param => param.ProductTypeId == productType.Id && param.Name.Trim().ToLower() == parametrOption.NameParameter)
+                 // .Select(param => (int?)param.Id) // need to improve
+                  .FirstOrDefault();
+
+            var pProducts = param != null
+                 ? _context.ProductParameters
+                     .Where(productParam => productParam.ParameterId == param.Id && !string.IsNullOrEmpty(productParam.Value))
+                     .ToList() : null;
+
+
+            if (parametrOption.FilterParameters.Count() > 0)
+            {
+                // Get parameter info
+                List<ParamaterValue> listParameters  = new List<ParamaterValue>();
+                foreach (var fParam in parametrOption.FilterParameters)
+                {
+                    var p = _context.Parameters
+                     .Where(parameter => parameter.ProductTypeId == productType.Id && parameter.Name.Trim().ToLower() == fParam.ParameterName)
+                     .FirstOrDefault();
+                   
+                    if (p != null)
+                    {
+                        listParameters.Add(new ParamaterValue() { ParameterValue = fParam.ParameterValue, SelectedParameter = p });
+                    }
+
+                }
+               
+                if(listParameters != null && listParameters.Count()>0)
+                {
+                    listParameters.OrderBy(p => p.SelectedParameter.Priority);
+                    var firstParameter = listParameters.First();
+                    var topPParameterValue = _context.ProductParameters
+                       .Where(productParam => productParam.ParameterId == firstParameter.SelectedParameter.Id && !string.IsNullOrEmpty(productParam.Value) 
+                             && productParam.Value.Equals(firstParameter.ParameterValue))
+                       .ToList();
+
+                    // List<ProductParameter> filtersProduct = null;
+                    listParameters.Remove(firstParameter);
+                    foreach (var fparam in listParameters)
+                    {
+                       var secPProducts =_context.ProductParameters
+                       .Where(productParam => productParam.ParameterId == fparam.SelectedParameter.Id && !string.IsNullOrEmpty(productParam.Value)
+                             && productParam.Value.Equals(fparam.ParameterValue))
+                       .ToList();
+                      
+                        List<ProductParameter> fValues = new List<ProductParameter>();
+                        foreach (var tr in topPParameterValue)
+                        {
+                            foreach (var secPP in secPProducts)
+                            {
+                                if (tr.ProductId == secPP.ProductId)
+                                {
+                                    fValues.Add(tr);
+                                }
+
+                            }
+                        }
+                        topPParameterValue = fValues;
+                        //     var filterdProducts = ;
+                        //   filtersProduct.AddRange(filterdProducts);
+                    }
+
+                    if (topPParameterValue.Count() > 0)
+                    {
+                        List<ProductParameter> fValues = new List<ProductParameter>();
+                        foreach (var tr in pProducts)
+                        {
+                            foreach (var topPP in topPParameterValue)
+                            {
+                                if (tr.ProductId == topPP.ProductId)
+                                {
+                                    fValues.Add(tr);
+                                }
+
+                            }
+                        }
+
+                        var paramValues = fValues.Select(pp => pp.Value).Distinct().ToList();
+                        if (param != null && ((param.Name.ToLower()).Equals(("диаметр")) || (param.Name.ToLower()).Equals(("размер"))))
+                        {
+                            return sortDiamterParameterValues(paramValues); // sort string with delimiter *
+                        }
+
+                        return paramValues;
+                    }
+                }
+
+            }
+            var pValues = pProducts.Count() > 0 ? pProducts.Select(pp => pp.Value).Distinct().ToList() : new List<string>();
+            if (param != null && ((param.Name.ToLower()).Equals(("диаметр")) || (param.Name.ToLower()).Equals(("размер"))))
+            {
+                return sortDiamterParameterValues(pValues); // sort string with delimiter *
+            }
+
+            return pValues;
+        }
+
+        private List<string> sortDiamterParameterValues(List<string> pValues)
+        {
+            double parsedValue = 0;
+            Dictionary<string, double> listDiamters = new Dictionary<string, double>();
+            foreach (var item in pValues)
+            {
+                if (double.TryParse(item, out parsedValue))
+                {
+                    listDiamters.Add(item, parsedValue);
+                }
+                else
+                {
+                    string[] parts = item.Split('*');
+                    if (parts.Length > 0)
+                    {
+                        if (double.TryParse(parts[0], out double number))
+                        {
+                            listDiamters.Add(item, number);
+                        }
+                    }
+
+
+                    parts = item.Split('/');
+                    if (parts.Length > 0)
+                    {
+                        if (double.TryParse(parts[0], out double number))
+                        {
+                            listDiamters.Add(item, number);
+                        }
+                    }
+                }
+
+            }
+            var rr = listDiamters.OrderBy(item => item.Value);
+            return rr.Select(item => item.Key).ToList();
+        }
+
+        private List<string> GetParameterValues32(ProductType productType, getInstancesOfProductParameterRequest parametrOption)
+        {
+            var parameterId = _context.Parameters
+                .Where(param => param.ProductTypeId == productType.Id && param.Name.Trim().ToLower() == parametrOption.NameParameter)
+                .Select(param => param.Id)
+                .FirstOrDefault();
+
+            if (parameterId != 0)
+                return new List<string>();
+
+            var productParameters = _context.ProductParameters
+                .Where(productParam => productParam.ParameterId == parameterId && !string.IsNullOrEmpty(productParam.Value))
+                .ToList();
+
+            if (parametrOption.FilterParameters.Count() == 0)
+                return productParameters.Select(pp => pp.Value).Distinct().ToList();
+
+            var filterParameterValues = new List<ParamaterValue>();
+
+            foreach (var filterParam in parametrOption.FilterParameters)
+            {
+                var parameter = _context.Parameters
+                    .Where(param => param.ProductTypeId == productType.Id && param.Name.Trim().ToLower() == filterParam.ParameterName)
+                    .FirstOrDefault();
+
+                if (parameter != null)
+                {
+                    filterParameterValues.Add(new ParamaterValue { ParameterValue = filterParam.ParameterValue, SelectedParameter = parameter });
+                }
+            }
+
+            filterParameterValues = filterParameterValues.OrderBy(p => p.SelectedParameter.Priority).ToList();
+
+            var topParameter = filterParameterValues.First();
+            var topParameterValues = _context.ProductParameters
+                .Where(productParam => productParam.ParameterId == topParameter.SelectedParameter.Id &&
+                                       !string.IsNullOrEmpty(productParam.Value) &&
+                                       productParam.Value.Equals(topParameter.ParameterValue))
+                .ToList();
+
+            foreach (var parameter in filterParameterValues.Skip(1))
+            {
+                var secondaryParameterValues = _context.ProductParameters
+                    .Where(productParam => productParam.ParameterId == parameter.SelectedParameter.Id &&
+                                           !string.IsNullOrEmpty(productParam.Value) &&
+                                           productParam.Value.Equals(parameter.ParameterValue))
+                    .ToList();
+
+                topParameterValues = topParameterValues
+                    .Join(secondaryParameterValues, tv => tv.ProductId, sv => sv.ProductId, (tv, sv) => tv)
+                    .ToList();
+            }
+
+            var finalValues = productParameters
+                .Join(topParameterValues, pp => pp.ProductId, tv => tv.ProductId, (pp, tv) => pp.Value)
+                .Distinct()
+                .ToList();
+
+            return finalValues;
+        }
+        private List<string> GetProductPropertyValues(ProductType productType, getInstancesOfProductParameterRequest parametrOption)
+        {
+
+            var x = Expression.Parameter(typeof(Product), parametrOption.NameParameter);
+            var body = Expression.PropertyOrField(x, parametrOption.NameParameter);
+            var lambda = Expression.Lambda<Func<Product, string>>(body, x);
+
+            var tt = _context.Products
+                .Where(param => param.ProductTypeId == productType.Id)
+                .Select(el => lambda.Compile())
+                .Select(el => el.ToString())
+                .Distinct()
+                .ToList();
+
+            return tt;
+        }
+
+        //    public dynamic GetSortField(SortOptionsDTO sortOption, List<Parameter> parameters)
+        //    {
+        //        if (SortFieldMappings.TryGetValue(sortOption.Name, out Func<Product, dynamic> selector))
+        //        {
+        //            return selector(this);
+        //        }
+
+        //        if (sortOption.IsParameter)
+        //        {
+        //            return GetParameterSortField(sortOption.Name, parameters);
+        //        }
+
+        //        return this.Id;
+        //    }
+
+
+        private double TryParseDouble(string value)
+        {
+            double orgValue = 0;
+            if (double.TryParse(value, out orgValue))
+            {
+                return orgValue;
+            };
+            return orgValue;
+        }
+
+        private static readonly Dictionary<string, Func<Product, string>> SortFieldMappings = new Dictionary<string, Func<Product, string>>
+        {
+           { "quantity", p => p.Quantity.ToString() },
+           { "productnumber", p => p.ProductNumber },
+           { "manufacturer", p => p.Manufacturer },
+           { "standartcost", p => p.StandartCost.ToString() },
+           { "primecost", p => p.PrimeCost.ToString() },
+           { "primecostusd", p => p.PrimeCostUSD.ToString() },
+           { "primecosteur", p => p.PrimeCostEUR.ToString() },
+           { "dateofreceipt", p => p.DateOfReceipt.ToString() },
+           { "warehousename", p => p.Manufacturer }
+        };
+
+        private List<ProductParametrDTO> OrderProductParameters(List<ProductParametrDTO> productParameters)
+        {
+            return productParameters
+                .OrderBy(el => el.ValueDouble != 0 ? el.ValueDouble : double.MaxValue)
+                .ToList();
+        }
+
+        private dynamic parseStringValue(string orgValue)
+        {
+            double parsedValue = 0;
+            if (double.TryParse(orgValue, out parsedValue))
+            {
+                return parsedValue;
+            }
+
+            return orgValue;
         }
 
         public async Task<updateProductInstancesRequest> UpdateProduct(updateProductInstancesRequest productDTO)
@@ -559,14 +892,14 @@ namespace gdm5._0.Services
             else throw new ApplicationException("Entered name of warehouse does not exist"); ;
 
 
-            var currency = _context.Currencies.FirstOrDefault(currency => currency.CurrencyName == productDTO.currency.Value);
-            var currencyId = 0;
+            //var currency = _context.Currencies.FirstOrDefault(currency => currency.CurrencyName == productDTO.currency.Value);
+            //var currencyId = 0;
 
-            if (currency != null)
-            {
-                currencyId = currency.Id;
-            }
-            else throw new ApplicationException("Entered name of currency does not exist");
+            //if (currency != null)
+            //{
+            //    currencyId = currency.Id;
+            //}
+            //else throw new ApplicationException("Entered name of currency does not exist");
 
             var product = _context.Products.Include(product => product.ProductType)
                                            .Include(product => product.ProductParameters)
@@ -595,16 +928,18 @@ namespace gdm5._0.Services
             product.StandartCost = StandartCost;
             product.PrimeCost = PrimeCost;
 
-            if (PrimeCostUSD != 0 && PrimeCostEUR != 0)
+            if (PrimeCostUSD != 0)
             {
                 product.PrimeCostUSD = PrimeCostUSD;
+            }
+            if (PrimeCostEUR != 0)
+            {
                 product.PrimeCostEUR = PrimeCostEUR;
             }
-           
             product.Description = productDTO.description?.Value;
             product.DateOfReceipt = DateOfReceipt;
             product.WareHouseId = idWarehouse;
-            product.CurrencyId = currencyId;
+          //  product.CurrencyId = currencyId;
             product.DateOfLastChanged = DateTime.Now;
             product.LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name;
             await _context.SaveChangesAsync();
@@ -726,7 +1061,7 @@ namespace gdm5._0.Services
                 DateOfReceipt = product.DateOfReceipt,
                 ProductTypeHistoryId = productTypeHistoryId,
                 DeletedProductTypeId = product.ProductTypeId,
-                CurrencyId = product.CurrencyId,
+                CurrencyId = product.CurrencyId ?? 0,
                 WareHouseId = product.WareHouseId,
                 DeletedProductId = product.Id,
                 UserName = _httpContextAccessor.HttpContext.User.Identity.Name
@@ -759,9 +1094,6 @@ namespace gdm5._0.Services
 
             return deletedProduct;
         }
-
-      
-
         public async Task<ProductHistory> DeleteProductInstance2(int? id)
         {
             if (!id.HasValue) throw new ApplicationException("ProductId does not exist");
@@ -785,7 +1117,7 @@ namespace gdm5._0.Services
                 ProductDeleted = true,
                 DateOfChange = DateTime.Now,
                 ProductTypeHistoryId = product.ProductTypeId,
-                CurrencyId = product.CurrencyId,
+                CurrencyId = product.CurrencyId ?? 0,
                 WareHouseId = product.WareHouseId,
                 DeletedProductId = product.Id,
                 UserName = _httpContextAccessor.HttpContext.User.Identity.Name
@@ -863,157 +1195,6 @@ namespace gdm5._0.Services
             }
         }
 
-        //public async Task<IEnumerable<ProductDTO>> SortProducs(int id)
-        //{
-        //    var products = await _context.Products
-        //      .Include(p => p.ProductParameters)
-
-        //      .Where(prod => prod.ProductTypeId == id)
-        //      .OrderBy(v => v.ProductParameters.Where(g => g.ParameterId == 4)
-        //           .OrderBy(t => Convert.ToInt32(t.Value)).FirstOrDefault().Value)
-        //      .Select(prod => new ProductDTO
-        //      {
-        //          ProductId = prod.Id,
-        //          ProductNumber = prod.ProductNumber,
-        //          NameType = prod.ProductType.NameType,
-        //          Quantity = prod.Quantity,
-        //          ProductStandartCost = prod.StandartCost,
-        //          ProductTypeId = prod.ProductTypeId,
-        //          Manufacturer = prod.Manufacturer,
-        //          Description = prod.Description,
-        //          Parameters = prod.ProductParameters
-        //            .Select(par => new ParameterDTO
-        //            {
-        //                Id = par.Id,
-        //                ParameterId = par.ParameterId,
-        //                Value = par.Value,
-        //                Name = par.Parameter.Name
-        //            })
-        //            .ToList()
-        //      })
-        //      .ToListAsync();
-
-
-        //    return products;
-        //}
-
-        //public async Task<IQueryable<ProductDTO>> SortProducsByParameters(int TypeId, bool StateOrder = true)
-        //{
-        //    string param = "Стандарт";
-        //    int paramId = 2; // тип штока 
-        //    int paramDiameterId = 4;
-        //    string diameter = "60";
-
-        //    var products = await _context.ProductParameters
-        //                   .Include(p => p.Product)
-        //                   .Where(p => p.Product.ProductTypeId == TypeId && p.Value == param && p.ParameterId == paramId)
-        //                   .Select(p => p.Product)
-        //                   .Include(p => p.ProductType)
-        //                   .Include(p => p.ProductParameters)
-        //                   .ToListAsync();
-
-
-        //    if (StateOrder == true)
-        //    {
-        //        products = products.OrderBy(v => v.ProductParameters.Where(g => g.ParameterId == paramDiameterId)
-        //                           .OrderBy(t => Convert.ToInt32(t.Product.Quantity)).FirstOrDefault().Product.Quantity).ToList();
-
-        //    }
-        //    else
-        //    {
-        //        products = products.OrderByDescending(v => v.ProductParameters.Where(g => g.ParameterId == paramDiameterId)
-        //                           .OrderByDescending(t => t.Product.Quantity).FirstOrDefault().Product.Quantity).ToList();
-        //    }
-
-        //    var items = new List<ProductDTO>();
-
-        //    foreach (var product in products)
-        //    {
-        //        var foundParam = product.ProductParameters.Where(pp => pp.ParameterId == paramDiameterId && pp.Value == diameter)
-        //            .FirstOrDefault();
-        //        if (foundParam == null)
-        //            continue;
-
-        //        var productDTO = new ProductDTO()
-        //        {
-        //            ProductId = product.Id,
-        //            ProductNumber = product.ProductNumber,
-        //            Manufacturer = product.Manufacturer,
-        //            Quantity = product.Quantity,
-        //            ProductStandartCost = product.StandartCost,
-        //            ProductTypeId = product.ProductTypeId,
-        //            Description = product.Description, 
-        //            NameType = product.ProductType.NameType
-        //        };
-
-        //        foreach (var typeParam in product.ProductParameters)
-        //        {
-        //            var paramDTO = new ParameterDTO();
-        //            var value = product.ProductParameters.FirstOrDefault(t => t.ParameterId == typeParam.Id);
-        //            if (value != null)
-        //            {
-        //                paramDTO.Id = value.Id;
-        //                paramDTO.Value = value.Value;
-        //            }
-        //            paramDTO.Id = typeParam.Id;
-        //            paramDTO.Name = typeParam.Product.ProductType.NameType;
-        //            paramDTO.ParameterId = typeParam.ParameterId;
-        //            paramDTO.Value = typeParam.Value;
-
-        //            productDTO.Parameters.Add(paramDTO);
-        //        }
-
-        //        items.Add(productDTO);
-        //    }
-
-        //    return items.AsQueryable();
-        //}
-
-        //public async Task<IEnumerable<ProductDTO>> GetProductParam(int id)
-        //{
-        //    var products = await _context.Products
-        //      .Include(p => p.ProductParameters)
-        //      .Where(prod => prod.Id == id)
-        //      .Select(prod => new ProductDTO
-        //      {
-        //          ProductId = prod.Id,
-        //          ProductNumber = prod.ProductNumber,
-        //          Quantity = prod.Quantity,
-        //          ProductStandartCost = prod.StandartCost,
-        //          ProductTypeId = prod.ProductTypeId,
-        //          Manufacturer = prod.Manufacturer,
-        //          Description = prod.Description,
-        //          Parameters = prod.ProductParameters
-        //            .Select(par => new ParameterDTO
-        //            {
-        //                Id = par.Id,
-        //                ParameterId = par.ParameterId,
-        //                Value = par.Value,
-        //                Name = par.Parameter.Name
-        //            })
-
-        //            .ToList()
-        //      })
-
-        //      .ToListAsync();
-
-
-        //    return products;
-        //}
-
-        //public async Task<IEnumerable<ProductOrderDTO>> GetParamForOrder(int id)
-        //{
-        //    var param = await _context.Products
-        //                              .Where(p => p.Id == id)
-        //                              .Select(m => new ProductOrderDTO
-        //                              {
-        //                                  ProductNumber = m.ProductNumber,
-        //                                  ProductStandartCost = m.StandartCost
-        //                              }).ToListAsync();
-
-        //    return param;
-
-        //}
         private void ValidateAddOtherProducts(addNewProductTypeRequest product)
         {
             if (string.IsNullOrEmpty(product.Name?.Value))
@@ -1165,85 +1346,78 @@ namespace gdm5._0.Services
             }
             else dd = 0;
         }
+        public static void CallParseFloat(string valueText, out float dd)
+        {
+            if (!String.IsNullOrEmpty(valueText))
+            {
+                float d;
+                bool result = float.TryParse(valueText, out d);
+
+                if (result)
+                    dd = d;
+                else
+                    dd = 0;
+            }
+            else dd = 0;
+        }
+        public byte[] GeneratePDF()
+        {
+            PdfDocument document = new PdfDocument();
+            //You will have to add Page in PDF Document
+            PdfPage page = document.AddPage();
+            //For drawing in PDF Page you will nedd XGraphics Object
+            XGraphics gfx = PdfSharpCore.Drawing.XGraphics.FromPdfPage(page);
+            //For Test you will have to define font to be used
+            XFont font = new XFont("Verdana", 20, XFontStyle.Bold);
+            //Finally use XGraphics & font object to draw text in PDF Page
+            gfx.DrawString("My First PDF Document", font, XBrushes.Black,
+            new XRect(0, 0, page.Width, page.Height), XStringFormats.Center);
+            //Specify file name of the PDF file
+            string filename = "FirstPDFDocument.pdf";
+            //Save PDF File
+            document.Save(filename);
+            //Load PDF File for viewing
+         //   Process.Start(filename);
+
+            // Send PDF to browser
+            MemoryStream stream = new MemoryStream();
+            document.Save(stream, false);
+            return stream.ToArray();
+        }
+
+        void DefineStyles(PdfDocument document)
+        {
+            // Get the predefined style Normal.
+          //  Style style =  document.["Normal"];
+            //// Because all styles are derived from Normal, the next line changes the 
+            //// font of the whole document. Or, more exactly, it changes the font of
+            //// all styles and paragraphs that do not redefine the font.
+            //style.Font.Name = "Verdana";
+
+            //style = document.Styles[StyleNames.Header];
+            //style.ParagraphFormat.AddTabStop("16cm", TabAlignment.Right);
+
+            //style = document.Styles[StyleNames.Footer];
+            //style.ParagraphFormat.AddTabStop("8cm", TabAlignment.Center);
+
+            //// Create a new style called Table based on style Normal
+            //style = document.Styles.AddStyle("Table", "Normal");
+            //style.Font.Name = "Verdana";
+            //style.Font.Name = "Times New Roman";
+            //style.Font.Size = 9;
+
+            //// Create a new style called Reference based on style Normal
+            //style = document.Styles.AddStyle("Reference", "Normal");
+            //style.ParagraphFormat.SpaceBefore = "5mm";
+            //style.ParagraphFormat.SpaceAfter = "5mm";
+            //style.ParagraphFormat.TabStops.AddTabStop("16cm", TabAlignment.Right);
+        }
+
+
+
+
     }
 
 
 }
 
-
-
-//var typeP = _context.ProductTypes?.Where(name => name.NameType == productDTO.NameType).FirstOrDefault();
-
-//if (typeP != null)
-//{
-//    idType = typeP.Id;
-//}
-//else
-//{
-//    nameType = productDTO.NameType;
-//    var typeProduct = new ProductType()
-//    {
-//        Id = 0,
-//        NameType = nameType,
-//    };
-
-//    _context.ProductTypes.Add(typeProduct);
-//    await _context.SaveChangesAsync();
-
-//    idType = typeProduct.Id;
-//}
-
-//typeP = _context.ProductTypes?.Where(name => name.NameType == productDTO.NameType).FirstOrDefault();
-//var product = new Product
-//{
-//    ProductTypeId = idType,
-//    Name = productDTO.Name,
-//    ProductNumber = productDTO.ProductNumber,
-//    Quantity = productDTO.Quantity,
-//    StandartCost = productDTO.ProductStandartCost,
-//    Manufacturer = productDTO.Manufacturer,
-//    Description = productDTO.Description,
-//};
-
-
-//_context.Products.Add(product);
-//await _context.SaveChangesAsync();
-
-//foreach (var paramDTO in productDTO.Parameters)
-//{
-//    if (string.IsNullOrEmpty(paramDTO.Value))
-//        continue;
-
-//    var existParam = _context.Parameters?
-//        .Where(item => item.Name == paramDTO.Name && item.ProductTypeId == idType)
-//        .FirstOrDefault();
-
-//    var idParam = 0;
-//    if(existParam != null)
-//    {
-//        idParam = existParam.Id;
-//    }
-//    else
-//    {
-//        var parameters = new Parameter()
-//        {
-//            ProductTypeId = typeP.Id,
-//            Name = paramDTO.Name,
-//        };
-
-//        _context.Parameters.Add(parameters);
-//        idParam = parameters.Id;
-//    }
-
-
-//    var param = new ProductParameter()
-//    {
-//        ProductId = product.Id,
-//        ParameterId = idParam,
-//        Value = paramDTO.Value
-//    };
-
-//    _context.ProductParameters.Add(param);
-//}
-
-//await _context.SaveChangesAsync();

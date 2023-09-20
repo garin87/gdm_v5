@@ -9,6 +9,7 @@
     flex-direction: row;
     min-height: 500px;
 }
+
 .order-command-button{
     margin: 1em;
     margin-left: 8px;
@@ -26,39 +27,50 @@
     width: 100%;
     padding-right: 0;
 }
+
 .order-save-button{
     margin-left: 10px;
 }
+
 .order-commands{
     width: 100%;
     margin-bottom: 1px;
     border-bottom: 1px solid black;
 }
+
 .order-container{
     width: 100%;
-    height: fit-content;
+    height: 100%;
+    overflow-x: hidden;
 }
+
 .order-container > .order-commands > .mat-card-actions{
     margin-left: 0px;
     margin-right: 0px;
 }
+
 .instance-order-card,
 .parameters-order-card{
     box-shadow: 0px 0px 0px 0px;
     width: inherit;
  
 }
+
 .parameters-order-content-card{
     width: 100%;
     display: flex;
     height: auto;
 }
+
 .parameters-order-content-card form-editor{
     width: inherit;
 }
+
 .grid-order-card{
     display: flex;
+    flex-direction: initial;
 }
+
 .order-grid-content{
     width: 100%;
 }
@@ -102,6 +114,7 @@
 .grid-order-cart{
     display: flex;
     flex-direction: inherit;
+    padding: 10px;
 }
 .order-cart-cancel-button{
     margin-right: 20px;
@@ -109,5 +122,16 @@
 
 .grid-order-history{
     display: flex;
-    
+    flex-direction: inherit;
+    padding: 10px;
+}
+
+.order-card.order-commands{
+    height: auto;
+}
+
+@media (max-width: 740px){
+    .order-content{
+        overflow: auto;
+    }
 }

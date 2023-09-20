@@ -54,7 +54,7 @@ namespace gdm5._0.Controllers
                 var result = this._productTypeService.getProductTypeParameters(nameType);
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -74,7 +74,7 @@ namespace gdm5._0.Controllers
                 var result  = this._productTypeService.getProductTypeInstances(nameType, filter, route, sortOption, null);
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -96,7 +96,7 @@ namespace gdm5._0.Controllers
                     request.PageFilter, route, request.SortOption, request.Filter);
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }

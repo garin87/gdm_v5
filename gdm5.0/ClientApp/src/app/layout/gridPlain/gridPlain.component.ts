@@ -1,18 +1,13 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
-import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
-import { MatSidenav } from '@angular/material/sidenav';
-import { MatSort, Sort } from '@angular/material/sort';
 import { MatTable } from '@angular/material/table';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { debounceTime, map, startWith, tap } from 'rxjs/operators';
-import { gridParameter, IGetOrderInstancesRequest, IgetProductTypeInstancesRequest, 
-  IGridColumnDefinition, IPaginationAction, ISortOption, OrdersRequest, PageFilter, ProductTypeInstancesRequest,} from 'src/app/common/objects/common';
+import { Observable } from 'rxjs';
+import { gridParameter, IGetOrderInstancesRequest,
+  IGridColumnDefinition, IParameter, ISortOption, OrdersRequest, PageFilter } from 'src/app/common/objects/common';
 import { ApplicationService } from 'src/app/common/services/application.service';
 import { AppStateService } from 'src/app/common/services/appState.service';
 import { MetadataService } from 'src/app/common/services/metadata.service';
-import { CommonUtil } from 'src/app/common/utils/common-utils';
 
 
 @Component({
@@ -42,8 +37,7 @@ export class gridPlainComponent implements OnInit{
   pageFilterPublick:PageFilter;
   GetOrdersRequest:IGetOrderInstancesRequest;
   selectedRow:any;
-
-  
+  dataTile:any;
   listProps : Observable<string[]>;
 
   constructor(private _metadataService:MetadataService,
@@ -74,9 +68,9 @@ export class gridPlainComponent implements OnInit{
       // });
 
 
-      // this._appStateService.refreshGridData.subscribe(data => {
+      // this._appStateService.refreshGridPainData.subscribe(data => {
       //   if(data){
-      //        this.refreshGridData();
+      //         this.refreshGridData();
       //   }
       // })
   };
@@ -131,58 +125,11 @@ export class gridPlainComponent implements OnInit{
     });
   }
 
-  // handlePage($event){
-  //  console.log("---------- handlePage($event)");
-  //  console.log($event);
-  //  let actionName = this.getPaginationEventName($event);
-  //  //  this.paginationParameters = this.getPaginationEventName($event);
-  //  console.log(actionName);
-  //  // this._appStateService.changedPageGrid.next(actionName);
-  //  this.pageFilterPublick.pageNumber = actionName.pageNumber;
-  //  this.pageFilterPublick.pageSize = actionName.pageSize;
-  //  this.isLoadingResults = true;
-  //  this.getGridData("Order", actionName.pageNumber,
-  //                   actionName.pageSize, this.sortOptionsPublick);
-  // }
 
-  // getGridData(name, pageNumber, pageSize, sortOptions:ISortOption = null, filter:gridParameter = null){
-   
-  //   this.GetOrdersRequest.Name = name;
-  //   this.GetOrdersRequest.SortOption = {
-  //     name: sortOptions?.name.trim(),
-  //     direction: sortOptions?.direction.trim(),
-  //     isParameter: sortOptions?.isParameter
-  //   };
-  //   this.GetOrdersRequest.PageFilter = {
-  //     pageNumber : pageNumber,
-  //     pageSize: pageSize
-  //   }
-
-  //   if(filter){
-  //     this.GetOrdersRequest.Filter[filter?.name] = filter.value;
-  //   }
-        
-    
-  //   this._applicationService.getOrderProductList(this.GetOrdersRequest).subscribe(response => {
-  //     console.log("--------- getGridData ------------ getOrderProductList");
-  //     console.log(response);
-  //     this.isLoadingResults = false;
-  //     this.dataSource = response.data;
-  //     this.totalRecords = this.gridData?.totalRecords;
-  //     if(this.table){
-  //       this.table.renderRows();
-  //     }
-      
-  //   },
-  //   err => {
-  //       this.isLoadingResults = false;
-  //       console.log(err);
-  //   });
-  // }
 
   refreshGridData(){
     this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
-                     this.pageFilterPublick.pageSize = 10, this.sortOptionsPublick);
+                     this.pageFilterPublick.pageSize = 20, this.sortOptionsPublick);
   }
 
   convertParametersToColumn(gridData){
@@ -303,32 +250,18 @@ export class gridPlainComponent implements OnInit{
     
   }
 
-  // private getPaginationEventName(pEvent):IPaginationAction{
-  //   let actionName: string;
-  //   let paginationData: IPaginationAction = {};
+  public  loadCustomParameters(selectedProduct:string){
+    let listParameters = [];
+    this._applicationService.getProductParameters2(selectedProduct)
+        .subscribe((data:IParameter[] | any[]) =>{
+            if(typeof data == "object" && data.length > 0){
+ 
+            }  
+        })
+  }
 
-  //   if(pEvent.pageSize != this.currentPageSize){ 
-  //     this.currentPageSize = pEvent.pageSize;
-  //     actionName = "changedPageSize";
-  //   }else if(!this.paginator.hasNextPage()){
-  //     actionName = "lastPage";
-  //   }else if(!this.paginator.hasPreviousPage()){
-  //     actionName = "firstPage";
-  //   }else if(pEvent.previousPageIndex > pEvent.pageIndex){
-  //     actionName = "previousPage";
-  //   }else{
-  //     actionName = "nextPage";
-  //   }
 
-  //   paginationData.paginationEventName = actionName; 
-  //   paginationData.gridName = this.gridMetadataType;
-  //   paginationData.pageSize = pEvent.pageSize
-  //   paginationData.pageNumber = (pEvent.pageSize * pEvent.pageIndex) + 1;
-  
-  //   return paginationData;
-  // }
-
-  onDestroy(){
+  ngOnDestroy(){
     this.dispose();
   }
 

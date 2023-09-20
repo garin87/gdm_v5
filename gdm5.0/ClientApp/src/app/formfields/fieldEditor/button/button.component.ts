@@ -1,10 +1,8 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import { FormControl, Validators } from "@angular/forms";
 import { MatDialog } from "@angular/material/dialog";
 import { Subject } from "rxjs";
 import { AlertService } from "src/app/alert/alert.service";
-import { ParameterForm, parameterUpdatedData, valueUpdatedData } from "src/app/common/objects/common";
-import { ParameterDialogComponent } from "../customField/parameterDialog/parameterDialog.component";
+import { valueUpdatedData } from "src/app/common/objects/common";
 
 @Component({
     selector: 'button-control',

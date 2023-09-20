@@ -1,13 +1,12 @@
 import { Injectable } from '@angular/core';
-import { IResultStatus,} from '../common/objects/common'; // any 
+import { IResultStatus } from '../common/objects/common'; // any 
 import { Alert, AlertTypes } from './alert';
-//import { LabelService } from '../common/services/label.service';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
-import {map } from 'rxjs/operators';
-import {AlertModalComponent} from './alert.modal.component';
+import { map } from 'rxjs/operators';
+import { AlertModalComponent } from './alert.modal.component';
 import { AlertModalObjectComponent } from './alert.modalObject.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Injectable()
 export class AlertService {
@@ -97,18 +96,19 @@ export class AlertService {
             switch (alert.type) {                
                case 1:                   
                     snackBarConfig = {                  
-                         panelClass: 'snack-bar-warning'                 
+                         panelClass: 'snack-bar-warning',
+                         duration: 7000          
                     };                    
                      break;               
                 case 3:                   
                     snackBarConfig = {                      
                          panelClass: 'snack-bar-success',          
-                         //duration: 5000                 
+                         duration: 5000                 
                     };                   
                  break;            
             }
-            let ref = this._snackBar.open(alert.message, 'Dismiss', snackBarConfig);    
-              ref.onAction().subscribe(action => {            });      
+            let ref = this._snackBar.open(alert.message, 'Закрыть', snackBarConfig);    
+            ref.onAction().subscribe(action => {});      
         }                            
         this.alerts = newAlerts;   
     }
@@ -142,7 +142,7 @@ export class AlertService {
        else{            
           am.cancelBtnCaption = choices[0] //this._labelService.getLabel(choices[0].Name, choices[0].DefaultValue); 
           am.primaryBtnCaption = choices[1] //this._labelService.getLabel(choices[1].Name, choices[1].DefaultValue);  
-         }       
+       }       
        return modalRef.afterClosed();   
     }
    

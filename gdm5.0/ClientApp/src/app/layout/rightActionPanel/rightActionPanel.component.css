@@ -20,8 +20,8 @@
   width: 100%;
 }
 .btn-action-panel{
-  width: 70px;
-  height: 70px;
+  width: 85px;
+  height: 85px;
   padding: 0px;
 }
 .btn-action-panel-content{
@@ -38,4 +38,15 @@
 }
 .container-action-btn{
   border-bottom: 1px solid #ada9a9;
+}
+
+.action-name{
+  white-space: normal;
+  line-height: initial;
+  padding-right: 5px;
+}
+
+.btn-action-panel:hover {
+  background: rgba(0,0,0,.1);
+  cursor: pointer;
 }

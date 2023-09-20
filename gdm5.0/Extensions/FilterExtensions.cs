@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using gdm5._0.Domain.Interfaces;
 using gdm5._0.Domain.Interfaces.Models;
+using gdm5._0.Shared;
 
 namespace gdm5._0.Extensions
 {

@@ -2,11 +2,13 @@
     display: flex;
     flex-direction: row;
     height: calc(100% - 64px);
+    overflow-x: hidden;
 }
 
 .modeling-content{
     display: flex;
     flex-direction: row;
+    height: 100%;
     min-height: 500px;
 }
 .modeling-command-button{
@@ -21,14 +23,21 @@
     padding: 1em 1em 0em 1em;
 }
 
+.modeling-card.modeling-commands{
+    height: auto;
+}
+
 .modeling-card{
-    height: 100%;
+    height: fit-content;
     width: 100%;
     padding-right: 0;
+    padding: 6px;
 }
-.modeling-save-button{
+
+/* .modeling-save-button{
     margin-left: 10px;
-}
+} */
+
 .modeling-commands{
     width: 100%;
     margin-bottom: 1px;
@@ -36,7 +45,9 @@
 }
 .modeling-container{
     width: 100%;
-    height: fit-content;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 .modeling-container > .modeling-commands > .mat-card-actions{
     margin-left: 0px;
@@ -52,13 +63,106 @@
     width: 100%;
     display: flex;
     height: auto;
+    flex-direction: initial;
 }
+
 .parameters-modeling-content-card form-editor{
     width: inherit;
 }
+
 .grid-modeling-card{
     display: flex;
 }
+
 .modeling-grid-content{
     width: 100%;
+}
+
+/* price list */
+.container-price-list-content{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.price-list-action-bth{
+    display: flex;
+    padding: 0 0em 1em 0em;
+}
+
+.price-list-add-button{
+   padding-left: 0.2em;
+}
+
+.price-list-save-button{
+    padding-left: 1em;
+}
+
+.price-list-empty{
+    padding-left: 0.1em;
+}
+
+.container-modeling-actions{
+    width: 100%;
+    height: 100%;
+}
+
+.modeling-card{
+    width: 100%;
+    height: 100%;
+}
+
+.container-modeling-actions .mat-mdc-card-actions.mdc-card__actions .product-command-button{
+    height: 26px !important;
+    cursor: pointer !important;
+}
+
+.container-modeling-action-commands{
+    padding: 10px;
+    border-bottom: 1px solid;
+    min-height: 0px;
+}
+
+.modeling-command-button mat-icon{
+    padding-bottom: 20px;
+}
+
+.modeling-content-productPage-container{
+    width: 100%;
+    height: 100%;
+}
+
+.modeling-product-command-button{
+    margin: 10px;
+}
+
+/* .sidePanelOpened{
+    background: #26316d !important;
+}
+
+.subSidePanelOpened{
+    background: #26316d !important;
+} */
+
+@media (max-width: 840px){
+    .modeling-main-container{
+        overflow: auto;
+    }
+}
+
+@media (max-width: 820px){
+    .modeling-card-sidePanel mat-drawer.mat-drawer.sidenav-content-container{
+        margin-left: 190px;
+        position: fixed ;
+    }
+
+
+    .modeling-save-button{
+        margin-left: 0px;
+    }
+    
+    mat-drawer.mat-drawer.rightActionPanel-content-container {
+        height: fit-content !important;
+    }
+   
 }

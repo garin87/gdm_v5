@@ -1,7 +1,7 @@
 <div class="field-selector">
     <mat-form-field appearance="fill" class="container-picklist-control">
       <input type="text" [formControl]="inputControl" placeholder="Value"
-      matInput  #textInput
+      matInput  #textInput [required]="required" 
       (keyup)="changeText()" (paste)="changeText()" 
       (cut)="changeText()" (input)="changeText()">
         <mat-label>{{displayedName}}</mat-label>

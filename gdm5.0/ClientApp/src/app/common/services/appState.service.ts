@@ -1,12 +1,14 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
+import { ProductTypeInstancesRequest } from "../objects/common";
 
 
 @Injectable()
 export class AppStateService {
-
+   
     public detectClickOnPanel = new BehaviorSubject<boolean>(false); 
     public detectClickOnSubPanel = new BehaviorSubject<any>(undefined); 
+    //SidePanel
     public selectedSidePanelValue = new BehaviorSubject<any>(undefined); 
     public selectedSideSubPanelValue = new BehaviorSubject<any>(undefined); 
     public selectedSideSubPanelValueName = new BehaviorSubject<any>(undefined); 
@@ -15,6 +17,7 @@ export class AppStateService {
     public changedPageGrid = new BehaviorSubject<any>(undefined);
     public changedGridOption = new BehaviorSubject<any>(undefined);
     public refreshGridData = new BehaviorSubject<boolean>(false);
+    public refreshGridPainData = new BehaviorSubject<boolean>(false);
     public refreshSubPanelContentData = new BehaviorSubject<boolean>(false);
     public refreshListOfPtopsofSubPanel = new BehaviorSubject<any>(undefined);
     public refreshPainGrid = new BehaviorSubject<boolean>(false);
@@ -40,6 +43,20 @@ export class AppStateService {
     public Cur_OfficialRate_EUR:number = undefined;
     public currencyNBRB:Array<any> = undefined;
     
+    // Grid spinner
+    public LoadingGridResults = new BehaviorSubject<boolean>(false);
+    // Grid Option
+    public getProductTypeInstancesRequest = new ProductTypeInstancesRequest();
+
+    // Right panel
+    public isActiveRightActionPanel = new BehaviorSubject<boolean>(false);
+
+    // Filter Parameters 
+    public listFilterParameters:Array<any> = [];
+    public filter_TileFilterParameters:Array<any> = [];
+    public filter_clickByTileFilter = new BehaviorSubject<any>(undefined);
+    public filter_initCreateFilterTileComponent = new BehaviorSubject<any>(undefined);
+
     constructor() {}
 
 }

@@ -1,10 +1,9 @@
 {
-
-    "/api/exrates/*": {
-        "target": "https://www.nbrb.by",
+    "/exrates/*": {
+        "target": "https://api.nbrb.by",
         "secure": false,
-        "logLevel": "debug",
-        "changeOrigin": true
+        "changeOrigin": true,
+        "logLevel": "info"
     }  
-}
+}    
 

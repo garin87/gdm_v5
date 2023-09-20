@@ -31,7 +31,7 @@ namespace gdm5._0.Services
 
         public string[] GetNamesCompanies()
         {
-            return _context.Customer.Select(customer => customer.NameCompany).ToArray();
+            return _context.Customer.Select(customer => customer.NameCompany).OrderBy(customerName => customerName).ToArray();
         }
 
         public async Task<Customer> AddNewCustomer(addCustomerRequest newCustomer)

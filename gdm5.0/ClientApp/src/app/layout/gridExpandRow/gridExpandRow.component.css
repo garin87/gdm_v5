@@ -67,8 +67,10 @@ table{
 .td-expandedDetail{
    width: 100%;
 }
+
 .expanded-row-content{
     width: 100%;
+    padding: 5px 20px;
 }
 
 .sub-grid-products, .plain-grid-section{
@@ -76,4 +78,18 @@ table{
    border-right: 1px solid #a9a9a9;
    border-top: 1px solid #a9a9a9;
    margin: 4px;
+}
+
+th.mat-header-cell {
+  font-size: 1.1em;
+  color: rgb(75 57 57 / 92%);
+  font-weight: 600;
+}
+
+.grid-expand-header-cell.grid-header-cell.grid-cell{
+  padding: 0px;
+}
+
+.grid-expand-header-cell.grid-header-cell.grid-cell:first-of-type {
+  padding-left: 24px;
 }

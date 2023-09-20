@@ -23,7 +23,23 @@ namespace gdm5._0.Extensions
 
             return dd;
         }
+        public static float ParseFloat(this string valueText)
+        {
+            float dd = 0;
+            if (!String.IsNullOrEmpty(valueText))
+            {
+                float d;
+                bool result = float.TryParse(valueText, out d);
 
+                if (result)
+                    dd = d;
+                else
+                    dd = 0;
+            }
+            else dd = 0;
+
+            return dd;
+        }
         public static int ParseInt(this string valueText)
         {
             int dd = 0;

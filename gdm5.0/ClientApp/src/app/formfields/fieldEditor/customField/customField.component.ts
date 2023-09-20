@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from "@angular/core";
-import { MatDialog } from "@angular/material/dialog";
 import { Subject } from "rxjs";
 import { MetadataProperty, ParameterForm, valueUpdatedData } from "src/app/common/objects/common";
 import { FormEditorService } from "src/app/common/services/formEditor.service";
 import { ParameterDialogComponent } from "./parameterDialog/parameterDialog.component";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
     selector: 'customField-editor',

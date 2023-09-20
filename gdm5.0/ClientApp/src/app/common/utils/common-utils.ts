@@ -14,4 +14,16 @@ export class CommonUtil {
             return 0;
           });
     }
+
+    static sortByPriority(props){
+      return props.sort(function (a, b) {
+          if (a.priority > b.priority) {
+            return -1;
+          }
+          if (a.priority < b.priority) {
+            return 1;
+          }
+          return 0;
+        });
+    };
 }

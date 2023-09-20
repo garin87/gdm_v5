@@ -13,6 +13,11 @@ namespace gdm5._0.DTO
         public Uri LastPage { get; set; }
         public int TotalPages { get; set; }
         public int TotalRecords { get; set; }
+        public double TotalQuantity { get; set; }
+        public double TotalPrimeCost { get; set; }
+        public double TotalPrimeCostEUR { get; set; }
+        public double TotalPrimeCostUSD { get; set; }
+
         public Uri NextPage { get; set; }
         public Uri PreviousPage { get; set; }
         public PagedResponseDTO(T data, int pageNumber, int pageSize)

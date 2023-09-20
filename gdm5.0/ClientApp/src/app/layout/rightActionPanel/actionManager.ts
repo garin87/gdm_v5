@@ -7,14 +7,10 @@ import { AppStateService,  } from 'src/app/common/services/appState.service';
 import { CurrenciesService } from 'src/app/common/services/currencies.service';
 import { FormEditorService } from 'src/app/common/services/formEditor.service';
 
-
-
 export class ActionManager{
 
- // @Input("eventToggle") eventToggle: any;
- // @Input("commands") commands: any;
-
   public executeCommands : IExecuteCommand[];
+  public isLoadingResults: boolean;
 
   constructor(private _appStateService:AppStateService,
               private _formEditorService:FormEditorService,
@@ -22,7 +18,6 @@ export class ActionManager{
               private _alertService: AlertService, 
               private _currenciesService: CurrenciesService) { 
   };
-
 
   executeCommand(command:ExecuteCommand){
 
@@ -66,14 +61,14 @@ export class ActionManager{
     }
     if(command.command == "Order"){
       if(command.data?.parentType == "product"){
-          console.log("-------------------------------- Execute Order");
+          
           this.orderProduct();
       }
     }
 
     if(command.command == "AddToCart"){
       if(command.data?.parentType == "product"){
-          console.log("-------------------------------- Execute AddToCart");
+         
           this.addToCartProduct();
       }
     }
@@ -81,59 +76,75 @@ export class ActionManager{
     
   updateProductInstance(){
     const updatedInstance = this.formProductInstanceToSave();
+    this._appStateService.LoadingGridResults.next(true);
     this._applicationService.updateProductInstance(updatedInstance)
     .subscribe(response => {
+      this._appStateService.LoadingGridResults.next(false);
        this._alertService.success(response.message);
        this.dispose();
        this._appStateService.refreshGridData.next(true);
      },
      err => {
-         this._alertService.error(err.error.message);
+       this._appStateService.LoadingGridResults.next(false);
+       this._alertService.error(err.error.message);
      });
   }
 
   deleteProductInstance(){
     const productId = this._appStateService.instanceOfProduct?.productId;
+    this._appStateService.LoadingGridResults.next(true);
     this._applicationService.deleteProductInstance(productId)
     .subscribe(response => {
+       this._appStateService.LoadingGridResults.next(false);
        this._alertService.success(response.message);
+       
        this.dispose();
        this._appStateService.refreshGridData.next(true);
      },
      err => {
-         this._alertService.error(err.error.message);
+       this._appStateService.LoadingGridResults.next(false);
+       this._alertService.error(err.error.message);
     });
   }
 
   orderProduct(){
+ 
     const orderData = this.formOrderProduct();
+    this._appStateService.LoadingGridResults.next(true);
     this._applicationService.addOrderProduct(orderData)
     .subscribe(response => {
+       this._appStateService.LoadingGridResults.next(false);
        this._alertService.success(response.message);
        this.dispose();
-       this._appStateService.selectedSidePanelValue.next(this._appStateService.selectedInstancePanel);
-      
-       // this._appStateService.refreshGridData.next(true);
+       this._appStateService.refreshGridData.next(true);
+       this._appStateService.isActiveRightActionPanel.next(false);
+      // this._appStateService.selectedSidePanelValue.next(this._appStateService.selectedInstancePanel);
      },
      err => {
+         this._appStateService.LoadingGridResults.next(false);
          this._alertService.error(err.error.message);
      });
   }
 
-
   addToCartProduct(){
     const orderData = this.formOrderProduct();
+    this._appStateService.LoadingGridResults.next(true);
+   
     this._applicationService.addToCartOrder(orderData)
-    .subscribe(response => {
-       this._alertService.success(response.message);
-       this.dispose();
-       this._appStateService.selectedSidePanelValue.next(this._appStateService.selectedInstancePanel);
-       this._appStateService.cartProductCount.next(1);
-       // this._appStateService.refreshGridData.next(true);
-     },
-     err => {
-         this._alertService.error(err.error.message);
-     });
+      .subscribe(response => {
+        this._alertService.success(response.message);
+        this._appStateService.LoadingGridResults.next(false);
+        this.dispose();
+      // this._appStateService.selectedSidePanelValue.next(this._appStateService.selectedInstancePanel);
+        this._appStateService.cartProductCount.next(1);
+        this._appStateService.refreshGridData.next(true);
+        this._appStateService.isActiveRightActionPanel.next(false);
+        // this._appStateService.refreshGridData.next(true);
+      },
+      err => {
+          this._appStateService.LoadingGridResults.next(false);
+          this._alertService.error(err.error.message);
+    });
   }
 
   updateCompany(){
@@ -182,7 +193,6 @@ export class ActionManager{
        this._alertService.success(response.message);
        this.dispose();
        this._appStateService.refreshListOfPtopsofSubPanel.next({lastItems:"company"});
-     //  this._appStateService.refreshGridData.next(true);
      },
      err => {
          this._alertService.error(err.error.message);
@@ -191,7 +201,7 @@ export class ActionManager{
 
   deleteCurrencyInstance(){
     const currencyId = this._appStateService.instanceOfProduct?.id;
-    this._applicationService.deleteCartProduct(currencyId)
+    this._applicationService.deleteСurrency(currencyId)
     .subscribe(response => {
        this._alertService.success(response.message);
        this.dispose();
@@ -219,7 +229,6 @@ export class ActionManager{
     const idCartProduct = this._appStateService.instanceOfProduct?.productId;
     this._applicationService.deleteCartProduct(idCartProduct)
     .subscribe(response => {
-      console.log("---------- deleteCartProduct")
        this._alertService.success(response.message);
        this.dispose();
        this._appStateService.refreshPainGrid.next(true);
@@ -236,7 +245,6 @@ export class ActionManager{
     const idOrderProduct = this._appStateService.instanceOfProduct?.orderId;
     this._applicationService.deleteOrder(idOrderProduct)
     .subscribe(response => {
-      console.log("---------- deleteOrderProduct")
        this._alertService.success(response.message);
        this.dispose();
        this._appStateService.refreshOrderGrid.next(true);
@@ -250,19 +258,35 @@ export class ActionManager{
 
   formProductInstanceToSave(){
     let parm = [];
-    let productData = this._formEditorService.instanceData;
-    if(this._formEditorService.instanceData?.parameters){
-      for(let item in this._formEditorService.instanceData?.parameters){
-        parm.push(this._formEditorService.instanceData?.parameters[item]);
+    let productData = Object.assign({}, this._formEditorService.instanceData);
+    if(productData?.parameters){
+      for(let item in productData?.parameters){
+        parm.push(productData?.parameters[item]);
       }
       productData.parameters = parm;
     } 
     productData.ProductId = this._appStateService.instanceOfProduct?.productId || this._appStateService.instanceOfProduct?.id 
     
-    const primeCostBYN = this._formEditorService.instanceData["primecost"]?.value;
-    if(this._appStateService.instanceOfProduct && this._appStateService.instanceOfProduct?.primeCost){
+    const primeCostBYN = productData["primecost"]?.value;
+    const primeCostUSD = productData["primecostusd"]?.value;
+    const primeCostEUR = productData["primecosteur"]?.value;
+    if(this._appStateService.instanceOfProduct){
       if(this._appStateService.instanceOfProduct?.primeCost !== primeCostBYN){
-        this.setPrimeCostUSDandEUR(primeCostBYN);
+        if(primeCostBYN){
+          this.setPrimeCostUSDandEUR(primeCostBYN, productData);
+        }
+      }
+
+      if(this._appStateService.instanceOfProduct?.primeCostEUR !== primeCostEUR){
+        if(primeCostEUR){
+          this.setEURPrimeCost(primeCostEUR, productData);
+        }
+      }
+
+      if(this._appStateService.instanceOfProduct?.primeCostUSD !== primeCostUSD){
+        if(primeCostUSD){
+          this.setUSDPrimeCost(primeCostUSD, productData);
+        }
       }
 
     }
@@ -276,20 +300,17 @@ export class ActionManager{
     if(productData?.primecost){
        productData.primecost.value = productData?.primecost?.value.toString();
     }
-   
+    if(productData?.primecostusd){
+      productData.primecostusd.value = productData?.primecostusd?.value.toString();
+    }
+    if(productData?.primecosteur){
+      productData.primecosteur.value = productData?.primecosteur?.value.toString();
+    }
+
     return JSON.stringify(productData);
   }
 
-  setPrimeCostUSDandEUR(primeCostBYN){
-    // const dateofreceipt = this._formEditorService.instanceData["dateofreceipt"]?.value?.toISOString().split("T")[0];
-    // this._currenciesService.getNBRBCurrenciesOnDate(dateofreceipt).subscribe( currencies =>{
-    //    if(currencies){
-    //      const USD = this._currenciesService.getCurrencyInfoByAbbreviation(currencies, "USD");
-    //      const EUR = this._currenciesService.getCurrencyInfoByAbbreviation(currencies, "EUR");
-
-         
-    //    }
-    // })
+  setPrimeCostUSDandEUR(primeCostBYN, productData){
     if(this._appStateService.Cur_OfficialRate_EUR && this._appStateService.Cur_OfficialRate_USD){
       const primeCostEUR = {
         name: "primecosteur",
@@ -297,7 +318,7 @@ export class ActionManager{
         type: "text",
         value: (primeCostBYN / this._appStateService.Cur_OfficialRate_EUR).toFixed(2) + ""
       }
-      this._formEditorService.instanceData["primecosteur"] = primeCostEUR;
+      productData["primecosteur"] = primeCostEUR;
       
       const primeCostUSD = {
         name: "primecostusd",
@@ -305,7 +326,71 @@ export class ActionManager{
         type: "text",
         value: (primeCostBYN / this._appStateService.Cur_OfficialRate_USD).toFixed(2) + ""
       }
-      this._formEditorService.instanceData["primecostusd"] = primeCostUSD;
+
+      productData["primecostusd"] = primeCostUSD;
+    }
+ 
+  }
+
+  setUSDPrimeCost(primeCostUSDinput, productData){
+    if(this._appStateService.Cur_OfficialRate_USD){
+      const primeCostUSD = {
+        name: "primecostusd",
+        navPriority: 1,
+        type: "text",
+        value: primeCostUSDinput
+      }
+
+      productData["primecostusd"] = primeCostUSD ;
+     
+      const primeCostBYN = {
+        name: "primecost",
+        navPriority: 1,
+        type: "text",
+        value: (primeCostUSDinput * this._appStateService.Cur_OfficialRate_USD).toFixed(2) + ""
+      }
+
+      productData["primecost"] = primeCostBYN;
+
+      const primeCostEUR = {
+        name: "primecosteur",
+        navPriority: 1,
+        type: "text",
+        value: (primeCostUSDinput * this._appStateService.Cur_OfficialRate_USD / this._appStateService.Cur_OfficialRate_EUR).toFixed(2) + ""
+      }
+      productData["primecosteur"] = primeCostEUR;
+    }
+ 
+  }
+
+  setEURPrimeCost(primeCostEURinput, productData){
+    if(this._appStateService.Cur_OfficialRate_EUR){
+      const primeCostEUR = {
+        name: "primecosteur",
+        navPriority: 1,
+        type: "text",
+        value: primeCostEURinput
+      }
+
+      productData["primecosteur"] = primeCostEUR;
+     
+      const primeCostBYN = {
+        name: "primecost",
+        navPriority: 1,
+        type: "text",
+        value: (primeCostEURinput * this._appStateService.Cur_OfficialRate_EUR).toFixed(2) + ""
+      }
+
+      productData["primecost"] = primeCostBYN;
+      const primeCostUSD = {
+        name: "primecostusd",
+        navPriority: 1,
+        type: "text",
+        value: ((primeCostEURinput * this._appStateService.Cur_OfficialRate_EUR) / this._appStateService.Cur_OfficialRate_USD).toFixed(2) + ""
+      }
+
+      productData["primecostusd"] = primeCostUSD;
+      
     }
  
   }
@@ -317,12 +402,9 @@ export class ActionManager{
     return this._currenciesService.getCurrencyInfoByAbbreviation(this._appStateService.currencyNBRB, curName);
   }
 
-
   formOrderProduct(){
-   // console.log(this._appStateService.instanceOfProduct?.productId);
-    let orderData = this._formEditorService.instanceData;
-
-    orderData.ProductId = this._appStateService.instanceOfProduct?.productId || this._appStateService.instanceOfProduct?.id; 
+   let orderData = Object.assign({}, this._formEditorService.instanceData);
+   orderData.ProductId = this._appStateService.instanceOfProduct?.productId || this._appStateService.instanceOfProduct?.id; 
     
    if(orderData?.quantity){
       orderData.quantity.value = orderData?.quantity?.value.toString();
@@ -344,21 +426,21 @@ export class ActionManager{
   }
 
   formCompanyInstanceToSave(){
-    let companyData = this._formEditorService.instanceData;
+    let companyData = Object.assign({}, this._formEditorService.instanceData);
     companyData.CustomerId = this._appStateService.instanceOfProduct?.id 
     
     return JSON.stringify(companyData);
   }
 
   forWareHouseInstanceToSave(){
-    let warehouseData = this._formEditorService.instanceData;
+    let warehouseData = Object.assign({}, this._formEditorService.instanceData);
     warehouseData.WareHouseId = this._appStateService.instanceOfProduct?.id 
     
     return JSON.stringify(warehouseData);
   }
 
   forCurrencyInstanceToSave(){
-    let currencyData = this._formEditorService.instanceData;
+    let currencyData = Object.assign({}, this._formEditorService.instanceData);
     currencyData.CurrencyId = this._appStateService.instanceOfProduct?.id 
     
     return JSON.stringify(currencyData);

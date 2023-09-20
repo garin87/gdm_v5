@@ -19,12 +19,12 @@ namespace gdm5._0.Services.Interfaces
         ProductNewDTO AddInstanceProduct(ProductNewDTO productNewDTO);
         Task<updateProductInstancesRequest> UpdateProduct(updateProductInstancesRequest productDTO);
         Task<Product> DeleteProducts(int id);
-     //   Task<IEnumerable<ProductDTO>> SortProducs(int id);
-     //   Task<IQueryable<ProductDTO>> SortProducsByParameters(int TypeId, bool StateOrder = true);
-    //    Task<IEnumerable<ProductDTO>> GetProductParam(int id);
-    //    Task<IEnumerable<ProductOrderDTO>> GetParamForOrder(int id);
-        List<ProductParametrDTO> getInstancesOfProductParameter(string nameType, string nameParam, bool isParameter);
+        List<ProductParametrDTO> getInstancesOfProductParameter(getInstancesOfProductParameterRequest requestParameters);
+        List<ProductParametrDTO> GetInstancesOfProductParameterUpdated(getInstancesOfProductParameterRequest requestParameters);
+
+        
         addNewProductTypeRequest AddOtherProducts(addNewProductTypeRequest productNewDTO);
-        Task<ProductHistory> DeleteProductInstance(Nullable<int> id);
+        Task<ProductHistory> DeleteProductInstance(Nullable<int> id); 
+        byte[] GeneratePDF();
     }
 }

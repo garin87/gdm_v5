@@ -1,65 +1,67 @@
 
-<div class="product-main-container">
-    <app-sidePanel [eventToggle]="sidenavToggle" [properties]="namesParoduct" [page]="'product'"></app-sidePanel>
+<div class="product-main-container" style="overflow-x:hidden;">
+    <app-sidePanel #appSidePanel  class="grid-products-card-sidePanel" [eventToggle]="sidenavToggle" [properties]="namesParoduct" [page]="'product'"></app-sidePanel>
     <div class="product-container">
         <mat-card class="product-card product-commands">
             <!-- <mat-card-title>Product</mat-card-title> -->
             <mat-card-actions>
                 <button mat-raised-button class="product-command-button"
-                     color="primary" (click)="onToggleSidenav($event)" style="margin-right: 12px;">
-                    products
+                     color="primary" [class.sidePanelOpened]="this.appSidePanel.drawer.opened" (click)="onToggleSidenav($event)" style="margin-right: 12px;">
+                    <mat-icon *ngIf="!this.appSidePanel.drawer.opened">chevron_left</mat-icon>
+                    <mat-icon *ngIf="this.appSidePanel.drawer.opened">chevron_right</mat-icon>
+                    {{this._labelsService.labels.productCommand_Product}}
                 </button>
                 <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isAddProduct')">Add a product</button>
+                    (click)="activePanel('isAddProduct')"> {{this._labelsService.labels.productCommand_AddProduct}}</button>
+                <!-- <button class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isAddNewProduct')" > {{this._labelsService.labels.productCommand_AddNewProduct}}</button> 
                 <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isAddNewProduct')" >Add a new product</button> 
-                <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isEditParamProduct')" >Edit product parameters</button> 
+                    (click)="activePanel('isEditParamProduct')" > {{this._labelsService.labels.productCommand_EditProduct}}</button>  -->
             </mat-card-actions>
         </mat-card>
 
         <div class="product-content">
-            <mat-card class="product-card instance-product-card"  *ngIf="isAddProduct">
-                <mat-card-title>Add a product</mat-card-title>
-                <mat-card-subtitle>Add a instance of product </mat-card-subtitle>
-                <form-editor  [instanceName]="'AddInstanceProduct'"></form-editor>
-                <mat-card-actions>
-                    <div class="product-save-button">
-                        <button  mat-raised-button color="primary" (click)="saveInstanceProduct2()" >Save a new product</button>    
+            <mat-card style="padding: 10px;" class="product-card instance-product-card"  *ngIf="isAddProduct">
+                <mat-card-title class="product-card-title">{{this._labelsService.labels.productCommand_AddProduct}}</mat-card-title>
+                <mat-card-subtitle class="product-card-subtitle">{{this._labelsService.labels.subTitleProductCart_AddProduct}} </mat-card-subtitle>
+                <form-editor class="container-list-add-porduct-fields"  [instanceName]="'AddInstanceProduct'"></form-editor>
+                <mat-card-actions style="padding-left: 4px;">
+                    <div class="product-save-button" >
+                        <button  mat-raised-button color="primary" (click)="saveInstanceProduct2()">{{this._labelsService.labels.productButton_SaveInstanceProduct}}</button>    
                     </div>
                 </mat-card-actions>
             </mat-card>
-            <mat-card class="product-card parameters-product-card"  *ngIf="isNewProduct">
-                <mat-card-title>Add a new product</mat-card-title>
-                <mat-card-subtitle>Add parameters for  a new product </mat-card-subtitle>
+            <mat-card style="padding: 10px;" class="product-card parameters-product-card"  *ngIf="isNewProduct">
+                <mat-card-title class="product-card-title">{{this._labelsService.labels.productCommand_AddNewProduct}}</mat-card-title>
+                <mat-card-subtitle class="product-card-subtitle">{{this._labelsService.labels.subTitleProductCart_AddNewProduct}}</mat-card-subtitle>
                 <form-editor  [instanceName]="'ProductInitial'"></form-editor>
-                <mat-card-actions>
+                <mat-card-actions style="padding-left: 4px;">
                     <div class="product-save-button">
-                        <button  mat-raised-button color="primary" (click)="saveProduct()" >Save a new product</button>    
+                        <button  mat-raised-button color="primary" (click)="saveProduct()">{{this._labelsService.labels.productButton_SaveNewProduct}}</button>    
                     </div>
                 </mat-card-actions>
             </mat-card>
-            <mat-card class="product-card parameters-product-card"  *ngIf="isEditParamProduct">
-                <mat-card-title>Edit product parameters</mat-card-title>
-                <mat-card-subtitle>You can add, delete or edit product parameters</mat-card-subtitle>
+            <mat-card style="padding: 10px;" class="product-card parameters-product-card"  *ngIf="isEditParamProduct">
+                <mat-card-title class="product-card-title">{{this._labelsService.labels.productCommand_EditProduct}}</mat-card-title>
+                <mat-card-subtitle class="product-card-subtitle">{{this._labelsService.labels.subTitleProductCart_EditParametersProduct}}</mat-card-subtitle>
                 <form-editor  [instanceName]="'EditProductParameters'"></form-editor>
-                <mat-card-actions>
+                <mat-card-actions style="padding-left: 4px;">
                     <div class="product-save-button">
-                        <button  mat-raised-button color="primary" (click)="saveEditedProduct()" >Save a new product</button> 
+                        <button  mat-raised-button color="primary" (click)="saveEditedProduct()" >{{this._labelsService.labels.productButton_SaveChangesOfProduct}}</button> 
                     </div>
                 </mat-card-actions>
             </mat-card>           
             <mat-card class="product-card grid-products-card"  *ngIf="isGridShow">
-                <div class="loading-shade" *ngIf="isLoadingResults">
-                    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
-                </div>
                 <div class="product-grid-content">
-                    <mat-card-title>Products</mat-card-title>
+                    <mat-card-title>{{this._labelsService.labels.productCommand_Product}} / {{this._appStateService.selectedInstancePanel}}</mat-card-title>
                     <grid-control [selectedProduct]="currentProductName" [gridData]="gridProductData" 
                     [gridMetadataType]="gridMetadaType" [typeFilter]="'OptionalOfProduct'"></grid-control>
                 </div>
-                <rightActionPanel></rightActionPanel>
-            </mat-card>
+                <rightActionPanel *ngIf="this._appStateService.initRightActionPanel"></rightActionPanel>
+            </mat-card> 
+            <div class="loading-shade" *ngIf="isLoadingResults">
+                <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+            </div>
         </div>   
 
     </div>

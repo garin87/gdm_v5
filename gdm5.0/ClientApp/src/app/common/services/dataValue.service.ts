@@ -35,7 +35,6 @@ export class DataValueService {
         }
 
         public loadProductParameters():Observable<ISelectableItem[]>{
-           console.log("--------------  -------------- loadProductParameters");
            let listProductNames : ISelectableItem[] = [];
            this._applicationService.getProductTypes().subscribe( data =>{
                 data.forEach(element => {
@@ -53,7 +52,6 @@ export class DataValueService {
         }
         
         public loadWarehousesNames():Observable<ISelectableItem[]>{
-            console.log("--------------  -------------- loadWarehousesNames");
             let listProductNames : ISelectableItem[] = [];
             this._applicationService.GetNamesWareHouses().subscribe( data =>{
                  data.forEach(element => {
@@ -65,12 +63,12 @@ export class DataValueService {
                    );
                 });
                
-            })
+            });
+
             return of(listProductNames);
         }
 
         public loadNamesCurrencies():Observable<ISelectableItem[]>{
-            console.log("--------------  -------------- loadNamesCurrencies");
             let listProductNames : ISelectableItem[] = [];
             this._applicationService.getNamesCurrencies().subscribe( data =>{
                  data.forEach(element => {
@@ -87,7 +85,6 @@ export class DataValueService {
         }
 
         public loadCompanies():Observable<ISelectableItem[]>{
-            console.log("--------------  -------------- loadCompanies");
             let listCompanies : ISelectableItem[] = [];
             this._applicationService.getCompaniesNames().subscribe( data =>{
                  data.forEach(element => {
@@ -155,8 +152,25 @@ export class DataValueService {
             return of(listCompanies);
         }
 
+        public getProductSuppliersByProductName():Observable<ISelectableItem[]>{
+            let listCompanies : ISelectableItem[] = [];
+            const instanceName = this._appStateService.selectedInstancePanel;
+            this._applicationService.getProductSuppliersByProductName(instanceName)
+                .subscribe( data =>{
+                 data.forEach(element => {
+                    listCompanies.push(
+                     {
+                         "name": "Supplier",
+                         "value": element
+                     },
+                   );
+                });
+               
+            })
+            return of(listCompanies);
+        }
+
         public loadNamesWareHouses():Observable<ISelectableItem[]>{
-            console.log("--------------  -------------- loadNamesWareHouses");
             let listCompanies : ISelectableItem[] = [];
             this._applicationService.GetNamesWareHouses().subscribe( data =>{
                  data.forEach(element => {
@@ -173,9 +187,6 @@ export class DataValueService {
         }
 
         public loadInstancesParameter(property):Observable<ISelectableItem[]>{
-           let option = property;
-           console.log("---------------------------- loadInstancesParameter");
-           console.log(option);
 
            const instanceName = this._appStateService.selectedInstancePanel;
            const paramertName = property.name;
@@ -188,7 +199,17 @@ export class DataValueService {
                 "value": "---------Not set---------"
             }
            ];
-           this._applicationService.getInstancesParameter(instanceName, paramertName, isParameter)
+  
+           const parameters = {
+                NameType:instanceName,
+                NameParameter: paramertName,  
+                IsParameter: isParameter,
+                FilterParameters:[]
+            };
+            if(this._appStateService.listFilterParameters.length > 0){
+                parameters.FilterParameters = this._appStateService.listFilterParameters;
+            }
+           this._applicationService.getInstancesParameter(parameters)
             .subscribe( data =>{
                 data.forEach(element => {
                     listProductNames.push(
@@ -198,18 +219,15 @@ export class DataValueService {
                         },
                     );
                 });
+            });
 
-                console.log("----------- data ==================== listProductNames");
-                console.log(listProductNames);
-            })
             return of(listProductNames);
         }
 
+
+
         public loadInstancesParameterProduct(property):Observable<ISelectableItem[]>{
-            let option = property;
-            console.log("---------------------------- loadInstancesParameter");
-            console.log(option);
- 
+
             const instanceName = property.category;
             const paramertName = property.name;
             const isParameter = property?.isParameter;
@@ -221,7 +239,19 @@ export class DataValueService {
                  "value": "---------Not set---------"
              }
             ];
-            this._applicationService.getInstancesParameter(instanceName, paramertName, isParameter)
+            
+            const parameters = {
+                NameType:instanceName,
+                NameParameter: paramertName,  
+                IsParameter: isParameter,
+                FilterParameters:[]
+            }
+
+            if(this._appStateService.listFilterParameters.length > 0){
+                parameters.FilterParameters = this._appStateService.listFilterParameters;
+            }
+
+            this._applicationService.getInstancesParameter(parameters)
              .subscribe( data =>{
                  data.forEach(element => {
                      listProductNames.push(
@@ -232,11 +262,11 @@ export class DataValueService {
                      );
                  });
  
-                 console.log("----------- data ==================== listProductNames");
-                 console.log(listProductNames);
-             })
+
+             });
+
              return of(listProductNames);
-         }
+        }
 }
 
 export class SelectableItem implements ISelectableItem {

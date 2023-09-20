@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore.DynamicLinq;
 using gdm5._0.Domain.Models.Filters;
 using gdm5._0.Filters;
 using gdm5._0.Extensions;
+using gdm5._0.Shared;
 
 namespace gdm5._0.Services
 {
@@ -87,9 +88,9 @@ namespace gdm5._0.Services
                                          .Include(product => product.PriceListValue)
                                          .Include(product => product.WareHouse)
                                          .Include(product => product.Currency)
-                                         .ApplyPagingFilter(filterAssigner);
+                                         .ApplyFilter(filterAssigner);
 
-
+            var totalRecords = GlobalVariables.TotalRecords;
             if (!isSortActive)
             {
                 var parametrs = new List<Parameter>();
@@ -105,6 +106,9 @@ namespace gdm5._0.Services
 
                 instancesOfProduct = this.getSortProducts(instancesOfProduct, parametrs, sortOption);
             }
+         
+            instancesOfProduct = filter.CountInstances > 0 ? instancesOfProduct.Skip(filter.StartIndex).Take(filter.CountInstances): instancesOfProduct;
+
 
             var items = new List<ProductDTO>();
 
@@ -116,7 +120,7 @@ namespace gdm5._0.Services
                     ProductNumber = product.ProductNumber,
                     Manufacturer = product.Manufacturer,
                     Supplier = product.Supplier,
-                    Quantity = product?.Quantity,
+                    Quantity = Math.Round((double)(product?.Quantity), 2),
                     ProductStandartCost = product?.StandartCost,
                     ProductTypeId = product.ProductTypeId,
                     NameType = product.ProductType.NameType,
@@ -126,10 +130,10 @@ namespace gdm5._0.Services
                     LastEditedByUser = product.LastEditedByUser,
                     Currency = product.Currency?.CurrencyName,
                     WareHouse = product.WareHouse?.Name,
-                    PrimeCost = product?.PrimeCost,
-                    PrimeCostEUR = product?.PrimeCostEUR,
-                    PrimeCostUSD = product?.PrimeCostUSD,
-                    StandartCost = product?.StandartCost,
+                    PrimeCost = (double)Math.Round((double)(product?.PrimeCost), 2),
+                    PrimeCostEUR = (double)Math.Round((double)(product?.PrimeCostEUR), 2), 
+                    PrimeCostUSD = (double)Math.Round((double)(product?.PrimeCostUSD), 2),
+                    StandartCost = (double)Math.Round((double)(product?.PrimeCostEUR), 2), // need to improve
                     Name = product.Name,
 
                 };
@@ -155,9 +159,13 @@ namespace gdm5._0.Services
 
                 items.Add(productDTO);
             }
+          
+            if (GlobalVariables.TotalRecords == 0)
+            {
+                totalRecords = _context.Products.Where(t => t.ProductTypeId == productType.Id).Count();
+            }
+   
 
-
-            var totalRecords = _context.Products.Where(t => t.ProductTypeId == productType.Id).Count();
             var productReponse = PaginationHelper.CreatePagedReponse<ProductDTO>(items, validFilter, totalRecords, _uriService, route);
             return productReponse;
         }

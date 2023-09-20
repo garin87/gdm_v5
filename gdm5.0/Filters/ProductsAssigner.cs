@@ -2,6 +2,8 @@
 
 using gdm5._0.Domain.Models.Filters;
 using gdm5._0.Models;
+using gdm5._0.Shared;
+using System;
 using System.Linq;
 
 namespace gdm5._0.Filters
@@ -27,15 +29,15 @@ namespace gdm5._0.Filters
 
             var productName = Filter.Name;
             if (!string.IsNullOrWhiteSpace(productName))
-                productInstances = productInstances.Where(c => c.Name.Contains(productName));
+                productInstances = productInstances.Where(c => c.Name.Equals(productName));
 
             var productNumber = Filter.ProductNumber;
             if (!string.IsNullOrWhiteSpace(productNumber))
-                productInstances = productInstances.Where(c => c.ProductNumber.Contains(productNumber));
+                productInstances = productInstances.Where(c => c.ProductNumber.Equals(productNumber));
 
             var productManufacturer = Filter.Manufacturer;
             if (!string.IsNullOrWhiteSpace(productManufacturer))
-                productInstances = productInstances.Where(c => c.Manufacturer.Contains(productManufacturer));
+                productInstances = productInstances.Where(c => c.Manufacturer.Equals(productManufacturer));
 
             var productQuantity = Filter.Quantity;
             if (productQuantity.HasValue)
@@ -57,12 +59,17 @@ namespace gdm5._0.Filters
                     if (!string.IsNullOrWhiteSpace(parameter.Value))
                     {
                         productInstances = productInstances.Where(c =>
-                        c.ProductParameters.Any(pp => pp.Value.Contains(parameter.Value)));
+                        c.ProductParameters.Any(pp => pp.Value.Equals(parameter.Value)));
                     }
 
                 }
 
             }
+            GlobalVariables.TotalRecords = productInstances.Count();
+            GlobalVariables.TotalQuantity = productInstances.Sum(product => product.Quantity);
+            GlobalVariables.TotalPrimeCost = productInstances.Sum(product => product.PrimeCost * product.Quantity);
+            GlobalVariables.TotalPrimeCostEUR = productInstances.Sum(product => product.PrimeCostEUR * product.Quantity);
+            GlobalVariables.TotalPrimeCostUSD = productInstances.Sum(product => product.PrimeCostUSD * product.Quantity);
 
             return productInstances;
         }

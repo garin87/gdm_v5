@@ -1,6 +1,7 @@
 ﻿using gdm5._0.Domain.Interfaces;
 using gdm5._0.Domain.Interfaces.Models;
 using gdm5._0.Domain.Models.Filters;
+using gdm5._0.Shared;
 using System.Linq;
 
 namespace gdm5._0.Filters

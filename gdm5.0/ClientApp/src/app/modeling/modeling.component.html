@@ -1,56 +1,140 @@
 
 <div class="modeling-main-container">
-    <app-sidePanel [eventToggle]="sidenavToggle" [properties]="modelingIntems" [page]="'modeling'"></app-sidePanel>
+    <app-sidePanel #appSidePanel  class="modeling-card-sidePanel" [eventToggle]="sidenavToggle" [properties]="modelingIntems" [page]="'modeling'"></app-sidePanel>
    
     <div class="modeling-container">
         <mat-card class="modeling-card modeling-commands">
-            <mat-card-title>Modeling {{ currentModelNameGet}} {{ currentModelInstanceNameGet}}  </mat-card-title> 
+            <mat-card-title>{{this._labelsService.labels.globalMenu_Modeling}} {{ currentModelNameGet}} {{ currentModelInstanceNameGet}}  </mat-card-title> 
             <mat-card-actions>
-           
-                <button class="modeling-command-button" mat-raised-button color="primary" [disabled]="!currentModelName"
-                    (click)="activePanel('createModel')">Create</button>
-
-                <!-- <button mat-raised-button class="product-command-button"
-                    color="primary" (click)="onToggleSidenav($event)">
-                   products
-               </button>    
-                <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isAddNewProduct')" >Add a new product</button> 
-                <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isEditParamProduct')" >Edit product parameters</button>  -->
+                <button mat-raised-button [class.sidePanelOpened]="this.appSidePanel.drawer.opened" class=" modeling-command-button"
+                     color="primary" (click)="onToggleSidenav($event)" style="margin-right: 12px;">
+                     <mat-icon *ngIf="!this.appSidePanel.drawer.opened">chevron_left</mat-icon>
+                     <mat-icon *ngIf="this.appSidePanel.drawer.opened">chevron_right</mat-icon>
+                      {{this._labelsService.labels.modelingLabelsOfButtons_Modeling}}
+                </button>
+                <button *ngIf="!isProductPage" class="modeling-command-button" mat-raised-button color="primary" 
+                    [disabled]="!currentModelName"
+                    (click)="activePanel('createModel')">
+                    {{this._labelsService.labels.modelingLabelsOfButtons_Create}}
+                </button>
             </mat-card-actions>
         </mat-card>
     
         <div class="modeling-content">
-            <app-subSidePanel [eventToggle]="sidenavToggle" [properties]="companyIntems" [page]="'submodeling'"></app-subSidePanel>
-             <div>
+            <app-subSidePanel #appSubSidePanel  [eventToggle]="sidenavToggle" [properties]="companyIntems" [page]="'submodeling'"></app-subSidePanel>
+            <div class="container-modeling-actions" *ngIf="!isProductPage">
+                    <mat-card-actions class="container-modeling-action-commands">
+                        <button mat-raised-button class="product-command-button"
+                          [class.subSidePanelOpened]="this.appSubSidePanel.drawer.opened" color="primary" (click)="onToggleSidenavSub($event)">
+                            <mat-icon *ngIf="!this.appSubSidePanel.drawer.opened">chevron_left</mat-icon>
+                            <mat-icon *ngIf="this.appSubSidePanel.drawer.opened">chevron_right</mat-icon>
+                            Список
+                        </button> 
+                    </mat-card-actions>
+             
                 <mat-card class="modeling-card instance-modeling-card"  *ngIf="isCreateModel">
-                      <div class="">
-                        <mat-card-title>Add a {{currentModelName}}</mat-card-title>
-                        <form-editor  [instanceName]="currentModelName"></form-editor>
-                        <mat-card-actions>
-                            <div class="modeling-save-button">
-                                <button  mat-raised-button color="primary" (click)="saveModel()" >Save a new {{currentModelName}}</button>    
+                        <div class="">
+                            <mat-card-title>{{this._labelsService.labels.modelingTitle_Add}} {{currentModelName}}</mat-card-title>
+                            <form-editor  [instanceName]="currentModelName"></form-editor>
+                            <mat-card-actions>
+                                <div class="modeling-save-button">
+                                    <button  mat-raised-button color="primary" (click)="saveModel()" >{{this._labelsService.labels.modelingLabelsOfButtons_Save}} {{currentModelName}}</button>    
+                                </div>
+                            </mat-card-actions>
+                        </div>
+                </mat-card>
+            
+                <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isCompanyPage">
+                    <form-editor  [instanceName]="'companyContent'"></form-editor>
+                    <rightActionPanel></rightActionPanel>
+                </mat-card>
+            
+                <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isWareHousePage">
+                    <form-editor  [instanceName]="'warehouseContent'"></form-editor>
+                    <rightActionPanel></rightActionPanel>
+                </mat-card>
+
+                <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isCurrencyPage">
+                    <form-editor  [instanceName]="'currencyContent'"></form-editor>
+                    <rightActionPanel></rightActionPanel>
+                </mat-card>
+
+                <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isPriceListPage">
+                    <div class="container-price-list-content">
+                        <form-editor  [instanceName]="'pricelistContent'" ></form-editor>
+                        <div class="container-grid">
+                        
+                            <div class="price-list-action-bth">
+                                <div class="price-list-add-button ">
+                                    <button  mat-raised-button color="primary" (click)="addPriceValue()">Add price value</button> 
+                                </div>
+                                <div class="price-list-save-button">
+                                    <button  mat-raised-button color="primary" (click)="savePriceValue()" >Save price value</button> 
+                                </div>
+                            </div> 
+
+                            <div class="container-add-price-list-value">
+                                <form-editor  [instanceName]="'OptionOfPriceListProduct'"></form-editor>
+                            </div>
+
+                            <div class="price-list-grid-content" *ngIf="priceListValuesData; else elseBlock" >
+                                <!-- <gridExpandRow-control [selectedProduct]="currentProductName" [gridData]="gridOrderData" 
+                                [gridMetadataType]="gridMetadaType" [typeFilter]="''"></gridExpandRow-control> -->
+                                
+                                <mat-card-title>Price list values</mat-card-title>
+   
+                                <gridPlain-control [selectedProduct]="'priceList'" [gridData]="priceListValuesData" 
+                                [gridMetadataType]="'PriceListValuesGrid'" ></gridPlain-control>
+            
+                            
+                            </div>
+                            <rightActionPanel *ngIf="gridOrderData" ></rightActionPanel>
+                            <ng-template #elseBlock>
+                            <mat-card-title class="price-list-empty">Price list is empty</mat-card-title>
+                        </ng-template>
+        
+                        </div>
+                    </div>
+                
+                    <rightActionPanel></rightActionPanel>
+                </mat-card>
+            </div>
+            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isProductPage">
+                <div class="modeling-content-productPage-container">
+                    <div class="modeling-productPage-commands-container">
+                        <button class="modeling-product-command-button" mat-raised-button color="primary"
+                        (click)="activePanel('isAddNewProduct')" > {{this._labelsService.labels.productCommand_AddNewProduct}}</button> 
+                        <button class="modeling-product-command-button" mat-raised-button color="primary"
+                        (click)="activePanel('isEditParamProduct')" > {{this._labelsService.labels.productCommand_EditProduct}}</button> 
+                    </div>
+    
+                    <mat-card style="padding: 10px;" class="product-card parameters-product-card"  *ngIf="isNewProduct">
+                        <mat-card-title class="product-card-title">{{this._labelsService.labels.productCommand_AddNewProduct}}</mat-card-title>
+                        <mat-card-subtitle class="product-card-subtitle">{{this._labelsService.labels.subTitleProductCart_AddNewProduct}}</mat-card-subtitle>
+                        <form-editor  [instanceName]="'ProductInitial'"></form-editor>
+                        <mat-card-actions style="padding-left: 4px;">
+                            <div class="product-save-button">
+                                <button  mat-raised-button color="primary" (click)="saveProduct()">{{this._labelsService.labels.productButton_SaveNewProduct}}</button>    
                             </div>
                         </mat-card-actions>
-                      </div>
-                </mat-card>
-             </div>
-            
-            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isCompanyPage">
-                <form-editor  [instanceName]="'companyContent'"></form-editor>
-                <rightActionPanel></rightActionPanel>
-            </mat-card>
-           
-            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isWareHousePage">
-                <form-editor  [instanceName]="'warehouseContent'"></form-editor>
-                <rightActionPanel></rightActionPanel>
-            </mat-card>
+                    </mat-card>
+                    <mat-card style="padding: 10px;" class="product-card parameters-product-card"  *ngIf="isEditParamProduct">
+                        <mat-card-title class="product-card-title">{{this._labelsService.labels.productCommand_EditProduct}}</mat-card-title>
+                        <mat-card-subtitle class="product-card-subtitle">{{this._labelsService.labels.subTitleProductCart_EditParametersProduct}}</mat-card-subtitle>
+                        <form-editor  [instanceName]="'EditProductParameters'"></form-editor>
+                        <mat-card-actions style="padding-left: 4px;">
+                            <div class="product-save-button">
+                                <button  mat-raised-button color="primary" (click)="saveEditedProduct()" >{{this._labelsService.labels.productButton_SaveChangesOfProduct}}</button> 
+                            </div>
+                        </mat-card-actions>
+                    </mat-card>  
+                </div>
 
-            <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isCurrencyPage">
-                <form-editor  [instanceName]="'currencyContent'"></form-editor>
-                <rightActionPanel></rightActionPanel>
+  
             </mat-card>
+            <div class="loading-shade" *ngIf="isLoadingResults">
+                <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+            </div>
         </div>  
 
     </div>

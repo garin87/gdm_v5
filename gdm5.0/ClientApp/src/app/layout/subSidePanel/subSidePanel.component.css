@@ -1,7 +1,7 @@
 .subsidenav-content-container {
   width: 200px;
   border: 1px solid rgba(0, 0, 0, 0.5);
-  padding: 1em;
+  padding: 4px;
 }
 .subsidenav-filterControl-container{
    display: flex;
@@ -27,4 +27,22 @@
 .panel-property-row:hover{
   border-bottom: .5px solid rgb(102, 110, 110);
 }
+
+.subsidenav-list-properties{
+  font-size: 1.1em;
+}
+
+.filter-subsidenav-content{
+  position: sticky;
+  z-index: 3;
+  top: 0px;
+}
+
+/* .filter-search-wrapper{
+  background: #e6e6e6;
+}
+ */
+.subsidenav-filterControl-container{
+  background: #ffffff87;
+} 
 

@@ -1,21 +1,21 @@
-import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import { FormControl, Validators } from "@angular/forms";
-import { MatDialog } from "@angular/material/dialog";
+import { AfterViewInit, Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
 import { Subject } from "rxjs";
 import { AlertService } from "src/app/alert/alert.service";
-import { ParameterForm, parameterUpdatedData, valueUpdatedData } from "src/app/common/objects/common";
+import { ParameterForm, valueUpdatedData } from "src/app/common/objects/common";
 import { ParameterDialogComponent } from "../customField/parameterDialog/parameterDialog.component";
+import { MatDialog } from "@angular/material/dialog";
 
 @Component({
     selector: 'text-editor',
     templateUrl: './textEditor.component.html',
     styleUrls: ['./textEditor.component.css']
   })
-export class TextEditorComponent implements OnInit {
+export class TextEditorComponent implements OnInit, AfterViewInit {
     @Input() value: string;
     @Input("valueUpdated") valueUpdated: Subject<valueUpdatedData>;
     @Input("property") _property: any;
-
+    @Input("listCreatedField") _listCreatedField: any;
+    
     @ViewChild("textInput") textInput: ElementRef;
 
     name: string;
@@ -39,8 +39,8 @@ export class TextEditorComponent implements OnInit {
     ngOnInit(){
         console.log(" init TextEditorComponent");
         console.log(this._property);
-        console.log(this.value);
-        console.log(this.valueUpdated);
+     //   console.log(this.value);
+     //   console.log(this.valueUpdated);
         this.typeName = this.applyTypeInput(this._property.type);
         this.required = this._property.required != undefined ? this._property.required: false;
         this.readOnly = this._property.readOnly != undefined ? this._property.readOnly: false;
@@ -48,8 +48,14 @@ export class TextEditorComponent implements OnInit {
         this.navPriority = this._property.navPriority != undefined ? this._property.navPriority : 0;
         this.isEditable = this._property.isEditable;
         this.name = this._property.name;
-        this.value = this._property.value !== undefined ? this._property.value: "";
+        this.value = this._property.value !== undefined ? this._property.value : "";
         this.isTypeArea = false;
+        if(this.typeName == "number") {
+            let number = parseFloat(this.value);
+            if(!isNaN(number)){
+                this.value = number.toFixed(2);
+            }
+        }
         this.min =  this.typeName == "number" ? "0.001" : null;
         this.step = this.typeName == "number" ? "any" : null;
         this.isDeleted = this._property.isDeleted;
@@ -58,7 +64,15 @@ export class TextEditorComponent implements OnInit {
             this.valChanged(this.value)
         }
     }
-    
+
+    ngAfterViewInit(){
+        let p = {
+            propertyName: this.name,
+            htmlRef: this.textInput.nativeElement
+        }
+        this._listCreatedField.push(p);
+    }
+
     applyTypeInput(type:string){
       if(type == "Double" || type == "Int") return "number";
       if(type == "DateTime") return "date";
@@ -88,7 +102,7 @@ export class TextEditorComponent implements OnInit {
             data: {},
           });
         
-        let paramDialog = dialogRef.componentInstance;
+        let paramDialog = dialogRef.componentInstance;
         paramDialog.parameterName.setValue(this.displayedName);
         paramDialog.parameterPriority.setValue(this.navPriority);
 

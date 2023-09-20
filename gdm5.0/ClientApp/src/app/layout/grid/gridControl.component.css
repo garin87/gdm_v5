@@ -11,7 +11,57 @@ table{
     cursor: pointer;
 }
 
+.table-row-selected{
+    font-weight: 600 !important;
+    border-color: rgb(0 0 0 / 54%) !important;
+}
+
 .table-row-selected .mat-cell {
     font-weight: 600;
     border-color: rgb(0 0 0 / 54%);
 }
+
+.mat-table {
+    overflow-x: scroll;
+}
+  
+.mat-cell,
+.mat-header-cell {
+    word-wrap: initial;
+    display: table-cell;
+    padding: 0px 3px;
+    line-break: unset;
+    width: fit-content;
+    white-space: nowrap;
+    overflow: hidden;
+    vertical-align: middle;
+}
+
+.mat-row,
+.mat-header-row {
+    display: table-row;
+}
+
+th.mat-header-cell {
+    font-size: 1.1em;
+    color: rgb(75 57 57 / 92%);
+    font-weight: 600;
+}
+
+.app-standart-table{
+   width: 100%;
+}
+
+.table-container-inner{
+   overflow: auto;
+}
+
+.conrainer-filter-panel{
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-header-cell{
+    padding: 0px;
+}
+

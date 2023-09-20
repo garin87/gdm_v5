@@ -6,50 +6,46 @@
         <mat-card class="order-card order-commands">
             <mat-card-actions>
                 <button class="order-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('orderCart')" style="margin-right: 12px;">Cart</button>
+                    (click)="activePanel('orderCart')" style="margin-right: 12px;">{{this._labelsService.labels.orderComandButton_Cart}}</button>
                 <button class="order-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('orderHistory')">Order history</button>                    
+                    (click)="activePanel('orderHistory')">{{this._labelsService.labels.orderComandButton_OrderHistory}}</button>                    
             </mat-card-actions>
         </mat-card>
     
         <div class="order-content">
-
-            <mat-card class="order-card grid-order-history"  *ngIf="isGridOrderShow">
+          
+            <mat-card class="order-card grid-order-history"  *ngIf="isGridOrderShow" style="box-shadow: none;">
                 <!-- <mat-card-title>Order history</mat-card-title> -->
-
-                <div class="loading-shade" *ngIf="isLoadingResults">
-                    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
-                </div>
                 <div class="order-grid-content">
                     <gridExpandRow-control [selectedProduct]="currentProductName" [gridData]="gridOrderData" 
                     [gridMetadataType]="gridMetadaType" [typeFilter]="'OptionalOfOrder'"></gridExpandRow-control>
                 </div>
                 <rightActionPanel *ngIf="gridOrderData" ></rightActionPanel>
             </mat-card>
-            <mat-card class="order-card grid-order-cart"  *ngIf="isOrderCart">
+            <mat-card class="order-card grid-order-cart"  *ngIf="isOrderCart" style="box-shadow: none;">
                 <div class="loading-shade" *ngIf="isLoadingResults">
                     <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
                 </div>
                 <div class="order-grid-content" *ngIf="gridOrderData; else elseBlock" >
                     <!-- <gridExpandRow-control [selectedProduct]="currentProductName" [gridData]="gridOrderData" 
                     [gridMetadataType]="gridMetadaType" [typeFilter]="''"></gridExpandRow-control> -->
-                    <mat-card-title>Current order info</mat-card-title>
+                    <mat-card-title style="font-size: 1.7em;">{{this._labelsService.labels.orderTitleCart_InfoTitle}}</mat-card-title>
                     <div class="order-row">
                         <div class="order-cell">
-                            <span class="order-cell-caption">Name Company:</span>
+                            <span class="order-cell-caption">{{this._labelsService.labels.orderTitleCart_NameCompany}}:</span>
                             <span class="order-cell-content">{{gridOrderData.nameCompany}}</span>
                         </div>   
                         <div class="order-cell">
-                            <span class="order-cell-caption">Total Price:</span>
+                            <span class="order-cell-caption">{{this._labelsService.labels.orderTitleCart_TotaPrice}}:</span>
                             <span class="order-cell-content">{{gridOrderData.totalPrice}}</span>
                         </div> 
                         <div  class="order-cell">
-                            <span class="order-cell-caption">Order Created By User:</span>
-                            <span class="order-cell-content">{{gridOrderData.orderCreatedByUser}}</span>
+                            <span class="order-cell-caption">{{this._labelsService.labels.orderTitleCart_OrderCurency}}:</span>
+                            <span class="order-cell-content">{{gridOrderData.currency}}</span>
                         </div> 
                         <div  class="order-cell">
-                            <span class="order-cell-caption">Currency:</span>
-                            <span class="order-cell-content">{{gridOrderData.currency}}</span>
+                            <span class="order-cell-caption">{{this._labelsService.labels.orderTitleCart_OrderCreatedByUser}}:</span>
+                            <span class="order-cell-content">{{gridOrderData.orderCreatedByUser}}</span>
                         </div> 
                     </div>
                     <gridPlain-control [selectedProduct]="'orderProduct'" [gridData]="gridOrderData.products" 
@@ -57,17 +53,17 @@
 
                     <div class="order-action-bth">
                         <div class="order-cart-cancel-button">
-                            <button  mat-raised-button color="primary" (click)="cancelCartOrder()">Cancel order</button> 
+                            <button  mat-raised-button color="warn" (click)="cancelCartOrder()">{{ this._labelsService.labels.orderLablesOfButton_CancelOrder}}</button> 
                         </div>
                         <div class="order-cart-save-button">
-                            <button  mat-raised-button color="primary" (click)="saveOrder()" >Save order</button> 
+                            <button  mat-raised-button color="primary" (click)="saveOrder()" >{{this._labelsService.labels.orderLablesOfButton_SaveOrder}}</button> 
                         </div>
                     </div> 
                 </div>
                 <rightActionPanel *ngIf="gridOrderData" ></rightActionPanel>
             </mat-card>
             <ng-template #elseBlock>
-                <mat-card-title>Cart is empty</mat-card-title>
+                <mat-card-title>{{ this._labelsService.labels.orderTitleCart_CartIsEmpty}}</mat-card-title>
             </ng-template>
             <!-- <mat-card class="order-card parameters-order-content-card"  *ngIf="isCompanyPage">
                 <form-editor  [instanceName]="'companyContent'"></form-editor>

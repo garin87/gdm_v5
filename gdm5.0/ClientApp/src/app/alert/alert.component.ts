@@ -1,4 +1,4 @@
-import { ViewEncapsulation } from '@angular/compiler/src/core';
+
 import { Component, Input, OnChanges } from '@angular/core';
 import { Alert } from './alert';
 
@@ -12,20 +12,20 @@ export class AlertComponent implements OnChanges {  
      @Input() alerts: Alert[];  
      statusAlerts: Alert[];
 
-     ngOnChanges(changes) {       
-        if (changes.alerts) {      
-          let als = (<Alert[]>changes.alerts.currentValue);        
-          this.statusAlerts = als.map(sa => sa);        
+     ngOnChanges(changes) {
+        if (changes.alerts) {
+          let als = (<Alert[]>changes.alerts.currentValue);
+          this.statusAlerts = als.map(sa => sa);
         }    
      }
 
      close(alert): void {  this.remove(alert); }
     
-     remove(alertToRemove: Alert) {        
-       let i = this.alerts.findIndex(a => a.time == alertToRemove.time);     
-       if (i != -1) {           
-         this.alerts.splice(i, 1);           
-         this.statusAlerts = this.alerts.filter(a => !a.modal);        
+     remove(alertToRemove: Alert) {
+       let i = this.alerts.findIndex(a => a.time == alertToRemove.time);
+       if (i != -1) {
+         this.alerts.splice(i, 1);
+         this.statusAlerts = this.alerts.filter(a => !a.modal);
        } 
      }
 }

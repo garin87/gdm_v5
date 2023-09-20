@@ -2,7 +2,8 @@
 <div *ngIf="valueUpdated">
     <div class="app-field-editor" [ngSwitch]="editorName">
         <div *ngSwitchCase="'input'">
-            <text-editor [property]="property" [valueUpdated]="valueUpdated"> 
+            <text-editor [property]="property" [valueUpdated]="valueUpdated"
+                         [listCreatedField]="listCreatedField"> 
             </text-editor>
         </div>
         <div *ngSwitchCase="'dateTime'">
@@ -10,7 +11,7 @@
              </dateTimePiker-editor>
         </div>
         <div *ngSwitchCase="'selector'">
-            <selector-editor [items]="property?.selectableItems" 
+            <selector-editor [items]="property?.selectableItems" [listCreatedField]="listCreatedField"
                 [property]="property" [valueUpdated]="valueUpdated">
             </selector-editor>
        </div>

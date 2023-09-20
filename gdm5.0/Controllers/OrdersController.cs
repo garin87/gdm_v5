@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
-using gdm5._0.DTO;
 using gdm5._0.Services;
 using gdm5._0.Requests.Product;
 using gdm5._0.Services.Interfaces;
@@ -117,7 +114,7 @@ namespace gdm5._0.Controllers
                 await _orderService.AddOrder(AddOrderRequest);
                 return Ok(new { IsSuccess = true, Message = "Success: Order has added." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -134,7 +131,7 @@ namespace gdm5._0.Controllers
                 await _orderService.AddToCartOrder(AddOrderRequest);
                 return Ok(new { IsSuccess = true, Message = "Success: Order has added to cart." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -151,7 +148,7 @@ namespace gdm5._0.Controllers
                 await _orderService.addOrderProductList(AddOrderRequest);
                 return Ok(new { IsSuccess = true, Message = "Success: Order has added." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -169,7 +166,7 @@ namespace gdm5._0.Controllers
                     request.PageFilter, route, request.SortOption, request.Filter);
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -186,14 +183,14 @@ namespace gdm5._0.Controllers
                     request.PageFilter, route, request.SortOption, request.Filter);
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
         }
 
         [Route("getCartOrderProducts")]
-        [HttpPost]
+        [HttpGet]
         public IActionResult getCartOrderProducts()
         {
             var route = Request.Path.Value;
@@ -202,7 +199,7 @@ namespace gdm5._0.Controllers
                 var result = this._orderService.getCartOrderProducts(route);
                 return Ok(result);
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -218,7 +215,7 @@ namespace gdm5._0.Controllers
 
                 return Ok(new { IsSuccess = true, Message = "Success: Order has saved." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -234,7 +231,7 @@ namespace gdm5._0.Controllers
 
                 return Ok(new { IsSuccess = true, Message = "Success: Order canceled." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -250,7 +247,7 @@ namespace gdm5._0.Controllers
 
                 return Ok(new { IsSuccess = true, Message = "Success: Order deleted." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -263,7 +260,7 @@ namespace gdm5._0.Controllers
             {
                 return Ok(this._orderService.GetCartOrderCount());
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -300,7 +297,7 @@ namespace gdm5._0.Controllers
             {
                 return Ok(this._orderService.getOrderNameCompanies());
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -314,7 +311,7 @@ namespace gdm5._0.Controllers
             {
                 return Ok(_orderService.getOrderNameCompanies(nameCompany));
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -331,7 +328,7 @@ namespace gdm5._0.Controllers
                 _orderService.DeleteCartProduct(id);
                 return Ok(new { IsSuccess = true, Message = "Success: Product has deleted from cart." });
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
@@ -345,7 +342,7 @@ namespace gdm5._0.Controllers
             {
                 return Ok(this._orderService.getNamesProduct());
             }
-            catch (ApplicationException ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }

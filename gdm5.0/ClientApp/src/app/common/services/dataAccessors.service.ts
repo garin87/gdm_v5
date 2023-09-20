@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Subject } from "rxjs";
-import { gridParameter, IMetadataProperty, IParameter, MetadataProperty } from "../objects/common";
+import { gridParameter, IDependentProperties, IMetadataProperty, IParameter, MetadataProperty, valueUpdatedData } from "../objects/common";
 import { ApplicationService } from "./application.service";
 import { AppStateService } from "./appState.service";
 import { FormEditorService } from "./formEditor.service";
@@ -57,8 +57,12 @@ export class DataAccessorsService {
 
              delete this._FormEditorService.instanceData.parameters;    
              this._FormEditorService.listParameters = {};
-             this._FormEditorService.dependentProperties.next(listParameters);
-             
+             const dependentProperties: IDependentProperties = {
+                metadataTypeName : "",
+                properties : listParameters
+             }
+
+             this._FormEditorService.dependentProperties.next(dependentProperties);
           })
     })
 
@@ -84,7 +88,11 @@ export class DataAccessorsService {
         
              delete this._FormEditorService.instanceData.parameters;    
              this._FormEditorService.listParameters = {};
-             this._FormEditorService.dependentProperties.next(listParameters);
+             const dependentProperties: IDependentProperties = {
+                metadataTypeName : "",
+                properties : listParameters
+             }
+             this._FormEditorService.dependentProperties.next(dependentProperties);
              
           })
     })
@@ -95,18 +103,8 @@ export class DataAccessorsService {
         let listParameters = [];
         let selectedProduct = value;
         this._appStateService.selectedProductName = selectedProduct;
-        let category = "OptionalOfProduct";
-        // const name = this._FormEditorService.instanceData["name"];
 
         const metaDataTypeName = propertyContext.category;
-        // let metaDataType = this._metadataService.getMetadataType(metaDataTypeName);
-        //     metaDataType.forEach(item =>{
-        //         if(item.name == "Name" || item.name == "name"){
-        //              //   item.defaultValue = selectedProduct;
-        //                 // return;
-        //         }
-        //     });
-        //   this._metadataService.setMetadataType(metaDataTypeName, metaDataType)
                
         this._appStateService.refreshAddProductSection.next(true);
         this._applicationService.getProductParameters2(selectedProduct)
@@ -115,7 +113,7 @@ export class DataAccessorsService {
                data.forEach((item:IParameter) => {
                    const p = new MetadataProperty(item.value, "string", undefined, 
                    item.id, item.value,"picklist","picklist","loadInstancesParameterProduct",undefined,
-                   undefined,item.priority,false,item.priority,false,false,false,false,true,false, selectedProduct);
+                   undefined,item.priority,false,item.priority,true,false,false,false,true,false, selectedProduct);
                    listParameters.push(p);
                })
                    console.log("--------- ------ listParameters");
@@ -128,14 +126,17 @@ export class DataAccessorsService {
                this._FormEditorService.instanceData["dateofreceipt"] = dateofreceipt;
                this._FormEditorService.instanceData["currencyname"] = currencyname;
                this._FormEditorService.instanceData["name"] = name;
-               
-
-               if(this._FormEditorService.dependentProperties.observers.length == 0){
+               this._appStateService.selectedInstancePanel = selectedProduct;
+                if(this._FormEditorService.dependentProperties.observers.length == 0){
                    this._FormEditorService.dependentProperties = new Subject<any>();
                 }
 
-               this._FormEditorService.listParameters = {};
-               this._FormEditorService.dependentProperties.next(listParameters);
+                this._FormEditorService.listParameters = {};
+                const dependentProperties: IDependentProperties = {
+                    metadataTypeName : "",
+                    properties : listParameters
+                }
+                this._FormEditorService.dependentProperties.next(dependentProperties);
            }
            
        })
@@ -144,6 +145,43 @@ export class DataAccessorsService {
         //  }, 0);
        
 
+    })
+
+    public  createParametersAsSelect = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+        this._FormEditorService.resetValueUpdated();
+        let listParameters = [];
+        let selectedProduct = value;
+        //this._appStateService.selectedProductName = selectedProduct;
+       // const metaDataTypeName = propertyContext.category;  
+      //  this._appStateService.refreshAddProductSection.next(true);
+        this._applicationService.getProductParameters2(selectedProduct)
+        .subscribe((data:IParameter[] | any[]) =>{
+           if(typeof data == "object" && data.length > 0){
+               data.forEach((item:IParameter) => {
+                   const p = new MetadataProperty(item.value, "string", undefined, 
+                   item.id, item.value,"picklist","picklist","loadInstancesParameterProduct",undefined,
+                   undefined,item.priority,false,item.priority,false,false,false,false,true,false, selectedProduct);
+                   listParameters.push(p);
+               })
+    
+
+               if(this._FormEditorService.dependentProperties.observers.length == 0){
+                   this._FormEditorService.dependentProperties = new Subject<any>();
+                }
+
+               this._FormEditorService.listParameters = {};
+               const dependentProperties: IDependentProperties = {
+                metadataTypeName : "OptionOfPriceListProduct",
+                properties : listParameters
+               }
+               setTimeout(function(){
+                   this._FormEditorService.dependentProperties.next(dependentProperties);
+               }, 0)
+               
+           }
+           
+       })
     })
 
     public loadDependParametersAsPickList = new PropertyAccessor( undefined, 
@@ -171,7 +209,12 @@ export class DataAccessorsService {
              delete this._FormEditorService.instanceData.parameters;    
              this._FormEditorService.listParameters = {};
           
-             this._FormEditorService.dependentProperties.next(listParameters);
+             const dependentProperties: IDependentProperties = {
+                metadataTypeName : "",
+                properties : listParameters
+             }
+
+             this._FormEditorService.dependentProperties.next(dependentProperties);
              
           })
     })
@@ -209,13 +252,42 @@ export class DataAccessorsService {
           const option:gridParameter = {
             isParameter: property.isParameter,
             value: value,
-            name: property.name
+            name: property.name,
+            priority: property?.navPriority,
           }
-
+          this._appStateService.isActiveRightActionPanel.next(false);
+         // this._appStateService.initRightActionPanel = false;
           this._appStateService.changedGridOption.next(option);
+        
      
     })
 
+    public  createPriceNDS = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+         console.log("-------------- createPriceNDS");
+        if(value || value == ""){
+          
+            const ndsValue = (value * 1.2).toFixed(2); // 20%
+            let stdCost = 0;
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName == "standartcost"){
+                   stdCost = item.htmlRef.value;
+                }
+                if(item.propertyName == "totalpricends"){
+                   item.htmlRef.value = ndsValue;
+                }
+                if(item.propertyName == "markup"){
+                   if(stdCost){
+                     item.htmlRef.value = (value - stdCost).toFixed(2);
+                   }
+                   
+                }
+            })
+            let d = new valueUpdatedData("totalpricends", ndsValue, "double");
+            this._FormEditorService.valueUpdated.next(d);
+        }
+
+    })
 
 }
 

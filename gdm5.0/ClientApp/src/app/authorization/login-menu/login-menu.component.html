@@ -2,23 +2,23 @@
       <div class="login-menu-item menu-item" matRipple  [matMenuTriggerFor]="menu" 
         aria-label="" *ngIf="isAdministrator">
         <mat-icon>account_circle</mat-icon>
-        <span>Account</span> 
+        <span>{{this._labelsService.labels.globalMenu_Account}}</span> 
       </div>
     
       <mat-menu #menu="matMenu">
         <button mat-menu-item [routerLink]='["/register"]'>
           <mat-icon>app_registration</mat-icon>
-          <span>Register</span>
+          <span>{{this._labelsService.labels.globalMenu_SingUP}}</span>
         </button>
         <button mat-menu-item [routerLink]='["/login"]'>
           <mat-icon>login</mat-icon>
-          <span>Login</span>
+          <span>{{this._labelsService.labels.globalMenu_Logout}}</span>
         </button>
       </mat-menu>
 
-     <div class="login-menu-item menu-item" aria-label="logout"  (click)="onLogout()">
+     <div *ngIf="!isAdministrator" class="login-menu-item menu-item" aria-label="logout"  (click)="onLogout()">
          <mat-icon>logout</mat-icon>
-         <span>Logout</span> 
+         <span>{{this._labelsService.labels.globalMenu_Logout}}</span> 
     </div>
 </div>
 

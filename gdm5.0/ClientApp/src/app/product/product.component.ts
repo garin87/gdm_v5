@@ -1,13 +1,12 @@
-import { AfterContentChecked, ChangeDetectorRef, Component, EventEmitter, Output } from '@angular/core';
-import { FormGroup } from '@angular/forms';
-import { NavigationEnd, NavigationStart, Router } from '@angular/router';
-import { BehaviorSubject, of, Subject } from 'rxjs';
-
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { AlertService } from '../alert/alert.service';
-import { IgetProductTypeInstancesRequest, IPaginationAction, ProductTypeInstancesRequest, valueUpdatedData } from '../common/objects/common';
+import { IgetProductTypeInstancesRequest, IPaginationAction, ProductTypeInstancesRequest } from '../common/objects/common';
 import { ApplicationService } from '../common/services/application.service';
 import { AppStateService } from '../common/services/appState.service';
 import { FormEditorService } from '../common/services/formEditor.service';
+import { LabelsService } from '../common/services/labels.service';
 
 @Component({
   selector: 'app-product-component',
@@ -16,6 +15,8 @@ import { FormEditorService } from '../common/services/formEditor.service';
   
 })
 export class ProductComponent {
+      
+      @ViewChild("appSidePanel") appSidePanel: any;
 
       public isAddProduct: boolean = false;
       public isNewProduct: boolean = false;
@@ -28,7 +29,11 @@ export class ProductComponent {
       public gridMetadaType = "ProductGrid";
       public isLoadingResults = false;
       public currentProductName :string;
-     //public namesParoduct = new BehaviorSubject<string[]>(undefined);
+      private routerEvents$:Subscription;
+      private selectedSidePanelValueSubscription$:Subscription;
+      private changedPageGridSubscription$:Subscription;
+      private refreshAddProductSectionSubscription$:Subscription;
+      private isActiveRightActionPanelSubscription$:Subscription;
 
       constructor(private _alertService : AlertService,
                   private _applicationService : ApplicationService, 
@@ -36,25 +41,25 @@ export class ProductComponent {
                   private alertService:AlertService,
                   private _appStateService:AppStateService,
                   private router: Router,
-                  private changeDetector: ChangeDetectorRef,){}
-                         
+                  private changeDetector: ChangeDetectorRef,
+                  public _labelsService: LabelsService){}
+                     
       onToggleSidenav(event) {
-         console.log("---- first event ============= onToggleSidenav");
-         console.log(event);
+        
          this._appStateService.detectClickOnPanel.next(true);
          this.sidenavToggle = event;
          if(!this.namesParoduct){
              this._applicationService.getProductTypes().subscribe(result => {
-                console.log("-------- getProductTypes");
-                console.log(result);
-
-               this.namesParoduct = result;
-               
-               // this.namesParoduct.next(result);
+                let producTypes = result.map(item =>{
+                    return {Name: item, DisplayName: item}
+                });
+                this.namesParoduct = producTypes;
              })
          }
       }
+
       ngAfterViewInit() {
+        this._appStateService.selectedSidePanelValue.next("Шток хромированный");
         this.changeDetector.detectChanges();
       }
       ngAfterContentChecked() : void {
@@ -64,45 +69,48 @@ export class ProductComponent {
       ngOnInit(){
         this._appStateService.optionValue = undefined;
         this._appStateService.detectClickOnPanel =  new BehaviorSubject<boolean>(false); 
-        this._appStateService.selectedSidePanelValue.subscribe((nameProduct:string) => {
-            console.log("------------- selectedSidePanelValue ");
-            console.log(nameProduct);
+        
+        this.selectedSidePanelValueSubscription$ = this._appStateService.selectedSidePanelValue.subscribe((nameProduct:string) => {
             if(!nameProduct) return; 
+
+            this._appStateService.listFilterParameters = [];
+            this._appStateService.getProductTypeInstancesRequest = new ProductTypeInstancesRequest();
+            this._appStateService.changedGridOption.next(undefined);
             this._appStateService.selectedInstancePanel = nameProduct;
             this.currentProductName = nameProduct;
             this.isLoadingResults = true;
-            this._appStateService.changedGridOption = new BehaviorSubject<any>(undefined);
             this.getProductData(nameProduct, 1, 10);
-            
         }); 
-
-        this.router.events.subscribe((event) => {
-          console.log("--------------------------------   this.router.events");
-          if (event instanceof NavigationEnd) {
-              this.dispose();
-              this._formEditorService.resetValueProperties();
-           //   this._appStateService.detectClickOnPanel.next(true);
-          }
-        });
         
-        this._appStateService.changedPageGrid.subscribe((data:IPaginationAction) =>{
+        this.changedPageGridSubscription$ = this._appStateService.changedPageGrid.subscribe((data:IPaginationAction) =>{
             if(data){
-              console.log("--------------- pag gri product data ");
-              console.log(data);
               if(data.gridName == "ProductGrid"){
                 this.getProductData(this.currentProductName, 1 , data.pageSize);
               }
             }
         });
         
-        this._appStateService.refreshAddProductSection.subscribe(isRefresh =>{
+        this.refreshAddProductSectionSubscription$ = this._appStateService.refreshAddProductSection.subscribe(isRefresh =>{
           if(isRefresh){
             this.isAddProduct = false;
             setTimeout(() => {             
                 this.activePanel("isAddProduct");
             }, 0);
           }
-        })
+        });
+
+        this.isActiveRightActionPanelSubscription$ = this._appStateService.isActiveRightActionPanel.subscribe(isActive =>{
+           this._appStateService.initRightActionPanel = isActive;
+        });
+
+        this.routerEvents$ = this.router.events.subscribe((event) => {
+          console.log("--------------------------------   this.router.events");
+          if (event instanceof NavigationEnd) {
+              this.dispose();
+            //  this._formEditorService.resetValueProperties();
+          }
+        });
+
       }
       
       getProductData(nameProduct, pageNumber, pageSize){
@@ -112,10 +120,8 @@ export class ProductComponent {
           pageSize: pageSize
         };
         getProductTypeInstancesRequest.NameProductType = nameProduct;
-
+        this.isLoadingResults = true;
         this._applicationService.getProductTypeInstances2(getProductTypeInstancesRequest).subscribe(response => {
-          console.log("------------------------ getProductData --------- getProductTypeIntances");
-          console.log(response);
           this.isLoadingResults = false;
           this.gridProductData = response;
           this.isGridShow = false;
@@ -123,18 +129,14 @@ export class ProductComponent {
             this.activePanel("isGridShow");
           }, 0);         
         },
-
         err => {
             this.isLoadingResults = false;
             this.alertService.error(err.error.message);
-
-            console.log("----  error getProductTypeIntances");
             console.log(err);
         });
       }
 
       activePanel(namePanel){
-
           if(namePanel == "isAddProduct"){
             this.isAddProduct = true;
             this.isNewProduct = false;
@@ -159,10 +161,8 @@ export class ProductComponent {
             this.isAddProduct = false;
             this.isEditParamProduct = false;
             this._appStateService.selectedProductName = undefined;
-            
           }
-          this._formEditorService.resetValueProperties();
-         
+          this._formEditorService.resetValueProperties(); 
           this.dispose();
       }
 
@@ -219,8 +219,10 @@ export class ProductComponent {
 
         const message = this.formMessageForEditedProduct("saveEditedProduct");
         const title = "Are you sure you want to save the following parameters?";
+        this.isLoadingResults = true;
         this._alertService.warningModalObject(message, title).subscribe(result =>{
           console.log(result);
+          this.isLoadingResults = false;
           if(result){
              console.log("----------- confirm - ok - parameters");
              const product = this.formProductInstanceToSave();
@@ -243,6 +245,7 @@ export class ProductComponent {
               //   this._formEditorService.valueUpdated.next( new valueUpdatedData(productName, "", ""))
              },
              err => {
+                 this.isLoadingResults = false;
                  this.alertService.error(err.error.message);
                  console.log("----  error save parameters");
                  console.log(err);
@@ -253,29 +256,17 @@ export class ProductComponent {
       }
       
       saveProduct(){
-        // const id = this.instanceName + "controls-id";
-        // if(!this._formEditorService.isRequiredValue(id)){
-        //   this._alertService.warning("Please fill out all required fields");
-        //   return;
-        // } 
-       
-        console.log("----------- saveProduct");
-        console.log(this._formEditorService.instanceData);
-        
         const message = this.formMessageForProduct();
         const title = "Are you sure you want to add the following product?";
+        this.isLoadingResults = true;
         this._alertService.warningModalObject(message, title).subscribe(result =>{
-          console.log("----------- confirm - ok - saveProduct");
-          console.log(result);
           if(result){
-              console.log(this._formEditorService.instanceData);
               const product = this.formProductInstanceToSave();
               console.log(product);
               this._applicationService.addNewProduct(product)
                   .subscribe(response => {
+                    this.isLoadingResults = false;
                       this.alertService.success(response.message);
-                      console.log("Successful addNewProduct");
-                      console.log(response);
                       this.isNewProduct = false;
                       this._formEditorService.resetValueProperties();
                       setTimeout(() => {             
@@ -284,6 +275,7 @@ export class ProductComponent {
                             
                   },
                   err => {
+                      this.isLoadingResults = false;
                       this.alertService.error(err.error.message);
                       console.log("----  error addNewProduct");
                       console.log(err);
@@ -293,47 +285,6 @@ export class ProductComponent {
         });
       }
 
-      // saveInstanceProduct(){
-      //   const id = "AddInstanceProduct" + "controls-id";
-      //   if(!this._formEditorService.isRequiredValue(id)){
-      //     this._alertService.warning("Please fill out all required fields");
-      //     return;
-      //   } 
-       
-      //   console.log("----------- saveProduct");
-      //   console.log(this._formEditorService.instanceData);
-        
-      //   const message = this.formMessageForProduct();
-      //   const title = "Do you want to save the product?";
-      //   this._alertService.warningModalObject(message, title).subscribe(result =>{
-      //     console.log("----------- confirm - ok - saveInstanceProduct");
-      //     console.log(result);
-      //     if(result){
-      //         console.log(this._formEditorService.instanceData);
-      //         const product = this.formProductInstanceToSave();
-      //         console.log(product);
-      //         this._applicationService.addInstanceProduct(product)
-      //             .subscribe(response => {
-      //                 this.alertService.success(response.message);
-      //                 console.log("Successful addInstanceProduct");
-      //                 console.log(response);
-      //                 this.isAddProduct = false;
-      //                 this._formEditorService.resetValueProperties();
-      //                 setTimeout(() => {             
-      //                     this.activePanel("isAddProduct");
-      //                 }, 0);
-                            
-      //             },
-      //             err => {
-      //                 this.alertService.error(err.error.message);
-      //                 console.log("----  error addInstanceProduct");
-      //                 console.log(err);
-      //             });
-      //     }
-    
-      //   });
-      // }
-
       saveInstanceProduct2(){
         const id = "AddInstanceProduct" + "controls-id";
         if(!this._formEditorService.isRequiredValue(id)){
@@ -341,15 +292,12 @@ export class ProductComponent {
           return;
         } 
        
-        console.log("----------- saveProduct");
-        console.log(this._formEditorService.instanceData);
         const product = this.formProductInstanceToSave();
-        console.log(product);
+        this.isLoadingResults = true;
         this._applicationService.addInstanceProduct(product)
             .subscribe(response => {
+                this.isLoadingResults = false;
                 this.alertService.success(response.message);
-                console.log("Successful addInstanceProduct");
-                console.log(response);
                 // this.isAddProduct = false;
                 // this._formEditorService.resetValueProperties();
                 // setTimeout(() => {             
@@ -358,41 +306,108 @@ export class ProductComponent {
                       
             },
             err => {
+              this.isLoadingResults = false;
                 this.alertService.error(err?.error?.message || err?.message);
-                console.log("----  error addInstanceProduct");
                 console.log(err);
             });
       }
 
       formProductInstanceToSave(){
         let parm = [];
-        let productData = this._formEditorService.instanceData;
+        let productData = Object.assign({}, this._formEditorService.instanceData);
         
         const primeCostBYN = this._formEditorService.instanceData["primecost"]?.value;
-        if(this._appStateService.Cur_OfficialRate_EUR && this._appStateService.Cur_OfficialRate_USD){
+        const primeCostEUR = this._formEditorService.instanceData["primecosteur"]?.value;
+        const primeCostUSD = this._formEditorService.instanceData["primecostusd"]?.value;
+        const customCurrencyRateEUR = this._formEditorService.instanceData["currencyrateeur"]?.value;
+       
+       
+        if(primeCostBYN && this._appStateService.Cur_OfficialRate_EUR && 
+          this._appStateService.Cur_OfficialRate_USD){
+          
           const primeCostEUR = {
             name: "primecosteur",
             navPriority: 1,
             type: "text",
             value: (primeCostBYN / this._appStateService.Cur_OfficialRate_EUR).toFixed(2) + ""
           }
-          this._formEditorService.instanceData["primecosteur"] = primeCostEUR;
+          productData["primecosteur"] = primeCostEUR;
           const primeCostUSD = {
             name: "primecostusd",
             navPriority: 1,
             type: "text",
             value: (primeCostBYN / this._appStateService.Cur_OfficialRate_USD).toFixed(2) + ""
           }
-          this._formEditorService.instanceData["primecostusd"] = primeCostUSD;
+          productData["primecostusd"] = primeCostUSD;
         }
-      
-        if(this._formEditorService.instanceData?.parameters){
-          for(let item in this._formEditorService.instanceData?.parameters){
-            parm.push(this._formEditorService.instanceData?.parameters[item]);
+
+        if(!primeCostBYN && primeCostEUR){
+         
+          const primecost = {
+            name: "primecost",
+            navPriority: 1,
+            type: "text",
+            value: (primeCostEUR * this._appStateService.Cur_OfficialRate_EUR).toFixed(2) + ""
+          }
+
+          productData["primecost"] = primecost;
+
+          const primeCostUSD = {
+            name: "primecostusd",
+            navPriority: 1,
+            type: "text",
+            value: ((primeCostEUR * this._appStateService.Cur_OfficialRate_EUR) / this._appStateService.Cur_OfficialRate_USD).toFixed(2) + ""
+          }
+          productData["primecostusd"] = primeCostUSD;
+
+        }
+
+
+        if(!primeCostBYN && primeCostUSD){
+         
+          const primecost = {
+            name: "primecost",
+            navPriority: 1,
+            type: "text",
+            value: (primeCostUSD * this._appStateService.Cur_OfficialRate_USD).toFixed(2) + ""
+          }
+          productData["primecost"] = primecost;
+
+          const primeCostEUR = {
+            name: "primecosteur",
+            navPriority: 1,
+            type: "text",
+            value: ((primeCostUSD * this._appStateService.Cur_OfficialRate_USD) / this._appStateService.Cur_OfficialRate_EUR).toFixed(2) + ""
+          }
+          productData["primecosteur"] = primeCostEUR;
+        }
+        
+        if(customCurrencyRateEUR){
+          const primeCostEUR = {
+            name: "primecosteur",
+            navPriority: 1,
+            type: "text",
+            value: (primeCostBYN / customCurrencyRateEUR).toFixed(2) + ""
+          }
+          productData["primecosteur"] = primeCostEUR;
+        }
+        
+        if(productData?.parameters){
+          for(let item in productData?.parameters){
+            parm.push(productData?.parameters[item]);
           }
           productData.parameters = parm;
         } 
     
+        const currencyName = {
+          name: "currencyname",
+          navPriority: 1,
+          type: "text",
+          value: "BYN"
+        }
+
+        productData["currencyname"] = currencyName;
+
         return JSON.stringify(productData);
       }
 
@@ -423,12 +438,21 @@ export class ProductComponent {
         return message;
       }
 
-      onDestroy(){
+      ngOnDestroy(){
+        console.log("------------------------------- product onDestroy");
         this.dispose();
+        this._formEditorService.listCreatedField = [];
+
+        this.routerEvents$.unsubscribe();
+        this.selectedSidePanelValueSubscription$.unsubscribe();
+        this.changedPageGridSubscription$.unsubscribe();
+        this.refreshAddProductSectionSubscription$.unsubscribe();
+        this.isActiveRightActionPanelSubscription$.unsubscribe();
       }
       
       dispose(){
         this._appStateService.initRightActionPanel = false;
         this._appStateService.instanceOfProduct = undefined;
+       // this._appStateService.selectedInstancePanel = undefined;
       }
 }

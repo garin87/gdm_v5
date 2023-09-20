@@ -6,7 +6,7 @@
         <!-- <mat-label>Filter product</mat-label> -->
         <div class="sidenav-filterControl-container">
         <input type="text" [formControl]="filterControl"
-               placeholder="Search"
+               placeholder="{{this._labelsService.labels.sidePanel_Search}}"
                matInput  #filterContent>
                <mat-icon>search</mat-icon>
               </div>
@@ -14,8 +14,8 @@
     </div>
     <div class="sidenav-list-properties" *ngIf="listProps">
       <div *ngFor="let element of listProps | async" class="panel-property-row">
-        <div class="data-property" (click)="select(element)" [class.selected-item]="isSelected(element)">
-          {{element}}
+        <div class="data-property" (click)="select(element.Name)" [class.selected-item]="isSelected(element.Name)">
+          {{element.DisplayName}}
         </div>
       </div>
     </div>

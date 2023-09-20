@@ -8,10 +8,10 @@
               matSort (matSortChange)="announceSortChange($event)" multiTemplateDataRows>
 
         <ng-container *ngFor="let column of gridcolumns" [matColumnDef]="column.columnDef">
-          <th mat-header-cell mat-sort-header [disabled]="!column.isSortable"  *matHeaderCellDef>
+          <th class="grid-expand-header-cell grid-header-cell grid-cell"  mat-header-cell mat-sort-header [disabled]="!column.isSortable"  *matHeaderCellDef>
             {{column.header}}
           </th>
-          <td mat-cell *matCellDef="let row; let i = dataIndex">      
+          <td mat-cell class="grid-content-cell grid-cell" *matCellDef="let row; let i = dataIndex">      
             {{ column.cell(row,column, i)}}
           </td>
         </ng-container>
@@ -44,48 +44,6 @@
                                <gridPlain-control [selectedProduct]="'orderProduct'" [gridData]="element.products" 
                                  [gridMetadataType]="'OrderProductGrid'" ></gridPlain-control>
 
-                                 <!-- <table mat-table [dataSource]="element.products" class="mat-elevation-z8 sub-grid-products">
-
-                                   Note that these columns can be defined in any order.
-                                        The actual rendered columns are set as a property on the row definition" -->
-                                
-                                  <!-- Position Column -->
-                                  <!-- <ng-container matColumnDef="position">
-                                    <th mat-header-cell *matHeaderCellDef> No. </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.position}} </td>
-                                  </ng-container> -->
-                                
-                                  <!-- Name Column
-                                  <ng-container matColumnDef="productName">
-                                    <th mat-header-cell *matHeaderCellDef> productName </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
-                                  </ng-container>
-                                
-                                   Weight Column 
-                                  <ng-container matColumnDef="productNumber">
-                                    <th mat-header-cell *matHeaderCellDef> productNumber </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.productNumber}} </td>
-                                  </ng-container>
-                                
-                                   Symbol Column 
-                                  <ng-container matColumnDef="quantity">
-                                    <th mat-header-cell *matHeaderCellDef> quantity </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.quantity}} </td>
-                                  </ng-container>
-                                  Symbol Column 
-                                 <ng-container matColumnDef="totalPrice">
-                                  <th mat-header-cell *matHeaderCellDef> totalPrice </th>
-                                  <td mat-cell *matCellDef="let element"> {{element.totalPrice}} </td>
-                                  </ng-container>  -->
-                                 <!-- Symbol Column -->
-                                 <!-- <ng-container matColumnDef="manufacturer"> 
-                                    <th mat-header-cell *matHeaderCellDef> manufacturer</th>
-                                    <td mat-cell *matCellDef="let element"> {{element.manufacturer}} </td>
-                                  </ng-container>
-                                
-                                  <tr mat-header-row *matHeaderRowDef="contentTableColumns"></tr>
-                                  <tr mat-row *matRowDef="let row; columns: contentTableColumns;"></tr>
-                                </table> -->
                          </section>
                      </div>  
               </div>

@@ -1,6 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild } from "@angular/core";
-import { FormControl, FormGroup } from "@angular/forms";
-
+import { UntypedFormControl, UntypedFormGroup } from "@angular/forms";
 import { Subject } from "rxjs";
 import { valueUpdatedData } from "src/app/common/objects/common";
 
@@ -16,7 +15,7 @@ export class DateTimePikerComponent implements OnInit {
     @Input("property") _property: any;
 
     @ViewChild("dateInput") textInput: ElementRef;
-    date = new FormControl(new Date());
+    date = new UntypedFormControl(new Date());
   //  serializedDate = new FormControl((new Date()).toISOString())
     name: string;
     typeName:string;
@@ -26,8 +25,8 @@ export class DateTimePikerComponent implements OnInit {
     category: string;
     required: boolean;
     readOnly: boolean;
-    campaignOne: FormGroup;
-    campaignTwo: FormGroup;
+    campaignOne: UntypedFormGroup;
+    campaignTwo: UntypedFormGroup;
     localvalueUpdated:any;
   
     constructor() {
@@ -35,14 +34,14 @@ export class DateTimePikerComponent implements OnInit {
       const month = today.getMonth();
       const year = today.getFullYear();
   
-      this.campaignOne = new FormGroup({
-        start: new FormControl(new Date(year, month, 13)),
-        end: new FormControl(new Date(year, month, 16))
+      this.campaignOne = new UntypedFormGroup({
+        start: new UntypedFormControl(new Date(year, month, 13)),
+        end: new UntypedFormControl(new Date(year, month, 16))
       });
   
-      this.campaignTwo = new FormGroup({
-        start: new FormControl(new Date(year, month, 15)),
-        end: new FormControl(new Date(year, month, 19))
+      this.campaignTwo = new UntypedFormGroup({
+        start: new UntypedFormControl(new Date(year, month, 15)),
+        end: new UntypedFormControl(new Date(year, month, 19))
       });
     }
 

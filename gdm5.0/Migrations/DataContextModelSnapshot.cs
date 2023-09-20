@@ -245,8 +245,8 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Quantity")
-                        .HasColumnType("float");
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
 
                     b.Property<double>("TaxNDS")
                         .HasColumnType("float");
@@ -279,8 +279,8 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductHistoryId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Quantity")
-                        .HasColumnType("float");
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
 
                     b.Property<double>("TaxNDS")
                         .HasColumnType("float");
@@ -389,7 +389,7 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ComplexPriceListId")
+                    b.Property<int?>("ComplexPriceListId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreationDate")
@@ -455,7 +455,7 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CurrencyId")
+                    b.Property<int?>("CurrencyId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateOfLastChanged")
@@ -491,8 +491,8 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductTypeId")
                         .HasColumnType("int");
 
-                    b.Property<double>("Quantity")
-                        .HasColumnType("float");
+                    b.Property<float>("Quantity")
+                        .HasColumnType("real");
 
                     b.Property<double>("StandartCost")
                         .HasColumnType("float");
@@ -864,8 +864,7 @@ namespace gdm5._0.Migrations
                     b.HasOne("gdm5._0.Models.ComplexPriceList", "ComplexPriceList")
                         .WithMany("PriceList")
                         .HasForeignKey("ComplexPriceListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("ComplexPriceList");
                 });
@@ -894,8 +893,7 @@ namespace gdm5._0.Migrations
                     b.HasOne("gdm5._0.Models.Currency", "Currency")
                         .WithMany("Products")
                         .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("gdm5._0.Models.ProductType", "ProductType")
                         .WithMany("Products")

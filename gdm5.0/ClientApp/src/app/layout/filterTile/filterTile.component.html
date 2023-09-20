@@ -1,0 +1,17 @@
+
+<mat-accordion class="" multi [attr.priority]="priority">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title class="filter-tile-title">
+        {{this.titleTile}}
+      </mat-panel-title>
+    </mat-expansion-panel-header>
+    <dev *ngIf="dateTile" >
+      <ng-container *ngFor="let tileItime of dateTile; let i = index" >
+        <button class="tile-button" [attr.index]="i"
+        [attr.clicked]="i === clickedButtonIndex ? 'true' : null" mat-raised-button color="primary" 
+        (click)="selectTile(tileItime, i)">{{tileItime.value}}</button>
+      </ng-container> 
+    </dev>
+  </mat-expansion-panel>
+</mat-accordion>

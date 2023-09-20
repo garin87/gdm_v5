@@ -10,6 +10,7 @@ namespace gdm5._0.DTO
         public int Id { get; set; }
         public string Name { get; set; }
         public string Value { get; set; }
+        public double ValueDouble { get; set; }
         public string NameType { get; set; }
         public int Priority { get; set; }
     }

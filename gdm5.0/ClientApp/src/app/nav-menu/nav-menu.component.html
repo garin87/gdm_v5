@@ -1,31 +1,75 @@
-<header *ngIf="isAuthenticated">
-  <mat-toolbar color="primary">
-   <h1>Warehouse</h1>
-   <div class="example-spacer"></div>
-   <div class="navbar-collapse collapse d-sm-inline-flex justify-content-end" [ngClass]="{ show: isExpanded }">
-      <div class="menu-list">
-        <ul class="navbar-nav flex-grow">
-          <li class="nav-item menu-item" [routerLinkActive]="['link-active']" [routerLinkActiveOptions]="{ exact: true }">
-            <a class="nav-link " [routerLink]="['/']">Home</a>
+
+<header *ngIf="isAuthenticated" style="display: flex;">     
+  <mat-sidenav-container  mode="over" class="mobile-sidenav-container app-sidenav-container" >   
+    <mat-sidenav #sidenav mode="over" position="start"  class="mobile-sidenav" [fixedInViewport]="true" 
+                 style="margin-left: 100%; width: 100%; z-index: 10; height: 40%;">
+      <div class="sidenav-content-header">
+        <div class="sidenav-content-header-title">
+            <h1>Warehouse</h1> 
+        </div>
+         <div (click)="sidenav.toggle()" class="close-button">
+             <md-icon aria-label="Menu" class="material-icons">close</md-icon>
+         </div>
+        <!-- <button color="primary" mat-raised-button md-icon-button (click)="sidenav.toggle()" class="md-icon-button sidenav-toggle-button" [hidden]="!sidenav.opened">
+          <md-icon aria-label="Menu" class="material-icons">close</md-icon>
+        </button>   -->
+      </div>  
+      <div class="mobile-menu-list menu-list">
+        <ul class="navbar-nav flex-grow" style="display: flex; flex-direction: column; text-align: justify;">
+          <li class="nav-item menu-item" (click)="sidenav.close()" [routerLinkActive]="['link-active']" [routerLinkActiveOptions]="{ exact: true }">
+            <a class="nav-link "  [routerLink]="['/']">{{this._labelsService.labels.globalMenu_Home}}</a>
           </li>
-          <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link " [routerLink]="['/product']">Product</a>
+          <li class="nav-item menu-item" (click)="sidenav.close()" [routerLinkActive]="['link-active']">
+            <a class="nav-link " [routerLink]="['/product']">{{ this._labelsService.labels.globalMenu_Product}}</a>
           </li>
-          <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link " [routerLink]="['/modeling']">Modeling</a>
+          <li class="nav-item menu-item" (click)="sidenav.close()" [routerLinkActive]="['link-active']">
+            <a class="nav-link " [routerLink]="['/modeling']">{{this._labelsService.labels.globalMenu_Modeling}}</a>
           </li>
-          <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
+          <li class="nav-item menu-item" (click)="sidenav.close()" [routerLinkActive]="['link-active']">
             <a class="nav-link countCartProducts"  [routerLink]="['/order']"
-               [matBadge]="countCartProducts" [matBadgeHidden]="hidden"  matBadgeColor="warn" >Order</a>
+              [matBadge]="countCartProducts" [matBadgeHidden]="hidden"  matBadgeColor="warn" style="z-index: 2;">{{this._labelsService.labels.globalMenu_Order}}</a>
           </li>
-          
-          <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
-            <a class="nav-link " [routerLink]="['/register']">Sign up</a>
-          </li>
-          
         </ul>
       </div>
-      <app-login-menu></app-login-menu>
+    </mat-sidenav>
+  </mat-sidenav-container>
+
+
+  <mat-toolbar color="primary">
+   <div class="container-nav-menu">
+    <h1 class="navbar-header-title">Warehouse</h1>
+    <div class="example-spacer"></div>
+    <div class="nav-menu" [ngClass]="{ show: isExpanded }">
+        <div class="desktop-menu-list menu-list">
+          <ul class="navbar-nav flex-grow">
+            <li class="nav-item menu-item" [routerLinkActive]="['link-active']" [routerLinkActiveOptions]="{ exact: true }">
+              <a class="nav-link " [routerLink]="['/']">{{this._labelsService.labels.globalMenu_Home}}</a>
+            </li>
+            <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
+              <a class="nav-link " [routerLink]="['/product']">{{ this._labelsService.labels.globalMenu_Product}}</a>
+            </li>
+            <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
+              <a class="nav-link " [routerLink]="['/modeling']">{{this._labelsService.labels.globalMenu_Modeling}}</a>
+            </li>
+            <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
+              <a class="nav-link countCartProducts"  [routerLink]="['/order']"
+                [matBadge]="countCartProducts" [matBadgeHidden]="hidden"  matBadgeColor="warn" style="z-index: 2;">{{this._labelsService.labels.globalMenu_Order}}</a>
+            </li>
+            
+            <!-- <li class="nav-item menu-item" [routerLinkActive]="['link-active']">
+              <a class="nav-link " [routerLink]="['/register']">{{this._labelsService.labels.globalMenu_SingUP}}</a>
+            </li> -->
+            
+          </ul>
+        </div>
+        <app-login-menu class="login-menu"></app-login-menu>
+        <div class="toggle-menu">
+          <button mat-icon-button (click)="sidenav.toggle()">
+            <mat-icon>menu</mat-icon>
+          </button>
+        </div>
     </div>
- </mat-toolbar>
+   </div>
+  </mat-toolbar>
+
 </header>

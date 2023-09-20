@@ -9,18 +9,15 @@ import { Component, Input, OnInit } from "@angular/core";
 export class FieldEditorComponent implements OnInit  {
     @Input("property") property: any;
     @Input("valueUpdated") valueUpdated: any;
+    @Input("listCreatedField") listCreatedField: any;
     editorName:string;
     
     constructor(){
       this.editorName = "text";
-
     }
     
     ngOnInit(){
-      console.log("create FieldEditorComponent");
-      console.log(this.property.typeView);
       this.editorName = this.applyTypeView(this.property.typeView);
-      console.log(this.valueUpdated);
     }
   
     applyTypeView(typeView:string){

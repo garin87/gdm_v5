@@ -27,6 +27,7 @@ namespace gdm5._0.DTO
         public string newName { get; set; }
         public string OptionOfProvider { get; set; }
         public string category { get; set; }
+        public string parentName { get; set; }
         
     }
 }

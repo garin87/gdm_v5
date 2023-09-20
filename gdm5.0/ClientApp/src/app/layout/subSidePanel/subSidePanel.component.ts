@@ -1,9 +1,12 @@
 import {  Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { UntypedFormControl } from '@angular/forms';
 import { MatSidenav } from '@angular/material/sidenav';
-import {  Observable, of } from 'rxjs';
+import {  Observable, Subscription, of } from 'rxjs';
 import { debounceTime} from 'rxjs/operators';
+import { commonConst } from 'src/app/common/objects/commonConst';
 import { AppStateService,  } from 'src/app/common/services/appState.service';
+import { FormEditorService } from 'src/app/common/services/formEditor.service';
+import { LabelsService } from 'src/app/common/services/labels.service';
 
 
 @Component({
@@ -25,24 +28,40 @@ export class SubSidePanelComponent implements OnInit{
   public selectedItem:String;
 
   listProps : Observable<string[]>;
-
-  constructor(private _appStateService:AppStateService) { };
-  filterControl = new FormControl();
+  private detectClickOnPanelSubscription$:Subscription;
+  private valueChangesSubscription$:Subscription;
+  
+  constructor(private _appStateService:AppStateService, public _labelsService: LabelsService,
+    private _formEditorService:FormEditorService) { };
+  filterControl = new UntypedFormControl();
 
   ngOnInit(){
-    this._appStateService.detectClickOnSubPanel.subscribe(data => {
+    this.detectClickOnPanelSubscription$ = this._appStateService.detectClickOnSubPanel.subscribe(data => {
       if(data){
+        
+        if(this.page == "product" || this.page == "modeling"){
+          
+          if(window.innerWidth < commonConst.mobileMaxSize){
+             this.drawer.mode = "over";
+          }  
+        }
+        
+        if(data?.selectMolenigInstance){
+          if(!this.drawer.opened) this.drawer.toggle();
+        }else{
+          this.drawer.toggle();
+        }
         this.selectedItem = undefined;
-        if(!this.drawer.opened) this.drawer.toggle();
       }
     });
+
     this._appStateService.selectedSideSubPanelValueName.subscribe( data=>{
       if(!data){
         this.selectedItem = undefined;
       }
     })
     
-    this.filterControl.valueChanges.pipe(
+    this.valueChangesSubscription$ = this.filterControl.valueChanges.pipe(
        debounceTime(800)
     ).subscribe(data=> {
         this.listProps = of(this._filter(data));
@@ -67,7 +86,7 @@ export class SubSidePanelComponent implements OnInit{
   select(element){
     console.log("-------- select");
     console.log(element);
-
+   // this._formEditorService.disposeFormProperties();
     if(element){
       this.selectedItem = element;
       this._appStateService.selectedSideSubPanelValue.next({page: this.page, element: element});
@@ -92,13 +111,15 @@ export class SubSidePanelComponent implements OnInit{
     return this.selectedItem == element;
   }
 
-  onDestroy(){
+  ngOnDestroy(){
     this.dispose();
   }
 
   dispose(){
     this._appStateService.initRightActionPanel = false;
     this._appStateService.instanceOfProduct = undefined;
+    //this.detectClickOnPanelSubscription$.unsubscribe();
+    this.valueChangesSubscription$.unsubscribe();
   }
 
   private _filter(value: string): string[] {

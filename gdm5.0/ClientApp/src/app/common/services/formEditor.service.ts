@@ -17,7 +17,7 @@ export class FormEditorService {
     setProperties:any;
     instanceData:any;
     listParameters:any;
-
+    listCreatedField:any[] = [];
     
     constructor(private _metadataService: MetadataService,
         private _dataValueService: DataValueService,
@@ -31,7 +31,7 @@ export class FormEditorService {
         console.log("createListProperties");
         console.log(this.instanceProperties);
 
-        if(!this.instanceProperties || !this.setProperties.hasOwnProperty(instanceName)){
+        if((!this.instanceProperties || !this.setProperties.hasOwnProperty(instanceName)) && !isDependentProps){
             this.instanceProperties = this._metadataService.metadataTypes[instanceName];
             this.setProperties[instanceName] = this.instanceProperties;
         }
@@ -52,7 +52,7 @@ export class FormEditorService {
     }
 
     setPropertyValue(prop: any, value:any, valueType:string = 'string', 
-    navPriority:number = 1, newName:string = "", isEditedName:boolean = false, isDeletedProp:boolean = false){ 
+        navPriority:number = 1, newName:string = "", isEditedName:boolean = false, isDeletedProp:boolean = false){ 
         const propertyName = prop[0].name.toLowerCase();
         if(propertyName){
             if(prop[0]?.isParameter){
@@ -101,6 +101,9 @@ export class FormEditorService {
     isRequiredValue(id):boolean{
         if(!document.getElementById(id)) return;
         const controls = document.getElementById(id).querySelectorAll("[required]");
+
+        // let test = document.getElementById("OrderProductcontrols-id").querySelectorAll("[required]"); 
+      //  [aria-required='true'] "[required]"
         let isValid = true;
         controls.forEach((element:HTMLInputElement) => {
             if (!element.reportValidity()) {
@@ -118,9 +121,10 @@ export class FormEditorService {
 
     resetValueProperties():void{
         this.customProperties = new Subject<any>();
-        this.dependentProperties = new Subject<any>();
+      //  this.dependentProperties = new Subject<any>();
         this.setProperties = {};
         this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
+     //   this.listCreatedField = [];
         this.instanceData = {};
         this.listParameters = {};
     }
@@ -130,7 +134,15 @@ export class FormEditorService {
        // this.instanceData = {};
     }
 
-
+    disposeFormProperties(){
+        this.customProperties = new Subject<any>();
+        this.dependentProperties = new Subject<any>();
+        this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
+      //  this.listCreatedField = [];
+        this.instanceData = {};
+        this.listParameters = {};
+    }
+    
     populateValue(p: IMetadataProperty ) : void {
         let v = this.getPropertyValue(p);
         p.value = v;
@@ -166,6 +178,11 @@ export class FormEditorService {
                 //         pv = false;
                 //     }
                 // }
+
+                if(key === "standartCost"){
+                    pv = (pv * this._appStateService.Cur_OfficialRate_EUR).toFixed(2);
+                }
+                
                 return pv;
             }
         }

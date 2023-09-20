@@ -155,6 +155,39 @@ export class ApplicationService {
       return this.http.delete(siteURI + "api/сurrency/DeleteСurrency/" + `${id}`);
     }
 
+
+    getPriceLists():Observable<any>{
+      return  this.http.get(siteURI + "api/pricelist/GetAll");
+    }
+
+    getPriceListWithValues(id):Observable<any>{
+      return  this.http.get(siteURI + "api/pricelist/getPriceListWithValues" + `${id}`);
+    }
+    
+    getPriceListWithValuesByName(name):Observable<any>{
+      return  this.http.get(siteURI + "api/pricelist/getPriceListWithValuesByName/" + `${name}`);
+    }
+
+    addPriceList(body:any):Observable<any> {
+      return this.http.post<UserForRegistrationDto> (siteURI + "api/pricelist/addPriceList", body,{
+        headers: new HttpHeaders ({
+          "Content-Type": "application/json"
+        })
+      });
+    }
+
+    updatePriceList(body:any):Observable<any> {
+      return this.http.post<UserForRegistrationDto> (siteURI + "api/pricelist/updatePriceList", body,{
+        headers: new HttpHeaders ({
+          "Content-Type": "application/json"
+          })
+      });
+    }
+
+    deletePriceList(id):Observable<any>{
+      return this.http.delete(siteURI + "api/pricelist/deletePriceList/" + `${id}`);
+    }
+
     addInstanceProduct(body:any):Observable<any> {
         return this.http.post<UserForRegistrationDto> (siteURI + "api/product/AddInstanceProduct", body,{
             headers: new HttpHeaders ({
@@ -233,8 +266,8 @@ export class ApplicationService {
 
     getCartOrderProducts():Observable<any>{ 
       const body = {};
-      return this.http.post<UserForRegistrationDto> 
-      (siteURI + "api/orders/getCartOrderProducts", body,{
+      return this.http.get<UserForRegistrationDto> 
+      (siteURI + "api/orders/getCartOrderProducts",{
          headers: new HttpHeaders ({
            "Content-Type": "application/json"
           })
@@ -296,12 +329,16 @@ export class ApplicationService {
          );
     }
 
-    getInstancesParameter(nameProduct:string, nameParameter:string, isParameter:boolean = false):Observable<any>{
-      const  param = `?productTypeName=${nameProduct.trim()}
-                           &name=${nameParameter.trim()}&isParameter=${isParameter}`;
-      return  this.http.get(
-             siteURI + "api/product/getInstancesOfProductParameter/" + param
-      );
+    getInstancesParameter(parameters):Observable<any>{
+
+      const body = JSON.stringify(parameters); //JSON.stringify(getOrdersInstancesRequest);
+      return this.http.post<UserForRegistrationDto> 
+      (siteURI + "api/product/getInstancesOfProductParameter", body,{
+         headers: new HttpHeaders ({
+           "Content-Type": "application/json"
+          })
+       });
+
     }
 
     updateProductParameters(body:any):Observable<any> {
@@ -325,12 +362,22 @@ export class ApplicationService {
     }
 
     getNBRBCurrencies(date = 0, period = 0):Observable<any>{
+      //https://api.nbrb.by/exrates/rates?periodicity=0
+      //exrates/rates?periodicity=0
       const periodicity = `periodicity=${period}`;
       const onDate = `ondate=${date}`;
       const parameters = date == 0 ? `?${periodicity}` : `?${onDate}&${periodicity}`;
-      const uriNbrb = "/api/exrates/rates" + parameters;
+      const uriNbrb = "/exrates/rates" + parameters;
+      console.log(uriNbrb);
       return  this.http.get(uriNbrb);
     }
+
+
+  getPeport(): Observable<any> {
+    return this.http.get(
+      siteURI + "api/product/loadReport"
+    );
+  }
 
 }
 

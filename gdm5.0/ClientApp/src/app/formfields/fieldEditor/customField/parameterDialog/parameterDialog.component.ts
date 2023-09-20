@@ -1,8 +1,7 @@
-import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from "@angular/core";
-import { FormControl, FormGroup, Validators } from "@angular/forms";
-import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from "@angular/material/dialog";
-import { Subject } from "rxjs";
-import { ParameterForm, valueUpdatedData } from "src/app/common/objects/common";
+import { Component, Inject, OnInit } from "@angular/core";
+import { UntypedFormControl, UntypedFormGroup, Validators } from "@angular/forms";
+import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { ParameterForm } from "src/app/common/objects/common";
 
 @Component({
     selector: 'parameter-dialog',
@@ -10,10 +9,10 @@ import { ParameterForm, valueUpdatedData } from "src/app/common/objects/common";
     styleUrls: ['./parameterDialog.component.css']
   })
 export class ParameterDialogComponent implements OnInit {
-    public parameterForm: FormGroup;
+    public parameterForm: UntypedFormGroup;
   
-    parameterName = new FormControl( '', [Validators.required,]);
-    parameterPriority  = new FormControl( '');
+    parameterName = new UntypedFormControl( '', [Validators.required,]);
+    parameterPriority  = new UntypedFormControl( '');
     
     constructor( public dialogRef: MatDialogRef<ParameterDialogComponent>,
                  @Inject(MAT_DIALOG_DATA) public data: any ) {}
@@ -24,7 +23,7 @@ export class ParameterDialogComponent implements OnInit {
     }
     ngOnInit(){
         console.log(" init TextEditorComponent");
-        this.parameterForm = new FormGroup({
+        this.parameterForm = new UntypedFormGroup({
             parameterName: this.parameterName ,
             parameterPriority: this.parameterPriority
         });

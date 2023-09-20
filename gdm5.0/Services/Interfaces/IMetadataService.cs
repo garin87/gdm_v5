@@ -8,8 +8,8 @@ namespace gdm5._0.Services.Interfaces
 {
     public interface IMetadataService
     {
-        dynamic GetMetadataTypes();
-        dynamic MergeMetadataWithViewRules(Dictionary<string, object> dbMetadata,
+        Dictionary<string, object> GetMetadataTypes();
+        Dictionary<string, object> MergeMetadataWithViewRules(Dictionary<string, object> dbMetadata,
                                      Dictionary<string, Dictionary<string, Property>> viewRules);
         dynamic ParseViewRulesFile(string JsonViewRulesFile);
     }

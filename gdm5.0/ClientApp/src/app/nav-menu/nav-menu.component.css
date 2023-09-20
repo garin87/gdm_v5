@@ -7,6 +7,7 @@ a.navbar-brand {
 html {
   font-size: 14px;
 }
+
 @media (min-width: 768px) {
   html {
     font-size: 16px;
@@ -21,11 +22,13 @@ html {
 .nav-item{
   border-radius: 4px
 }
+
 .nav-link{
   color: white;
   font-size: 18px;
   padding: .5rem .5rem .5rem .5rem;
 }
+
 .menu-item:focus, 
 .menu-item:hover, 
  a:hover{
@@ -45,3 +48,190 @@ html {
     top:-4px;
 }
 
+
+mat-toolbar{
+  height: auto;
+  padding: .4em;  
+}
+
+.container-nav-menu{
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex: auto;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.nav-menu{
+  display: flex;
+  flex-direction: row;
+}
+
+@media (max-width: 576px){
+
+  /* .container-nav-menu{
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .nav-menu{
+    flex-direction: column;
+  }
+
+  .menu-list .navbar-nav{
+    flex-direction: column;
+    text-align: center;
+  } */
+
+}
+
+.nav-item.menu-item:hover {
+  background: rgba(0,0,0,.4);
+}
+
+
+.sidenav-content-container {
+  width: 100%;
+  /* border: 1px solid rgba(0, 0, 0, 0.5); */
+  padding: 4px;
+}
+.sidenav-filterControl-container{
+   display: flex;
+}
+.selected-item{
+  font-weight: 800;
+}
+.app-sidenav-container {
+  display: flex;
+  height: 40%;
+  align-items: center;
+  justify-content: center;
+}
+.filter-sidenav-content-field{
+  width: 100%;
+}
+.data-property{
+  cursor: pointer;
+}
+.panel-property-row{
+  padding: .5em;
+}
+.panel-property-row:hover{
+  border-bottom: .5px solid rgb(102, 110, 110);
+}
+.menu-list{
+  color: black;
+}
+.sidenav-list-properties{
+  font-size: 1.1em;
+}
+
+.toolbar-fullscreen {
+  display: none;
+}
+
+.sidenav-content-header{
+   display: flex;
+   font-size: 1.7em;
+   justify-content: space-between;
+   background-color: #3f51b5;
+}
+
+.sidenav-content-header-title{
+  color: #fff;
+  padding: 10px 5px 0px 5px;
+}
+
+.mobile-sidenav .menu-list .navbar-nav li a{
+  color: black;
+}
+
+.sidenav-content-header .mat-mdc-raised-button{
+  box-shadow: none;
+}
+
+
+.mobile-sidenav .menu-list .navbar-nav li.nav-item.menu-item:hover{
+  background:rgba(0,0,0,.2);
+}
+
+.mobile-sidenav .menu-list .navbar-nav li.nav-item.link-active{
+  background:rgba(0,0,0,.2);
+}
+
+.mobile-sidenav .menu-list .navbar-nav li.nav-item.menu-item:hover{
+  background:rgba(0,0,0,.2);
+}
+
+.close-button{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  padding-right: 5px;
+  cursor: pointer;
+}
+
+.mobile-sidenav 
+.menu-item:focus, 
+.menu-item:hover, 
+a:hover{
+  background: none;
+}
+
+.mobile-sidenav-container{
+  display: none;
+}
+
+.toggle-menu{
+  display: none;
+}
+
+.nav-menu{
+  cursor: pointer;
+}
+
+@media (max-width: 1322px){
+
+}
+
+@media (max-width: 1060px){
+
+}
+
+@media (max-width: 898px){
+  
+}
+
+@media (max-width: 840px){
+
+}
+
+@media (max-width: 760px){
+  .mobile-sidenav-container{
+    display: flex;
+  }
+
+  .toggle-menu{
+    display: block;
+  }
+
+  .desktop-menu-list{
+    display: none;
+  }
+
+  .login-menu{
+    display: none;
+  }
+
+  .container-nav-menu{
+    display: flex;
+    align-content: center;
+    align-items: center;
+  }
+}
+
+@media (max-width: 640px){
+
+}

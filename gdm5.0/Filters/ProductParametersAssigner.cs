@@ -2,6 +2,7 @@
 
 using gdm5._0.Domain.Models.Filters;
 using gdm5._0.Models;
+using System;
 using System.Linq;
 
 namespace gdm5._0.Filters
@@ -26,7 +27,7 @@ namespace gdm5._0.Filters
             if (!string.IsNullOrWhiteSpace(productParamValue))
             {
                 productParameteres = productParameteres.Where(c =>
-                c.ProductParameters.Any(pp => pp.Value.Contains(productParamValue)));
+                c.ProductParameters.Any(pp => pp.Value.Equals(productParamValue)));
             }
                
 

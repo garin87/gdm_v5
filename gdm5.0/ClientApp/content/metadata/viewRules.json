@@ -29,15 +29,6 @@
         "DefaultValue":"",
         "Required":true,
         "Provider":"loadWarehousesNames"
-      },
-      "CurrencyName":{
-        "Name": "CurrencyName",
-        "TypeView":"selector",
-        "Editor":"selector",
-        "Type":"string",
-        "DefaultValue":"BYR",
-        "Provider":"loadNamesCurrencies",
-        "DisplayedName":"Currency name"
       }
    },
    "EditProductParameters":{ 
@@ -83,6 +74,7 @@
       "DefaultValue":"",
       "Required":true
     },
+    
     "StandartCost":{
       "Name": "StandartCost",
       "TypeView":"input",
@@ -97,17 +89,42 @@
       "DefaultValue":"",
       "DisplayedName":"Product prime cost"
     },
+    "PrimeCostUSD":{
+      "Name": "primeCostUSD",
+      "Type":"double",
+      "DisplayedName":"Prime Cost USD",
+      "isSortable": true
+    },
+    "PrimeCostEUR":{
+      "Name": "primeCostEUR",
+      "Type":"double",
+      "DisplayedName":"Prime Cost EUR",
+      "isSortable": true
+    },
+    "CurrencyRateEUR":{
+      "Name": "currencyRateEUR",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Курс евро EUR",
+      "DefaultValue":""
+    },
     "Manufacturer":{
       "Name": "Manufacturer",
-      "TypeView":"input",
+      "TypeView":"picklist",
       "Type":"string",
+      "Accessor":"getGridDataByParameter",
+      "Editor":"picklist",
+      "Provider":"loadProductManufacturersByProductName",
+      "OptionOfProvider":"{paramertName='Manufacturer', instanceName='product'}",
       "DefaultValue":""
     },
     "Supplier":{
       "Name": "supplier",
-      "TypeView":"input",
+      "TypeView":"picklist",
       "Type":"string",
-      "DisplayedName":"Supplier"
+      "DisplayedName":"Supplier",
+      "Editor":"picklist",
+      "Provider":"getProductSuppliersByProductName"
     },
     "Description":{
       "Name": "Description",
@@ -121,16 +138,6 @@
       "Type":"DateTime",
       "DefaultValue":"",
       "DisplayedName":"Date of receipt"
-    },
-    "CurrencyName":{
-      "Name": "CurrencyName",
-      "TypeView":"selector",
-      "Editor":"selector",
-      "Type":"string",
-      "DefaultValue":"BYR",
-      "Provider":"loadNamesCurrencies",
-      "DisplayedName":"Currency name",
-      "Required":true
     },
     "WarehouseName":{  
       "Name": "WarehouseName",
@@ -187,6 +194,18 @@
       "DisplayedName":"Product prime cost",
       "category":"UpdateInstanceProduct"
     },
+    "PrimeCostUSD":{
+      "Name": "primeCostUSD",
+      "Type":"double",
+      "DisplayedName":"Pr USD",
+      "isSortable": true
+    },
+    "PrimeCostEUR":{
+      "Name": "primeCostEUR",
+      "Type":"double",
+      "DisplayedName":"Pr EUR",
+      "isSortable": true
+    },
     "manufacturer":{
       "Name": "manufacturer",
       "TypeView":"input",
@@ -209,16 +228,6 @@
       "DisplayedName":"Date of receipt",
       "category":"UpdateInstanceProduct"
     },
-    "currency":{
-      "Name": "currency",
-      "TypeView":"selector",
-      "Editor":"selector",
-      "Type":"string",
-      "DefaultValue":"BYR",
-      "Provider":"loadNamesCurrencies",
-      "DisplayedName":"Currency",
-      "category":"UpdateInstanceProduct"
-    },
     "warehouse":{  
       "Name": "warehouse",
       "TypeView":"selector",
@@ -236,7 +245,7 @@
         "Name": "position",
         "Type":"string",
         "DisplayedName":"No.",
-        "Order": 1000,
+        "Order": 1001,
         "isSortable": false
       },
       "Name":{
@@ -244,7 +253,7 @@
         "Type":"string",
         "DisplayedName":"Product",
         "isSortable": false,
-        "Order": 990
+        "Order": 1000
       },
       "ProductNumber":{
         "Name": "productNumber",
@@ -264,6 +273,18 @@
         "Name": "standartCost",
         "Type":"double",
         "DisplayedName":"Std cost",
+        "isSortable": true
+      },
+      "PrimeCostUSD":{
+        "Name": "primeCostUSD",
+        "Type":"double",
+        "DisplayedName":"Prime Cost USD",
+        "isSortable": true
+      },
+      "PrimeCostEUR":{
+        "Name": "primeCostEUR",
+        "Type":"double",
+        "DisplayedName":"Prime Cost EUR",
         "isSortable": true
       },
       "PrimeCost":{
@@ -296,12 +317,6 @@
         "DisplayedName":"Description",
         "isSortable": false
       },
-      "CurrencyName":{
-        "Name": "currency",
-        "Type":"string",
-        "DisplayedName":"Currency",
-        "isSortable": true
-      },
       "DateOfLastChanged":{
         "Name": "dateOfLastChanged",
         "Type":"DateTime",
@@ -317,7 +332,7 @@
       "lastEditedByUser":{
         "Name": "lastEditedByUser",
         "Type":"string",
-        "DisplayedName":"User why did last changed",
+        "DisplayedName":"User changed",
         "isSortable": true
       }
    },
@@ -351,6 +366,66 @@
         "DefaultValue":"",
         "category":"OptionalOfProduct"
       }
+   },
+   "OptionOfPriceListProduct":{
+    "Name":{
+      "Name": "Name",
+      "Order": 9999,
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Provider":"loadProductParameters",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "Accessor":"createParametersAsSelect",
+      "DisplayedName":"Name",
+      "category":"OptionOfPriceListProduct",
+      "ParentName":"OptionOfPriceListProduct"
+    },
+    "Manufacturer":{
+      "Name": "Manufacturer",
+      "TypeView":"selector",
+      "Type":"string",
+      "Accessor":"getGridDataByParameter",
+      "Editor":"selector",
+      "Provider":"loadProductManufacturersByProductName",
+      "OptionOfProvider":"{paramertName='Manufacturer', instanceName='product'}",
+      "DefaultValue":"",
+      "category":"OptionOfPriceListProduct",
+      "ParentName":"OptionOfPriceListProduct"
+    },
+    "Supplier":{
+      "Name": "supplier",
+      "TypeView":"input",
+      "Type":"string",
+      "DisplayedName":"Supplier",
+      "ParentName":"OptionOfPriceListProduct"
+    },
+    "Quantity":{
+      "Name": "Quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "ParentName":"OptionOfPriceListProduct"
+    },
+    "Price":{
+      "Name": "Price",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "Required":true,
+      "ParentName":"OptionOfPriceListProduct"
+    },
+    "CurrencyName":{
+      "Name": "CurrencyName",
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Type":"string",
+      "DefaultValue":"BYR",
+      "Provider":"loadNamesCurrencies",
+      "DisplayedName":"Currency name",
+      "ParentName":"OptionOfPriceListProduct"
+    }
    },
    "OptionalOfOrder":{
     "NameCompany":{
@@ -717,6 +792,71 @@
       "ReadOnly":true
     }
    },
+   "pricelist":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "DisplayedName":"Name"
+    },
+    "Description":{
+      "Name": "Description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Description"
+    },
+    "Version":{
+      "Name": "Version",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Version"
+    }
+   },
+   "pricelistContent":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "ReadOnly":true,
+      "ParentName":"pricelistContent"
+    },
+    "Description":{
+      "Name": "Description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Description",
+      "ReadOnly":true,
+      "ParentName":"pricelistContent"
+    },
+    "Version":{
+      "Name": "Version",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Version",
+      "ReadOnly":true,
+      "ParentName":"pricelistContent"
+    },
+    "CreationDate":{
+      "Name": "CreationDate",
+      "Type":"string",
+      "DisplayedName":"Creation Date",
+      "ReadOnly":true
+    },
+    "LastModifiedDate":{
+      "Name": "LastModifiedDate",
+      "Type":"string",
+      "DisplayedName":"Last Modified Date",
+      "ReadOnly":true
+    }
+   },
    "ProductOrder":{
     "Name":{
       "Name": "Name",
@@ -765,6 +905,7 @@
       "TypeView":"input",
       "Type":"double",
       "DisplayedName":"Total Price",
+      "Accessor":"createPriceNDS",
       "category":"OrderProduct",
       "Required":true
     },
@@ -772,9 +913,8 @@
       "Name": "totalpricends",
       "TypeView":"input",
       "Type":"double",
-      "DisplayedName":"Total Price NDS",
+      "DisplayedName":"Price NDS 20%",
       "category":"OrderProduct",
-      "Required":true,
       "ReadOnly":true
     },
     "markup":{
@@ -783,7 +923,8 @@
       "TypeView":"input",
       "Type":"double",
       "DefaultValue":"",
-      "category":"OrderProduct"
+      "category":"OrderProduct",
+      "ReadOnly":true
     },
     "company":{
       "Name": "company",
@@ -793,7 +934,8 @@
       "DefaultValue":"BYN",
       "Provider":"loadCompanies",
       "DisplayedName":"Company",
-      "category":"OrderProduct"
+      "category":"OrderProduct",
+      "Required":true
     },
     "description":{
       "Name": "descriptionOrder",
@@ -883,6 +1025,43 @@
       "Type":"double",
       "DisplayedName":"Total Price",
       "category":"OrderProduct",
+      "Required":true
+    },
+    "manufacturer":{
+      "Name": "manufacturer",
+      "Type":"string",
+      "DisplayedName":"Manufacturer"
+    }
+   },
+   "PriceListValuesGrid":{
+    "Position":{
+      "Name": "position",
+      "Type":"string",
+      "DisplayedName":"No.",
+      "Order": 1000,
+      "isSortable": false
+    },
+    "productName":{
+      "Name": "productName",
+      "Type":"string",
+      "DisplayedName":"Product Name",
+      "isSortable": true,
+      "Order": 980
+    },
+    "quantity":{
+      "Name": "quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Quantity",
+      "category":"priceList",
+      "Required":true
+    },
+    "totalprice":{
+      "Name": "totalPrice",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Total Price",
+      "category":"priceList",
       "Required":true
     },
     "manufacturer":{

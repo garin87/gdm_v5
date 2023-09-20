@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AuthorizeService} from '../authorize.service';
 import { Router } from '@angular/router';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
 import { AlertService } from 'src/app/alert/alert.service';
 import { UserForLoginDto } from 'src/app/common/objects/common';
 import { ApplicationService } from 'src/app/common/services/application.service';
+import { LabelsService } from 'src/app/common/services/labels.service';
 
 
 
@@ -17,23 +18,24 @@ export class LoginComponent implements OnInit {
 
 
   public hide = true;
-  public loginForm: FormGroup;
+  public loginForm: UntypedFormGroup;
   
-  password = new FormControl( '', [Validators.required, Validators.minLength(4)]);
-  username  = new FormControl( '', [Validators.required, Validators.minLength(4)]);
+  password = new UntypedFormControl( '', [Validators.required, Validators.minLength(4)]);
+  username  = new UntypedFormControl( '', [Validators.required, Validators.minLength(4)]);
   
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
     private applicationService: ApplicationService,
-    private alertService:AlertService) { }
+    private alertService:AlertService,
+    public _labelsService: LabelsService) { }
   
   ngAfterViewInit(): void {
     this.cdr.detectChanges();
   } 
 
   async ngOnInit() {
-    this.loginForm = new FormGroup({
+    this.loginForm = new UntypedFormGroup({
       username: this.username ,
       password: this.password
     });

@@ -1,5 +1,6 @@
 ﻿using gdm5._0.DTO;
 using gdm5._0.Services.Interfaces;
+using gdm5._0.Shared;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +31,11 @@ namespace gdm5._0.Helpers
             respose.LastPage = uriService?.GetPageUri(new PaginationFilterDTO(roundedTotalPages, validFilter.PageSize), route);
             respose.TotalPages = roundedTotalPages;
             respose.TotalRecords = totalRecords;
+            respose.TotalQuantity = GlobalVariables.TotalQuantity;
+            respose.TotalPrimeCost = GlobalVariables.TotalPrimeCost;
+            respose.TotalPrimeCostEUR = GlobalVariables.TotalPrimeCostEUR;
+            respose.TotalPrimeCostUSD = GlobalVariables.TotalPrimeCostUSD;
+
             return respose;
         }
     }
