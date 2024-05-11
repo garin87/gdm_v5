@@ -10,11 +10,8 @@ namespace gdm5._0.Services
 {
     public class ParameterService : BaseService<Parameter>, IParameterService
     {
-        private readonly DataContext _context;
-
         public ParameterService(DataContext context) : base(context)
         {
-            _context = context;
         }
 
         public List<Parameter> getUniqueNameParameters()
@@ -70,6 +67,7 @@ namespace gdm5._0.Services
                         existingParam.Name = parameterName;
                         existingParam.NameType = parameter.Type;
                         existingParam.Priority = parameter.NavPriority.Value;
+                        existingParam.isRequired = (bool)parameter.Required;
                     }
                     else
                     {
@@ -78,9 +76,9 @@ namespace gdm5._0.Services
                             ProductTypeId = productTypeId,
                             Name = parameterName,
                             NameType = parameter.Type,
-                            Priority = parameter.NavPriority.Value
-
-                        };
+                            Priority = parameter.NavPriority.Value,
+                            isRequired = (bool)parameter.Required
+                    };
 
                         _context.Parameters.Add(inctanceParameter);
                     }
@@ -91,7 +89,6 @@ namespace gdm5._0.Services
                 _context.SaveChanges();
 
             }
-            // _context.SaveChanges();
 
             return productNewDTO;
         }

@@ -8,8 +8,6 @@ namespace gdm5._0.Models
 {
     public class OrderProduct : BaseObject
     {
-       // public int Id { get; set; }
-
         [ForeignKey("ProductId")]
         public int ProductId { get; set; }
         public virtual Product Product { get; set; }
@@ -21,5 +19,6 @@ namespace gdm5._0.Models
         public double TotalPrice { get; set; }
         public double TaxNDS { get; set; }
         public double Markup { get; set; }
+        public DateTime CreatedDateTime { get; set; }
     }
 }

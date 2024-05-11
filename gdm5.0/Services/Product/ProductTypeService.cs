@@ -3,43 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
-using gdm5._0.Services;
 using gdm5._0.Services.Interfaces;
 using gdm5._0.DTO;
 using gdm5._0.Helpers;
-using System.Linq.Expressions;
-using System.Linq.Dynamic;
-using Microsoft.EntityFrameworkCore.DynamicLinq;
 using gdm5._0.Domain.Models.Filters;
 using gdm5._0.Filters;
 using gdm5._0.Extensions;
 using gdm5._0.Shared;
+using gdm5._0.Domain.Models.Order;
+using gdm5._0.Requests.Product;
+using gdm5._0.Domain.Models.Product;
 
 namespace gdm5._0.Services
 {
     public class ProductTypeService : BaseService<ProductType>, IProductTypeService
     {
-        private readonly DataContext _context;
         private readonly IUriService _uriService;
-        public ProductTypeService(DataContext context, IUriService uriService,
-            IHttpContextAccessor httpContextAccessor) : base(context)
+        public ProductTypeService(DataContext context, IUriService uriService) : base(context)
         {
-            _context = context;
-            this._uriService = uriService;
+            _uriService = uriService;
         }
 
         public List<ProductParametrDTO> getProductTypeParameters(string nameType)
         {
-            var productType = _context.ProductTypes.Where(type => type.NameType == nameType).FirstOrDefault();
-
-            if (productType == null)
-                throw new ApplicationException("Product name " + nameType + " does not exist");
-
-            var parametrs = _context.Parameters.Where(parameter => parameter.ProductTypeId == productType.Id).Distinct();
-            Console.WriteLine(parametrs);
+            var productTypeID = GetProductTypeID(nameType);
+            var parametrs = _context.Parameters.Where(parameter => parameter.ProductTypeId == productTypeID).Distinct();
+        
             List<ProductParametrDTO> ProductParameters = new List<ProductParametrDTO>();
             if (parametrs != null)
             {
@@ -50,7 +41,8 @@ namespace gdm5._0.Services
                         Id = param.Id,
                         Value = param.Name,
                         Priority = param.Priority,
-                        NameType = param.NameType
+                        NameType = param.NameType,
+                        isRequired = param.isRequired
                     });
                 };
             }
@@ -58,62 +50,56 @@ namespace gdm5._0.Services
 
             return ProductParameters;
         }
-
         public PagedResponseDTO<List<ProductDTO>> getProductTypeInstances(string nameProductType,
             PaginationFilterDTO pageFilter, string route, SortOptionsDTO sortOption,
             ProductFilter filter)
         {
             var validFilter = new PaginationFilterDTO(pageFilter.PageNumber, pageFilter.PageSize);
-            if (string.IsNullOrEmpty(nameProductType))
-                throw new ApplicationException("Enter valid name product");
-
-            var productType = _context.ProductTypes.Where(type => type.NameType == nameProductType).FirstOrDefault();
-
-            if (productType == null)
-                throw new ApplicationException("Product name " + nameProductType + " does not exist");
-
-
-            var parameters = _context.Parameters.Where(param => param.ProductTypeId == productType.Id);
-
+            var productTypeID = GetProductTypeID(nameProductType);
+            var parameters = GetParametersOfProduct(productTypeID);
             var isSortActive = string.IsNullOrEmpty(sortOption.Name) && string.IsNullOrEmpty(sortOption.Direction);
+
+            if(filter.Parameters is Array)
+            {
+                foreach (var param in filter.Parameters)
+                {
+                    int? id = parameters.FirstOrDefault(p => p.Name.Equals(param.ParameterName))?.Id ;
+
+                    param.ParameterId = id ?? 0;
+                }
+            }
+
 
             filter.StartIndex = validFilter.PageNumber - 1;
             filter.CountInstances = validFilter.PageSize;
-            filter.ProductTypeId = productType.Id;
+            filter.ProductTypeId = productTypeID;
             var filterAssigner = new ProductAssigner(filter);
-            var instancesOfProduct = _context.Products.AsNoTracking()
-                                         .OrderByDescending(product => product.DateOfReceipt)
-                                         .Include(product => product.ProductParameters)
-                                         .Include(product => product.ProductType)
-                                         .Include(product => product.PriceListValue)
-                                         .Include(product => product.WareHouse)
-                                         .Include(product => product.Currency)
-                                         .ApplyFilter(filterAssigner);
+
+            var instancesOfProduct = _context.Products
+                                             .OrderByDescending(product => product.DateOfReceipt)
+                                             .Include(product => product.ProductParameters)
+                                             .Include(product => product.ProductType)
+                                             .Include(product => product.WareHouse)
+                                             .Include(product => product.Currency)
+                                             .AsNoTracking()
+                                             .ApplyFilter(filterAssigner);
+                                             
+            var testQueryString = instancesOfProduct.ToQueryString();
 
             var totalRecords = GlobalVariables.TotalRecords;
             if (!isSortActive)
             {
-                var parametrs = new List<Parameter>();
-
-                if (sortOption.IsParameter)
-                {
-                    parametrs = _context.Parameters.Where(param => param.ProductTypeId == productType.Id).ToList();
-                    //  var paramId = parametrs.Where(el => el.Name == sortOption.Name).FirstOrDefault().Id;
-                    //   productParameters = _context.ProductParameters.Where(type => type.ParameterId == paramId).ToList();
-                    // productParameters = productParameters.Where(el => !string.IsNullOrEmpty(el.Value)).ToList();
-                }
-
-
-                instancesOfProduct = this.getSortProducts(instancesOfProduct, parametrs, sortOption);
+                instancesOfProduct = getSortProducts(instancesOfProduct, parameters.ToList(), sortOption);
             }
          
             instancesOfProduct = filter.CountInstances > 0 ? instancesOfProduct.Skip(filter.StartIndex).Take(filter.CountInstances): instancesOfProduct;
 
-
             var items = new List<ProductDTO>();
-
             foreach (var product in instancesOfProduct)
             {
+                var priceListValue = _context.PriceListValues.FirstOrDefault(pv => pv.ProductId == product.Id);
+                var priceListValueEUR = priceListValue?.PriceEUR ?? 0;
+                var priceListValueEURNDS = priceListValue?.PriceEURNDS ?? 0;
                 var productDTO = new ProductDTO()
                 {
                     ProductId = product.Id,
@@ -131,9 +117,12 @@ namespace gdm5._0.Services
                     Currency = product.Currency?.CurrencyName,
                     WareHouse = product.WareHouse?.Name,
                     PrimeCost = (double)Math.Round((double)(product?.PrimeCost), 2),
-                    PrimeCostEUR = (double)Math.Round((double)(product?.PrimeCostEUR), 2), 
+                    PrimeCostEUR = (double)Math.Round((double)(product?.PrimeCostEUR), 2),
                     PrimeCostUSD = (double)Math.Round((double)(product?.PrimeCostUSD), 2),
                     StandartCost = (double)Math.Round((double)(product?.PrimeCostEUR), 2), // need to improve
+
+                    PriceValueEUR = (double)Math.Round((double)(priceListValueEUR), 2),
+                    PriceValueEURNDS = (double)Math.Round((double)(priceListValueEURNDS), 2),
                     Name = product.Name,
 
                 };
@@ -162,14 +151,14 @@ namespace gdm5._0.Services
           
             if (GlobalVariables.TotalRecords == 0)
             {
-                totalRecords = _context.Products.Where(t => t.ProductTypeId == productType.Id).Count();
+                totalRecords = _context.Products.Where(t => t.ProductTypeId == productTypeID).Count();
             }
-   
 
+          //  var sserRole = this._httpContextAccessor.HttpContext.User.Claims.FirstOrDefault()?.Value;
             var productReponse = PaginationHelper.CreatePagedReponse<ProductDTO>(items, validFilter, totalRecords, _uriService, route);
+           
             return productReponse;
         }
-
         private IQueryable<Product> getSortProducts(
               IQueryable<Product> products, List<Parameter> parameters, SortOptionsDTO sortOption)
         {
@@ -181,8 +170,87 @@ namespace gdm5._0.Services
                 return productsT.OrderByDescending(product => product.getSortField(sortOption, parameters)).AsQueryable();
             }
         }
+        public List<ProductTotalQuantity> LoadProdutReport(loadProductReportRequest request)
+        {
+            int productTypeID = GetProductTypeID(request.Name?.Value);
+            int parameterDiameterID = GetParameterDiameterID(productTypeID);
+
+            ProductFilter filter = new ProductFilter()
+            {
+                Parameters = request.Parameters,
+                Manufacturer = request.Manufacturer?.Value,
+            };
+
+            var parameters = GetParametersOfProduct(productTypeID);
+
+            if (filter.Parameters is Array)
+            {
+                foreach (var param in filter.Parameters)
+                {
+                    int? id = parameters.FirstOrDefault(p => p.Name.Equals(param.Name) && p.ProductTypeId == productTypeID)?.Id;
+
+                    param.ParameterId = id ?? 0;
+                }
+            }
 
 
+            var filterAssigner = new ProductAssigner(filter);
+
+            var OrderProductTotalQ = getProductQuantityByParameter(productTypeID, parameterDiameterID, filterAssigner);
+           
+            var test11 = OrderProductTotalQ.ToQueryString();
+            var test22 = OrderProductTotalQ.ToList();
+
+            var groupedResults = OrderProductTotalQ
+                .GroupBy(t => t.Diameter)
+                .Select(g => new ProductTotalQuantity
+                {
+                    Name = request.Name.Value,
+                    Diameter = g.Key,
+                    TotalAmount = (double)Math.Round((double)(g.Sum(t => t.TotalAmount)), 2),
+                })
+                .OrderByDescending(t => t.TotalAmount)
+                .ToList();
+
+            return groupedResults;
+        }
+        private IQueryable<OrderTotalQuantity> getProductQuantityByParameter(int productTypeID, int parameterID,
+            ProductAssigner filterProductAssigner)
+        {
+            return from subT in (
+                           from p in _context.Products.ApplyFilter(filterProductAssigner) 
+                           join pt in _context.ProductTypes on p.ProductTypeId equals pt.Id
+                           join param in _context.Parameters on pt.Id equals param.ProductTypeId
+                           join pp in _context.ProductParameters on param.Id equals pp.ParameterId
+                           where pt.Id == productTypeID && pp.ParameterId == parameterID
+                           select new {
+                               Diameter = pp.Value,
+                               ProductIDF = p.Id,
+                               pp.ProductId,
+                               pp.ParameterId,
+                               Amount = p.Quantity,
+                           })
+                   join pp in _context.ProductParameters on subT.ProductIDF equals pp.ProductId
+                   where subT.ProductIDF == subT.ProductId && pp.ParameterId == parameterID
+                   group subT by subT.Diameter into g
+                   select new OrderTotalQuantity
+                   {
+                       Diameter = g.Key,
+                       TotalAmount = g.Sum(subT => subT.Amount)
+                   };
+        }
+        private int GetParameterDiameterID(int productTypeId)
+        {
+            var parameterDiameter = _context.Parameters.FirstOrDefault(p => p.ProductTypeId == productTypeId &&
+                                                                      (p.Name.ToLower().Equals("диаметр") ||
+                                                                       p.Name.ToLower().Equals("размер") ||
+                                                                       p.Name.ToLower().Equals("внутренний диаметр")));
+
+            if (parameterDiameter == null)
+                throw new ApplicationException("Product has no 'диаметр' or 'размер'");
+
+            return parameterDiameter.Id;
+        }
     }
 
 

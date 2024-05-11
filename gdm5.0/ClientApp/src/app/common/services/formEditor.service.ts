@@ -12,24 +12,25 @@ export class FormEditorService {
     customProperties:Subject<any> = new Subject<any>();
     dependentProperties:Subject<any> = new Subject<any>();
     dependentPropertiesforDialog:Subject<any> = new Subject<any>();
-    valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined); 
-    instanceProperties:IMetadataProperty[];
+    valueUpdated = new Subject<valueUpdatedData>(); 
+    instanceProperties:IMetadataProperty[] = [];
     setProperties:any;
     instanceData:any;
+    instanceDataList:any;
     listParameters:any;
     listCreatedField:any[] = [];
+    standartCost:any;
     
     constructor(private _metadataService: MetadataService,
         private _dataValueService: DataValueService,
         private _appStateService: AppStateService) {
         this.instanceData = {};
+        this.instanceDataList = {};
         this.listParameters = {};
         this.setProperties = {}
     }
 
     createListProperties(instanceName: string, customProps:any = [], isDependentProps:boolean = false):IMetadataProperty[]{
-        console.log("createListProperties");
-        console.log(this.instanceProperties);
 
         if((!this.instanceProperties || !this.setProperties.hasOwnProperty(instanceName)) && !isDependentProps){
             this.instanceProperties = this._metadataService.metadataTypes[instanceName];
@@ -46,15 +47,18 @@ export class FormEditorService {
         //this.instanceProperties = this.instanceProperties?.concat(customProps);
         this.instanceProperties.forEach(item => this.setValueProvider(item));
         this.setProperties[instanceName] = this.instanceProperties;
-        console.log( this.instanceProperties);
-        
+  
         return  this.instanceProperties;
     }
 
-    setPropertyValue(prop: any, value:any, valueType:string = 'string', 
-        navPriority:number = 1, newName:string = "", isEditedName:boolean = false, isDeletedProp:boolean = false){ 
+    setPropertyValue(parent:string, prop: any, value:any, valueType:string = 'string', 
+        navPriority:number = 1, newName:string = "", 
+        isEditedName:boolean = false, isDeletedProp:boolean = false,
+        isRequired:boolean = false){ 
         const propertyName = prop[0].name.toLowerCase();
         if(propertyName){
+            
+            let parentType = this.instanceDataList[parent] ?? {};
             if(prop[0]?.isParameter){
                 let propName = propertyName;
                 if(isEditedName && prop[0]?.isNewProp){
@@ -67,9 +71,11 @@ export class FormEditorService {
                     type: valueType,
                     navPriority: navPriority,
                     newName: newName,
-                    isDeleted: isDeletedProp
+                    isDeleted: isDeletedProp,
+                    Required: isRequired
                 };
                 this.instanceData['parameters'] = this.listParameters;
+                parentType['parameters'] = this.listParameters;
             }else{
                 this.instanceData[propertyName] = {
                     name: propertyName,
@@ -77,6 +83,8 @@ export class FormEditorService {
                     type: valueType,
                     navPriority: navPriority
                 }
+                parentType[propertyName] = this.instanceData[propertyName];
+                this.instanceDataList[parent] = parentType;
             }
         }
 
@@ -121,24 +129,20 @@ export class FormEditorService {
 
     resetValueProperties():void{
         this.customProperties = new Subject<any>();
-      //  this.dependentProperties = new Subject<any>();
         this.setProperties = {};
-        this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
-     //   this.listCreatedField = [];
+        this.valueUpdated = new Subject<valueUpdatedData>();
         this.instanceData = {};
         this.listParameters = {};
     }
 
     resetValueUpdated():void{
-     //   this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
-       // this.instanceData = {};
     }
 
     disposeFormProperties(){
         this.customProperties = new Subject<any>();
         this.dependentProperties = new Subject<any>();
-        this.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
-      //  this.listCreatedField = [];
+        this.valueUpdated = new Subject<valueUpdatedData>();
+        this.listCreatedField = [];
         this.instanceData = {};
         this.listParameters = {};
     }
@@ -179,10 +183,14 @@ export class FormEditorService {
                 //     }
                 // }
 
+               // let standartCost = 0;
                 if(key === "standartCost"){
                     pv = (pv * this._appStateService.Cur_OfficialRate_EUR).toFixed(2);
+                    this.standartCost = pv;
                 }
                 
+             
+
                 return pv;
             }
         }
@@ -191,7 +199,19 @@ export class FormEditorService {
             let dv = p.defaultValue;
             return dv;
         }
-        
+
+        if(p.name.toLowerCase() === "totalprice"){
+            return (this.standartCost * 1.2).toFixed(2);
+        }
+
+        if(p.name.toLowerCase() === "totalpricends"){
+            return ((this.standartCost * 1.2)*1.2).toFixed(2);
+        }
+
+        if(p.name.toLowerCase() === "markup"){
+            return ((this.standartCost * 1.2) - this.standartCost).toFixed(2);
+        }
+
         return null;
     }
   

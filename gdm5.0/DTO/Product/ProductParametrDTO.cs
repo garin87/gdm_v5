@@ -11,6 +11,7 @@ namespace gdm5._0.DTO
         public string Name { get; set; }
         public string Value { get; set; }
         public double ValueDouble { get; set; }
+        public bool isRequired { get; set; }
         public string NameType { get; set; }
         public int Priority { get; set; }
     }

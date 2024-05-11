@@ -11,12 +11,17 @@ table{
     cursor: pointer;
 }
 
-.table-row-selected .mat-cell {
+.table-row-selected .mat-mdc-cell {
     font-weight: 600;
     border-color: rgb(0 0 0 / 54%);
 }
+
 th.mat-header-cell {
     font-size: 1.1em;
     color: rgb(75 57 57 / 92%);
     font-weight: 600;
+}
+
+.mdc-data-table__cell, .mdc-data-table__header-cell {
+padding: 0px;
 }

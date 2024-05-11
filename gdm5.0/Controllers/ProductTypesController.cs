@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
 using gdm5._0.Services.Interfaces;
 using gdm5._0.DTO;
 using gdm5._0.Requests.Product;
+using Microsoft.AspNetCore.Authorization;
 
 namespace gdm5._0.Controllers
 {
@@ -25,6 +25,7 @@ namespace gdm5._0.Controllers
         }
 
         // GET: api/ProductTypes
+        [Authorize]
         [HttpGet]
         [Route("getProductTypes")]
         public IEnumerable<ProductType> GetProductTypes()
@@ -33,6 +34,7 @@ namespace gdm5._0.Controllers
             return _context.ProductTypes; //Take(2);
         }
         // GET: api/getProductTypeNames
+        [Authorize]
         [HttpGet]
         [Route("getProductTypeNames")]
         public IEnumerable<string> GetProductTypeNames()
@@ -40,6 +42,7 @@ namespace gdm5._0.Controllers
             return _context.ProductTypes.Select(el => el.NameType);
         }
 
+        [Authorize]
         [Route("getProductTypeParameters/{nameType}")]
         [HttpGet]
         public IActionResult getProductTypeParameters([FromRoute] string nameType)
@@ -60,6 +63,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("getProductTypeInstances/{nameType}")]
         [HttpGet]
         public IActionResult getProductTypeInstances([FromRoute] string nameType, [FromQuery] PaginationFilterDTO filter, [FromQuery] SortOptionsDTO sortOption = null)
@@ -80,7 +84,7 @@ namespace gdm5._0.Controllers
             }
         }
 
-
+        [Authorize]
         [Route("getProductTypeInstances2")]
         [HttpPost]
         public IActionResult getProductTypeInstances2([FromBody] getProductTypeInstancesRequest request)
@@ -103,16 +107,8 @@ namespace gdm5._0.Controllers
         }
 
 
-        // GET: api/GetOtherProductTypes
-        [HttpGet]
-        [Route("GetOtherProductTypes")]
-        public IEnumerable<ProductType> GetOtherProductTypes()
-        {
-            // type.Id = 1 штока хромированные type.Id = 2 трубы хонингованные
-            return _context.ProductTypes.Skip(2);
-        }
-
         // GET: api/ProductTypes/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductType([FromRoute] int id)
         {
@@ -132,6 +128,7 @@ namespace gdm5._0.Controllers
         }
 
         // PUT: api/ProductTypes/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProductType([FromRoute] int id, [FromBody] ProductType productType)
         {
@@ -167,6 +164,7 @@ namespace gdm5._0.Controllers
         }
 
         // POST: api/ProductTypes
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> PostProductType([FromBody] ProductType productType)
         {
@@ -182,6 +180,7 @@ namespace gdm5._0.Controllers
         }
 
         // DELETE: api/ProductTypes/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProductType([FromRoute] int id)
         {
@@ -200,6 +199,23 @@ namespace gdm5._0.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(productType);
+        }
+
+        [Authorize]
+        [Route("loadProductReport")]
+        [HttpPost]
+        public IActionResult loadProductReport(loadProductReportRequest request)
+        {
+            try
+            {
+                var result = this._productTypeService.LoadProdutReport(request);
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
         }
 
         private bool ProductTypeExists(int id)

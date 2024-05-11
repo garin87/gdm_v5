@@ -5,9 +5,8 @@
 }
 
 .product-command-button{
-    margin: 1em;
+    margin: 0.4em 1em 0.4em 0;
     margin-left: 8px;
-    margin-left: 0px;
     text-transform: uppercase;
 }
 
@@ -99,11 +98,18 @@
   padding-bottom: 20px;
 }
 
-/* .sidePanelOpened{
-  background: #26316d !important;
-} */
+.grid-order-report{
+    padding: 10px;
+}
+.order-action-report-bth{
+    margin: 0em 0 1em 0;
+    display: flex;
+    margin-left: 2px;
+}
 
-
+.selected-panel{
+    background: #683fb5 !important;
+}
 
 @media (max-width: 898px){
     .product-command-button.mat-raised-button.mat-button-base{

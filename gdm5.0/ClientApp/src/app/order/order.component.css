@@ -130,6 +130,18 @@
     height: auto;
 }
 
+.grid-order-report{
+    padding: 10px;
+}
+
+.order-action-report-bth{
+    margin: 0em 0 1em 0;
+    display: flex;
+    margin-left: 2px;
+}
+.selected-panel{
+    background: #683fb5 !important;
+}
 @media (max-width: 740px){
     .order-content{
         overflow: auto;

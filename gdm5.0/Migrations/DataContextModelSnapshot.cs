@@ -100,6 +100,12 @@ namespace gdm5._0.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailSecond")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("MobilePhone")
                         .HasColumnType("nvarchar(max)");
 
@@ -191,7 +197,7 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CurrencyId")
+                    b.Property<int?>("CurrencyId")
                         .HasColumnType("int");
 
                     b.Property<int>("CustomerId")
@@ -218,6 +224,9 @@ namespace gdm5._0.Migrations
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CurrencyId");
@@ -225,6 +234,8 @@ namespace gdm5._0.Migrations
                     b.HasIndex("CustomerId");
 
                     b.HasIndex("OrderStatusId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Orders");
                 });
@@ -236,6 +247,9 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("CreatedDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<double>("Markup")
                         .HasColumnType("float");
 
@@ -245,8 +259,8 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
-                    b.Property<float>("Quantity")
-                        .HasColumnType("real");
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
 
                     b.Property<double>("TaxNDS")
                         .HasColumnType("float");
@@ -270,6 +284,9 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("CreatedDateTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<double>("Markup")
                         .HasColumnType("float");
 
@@ -279,8 +296,8 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductHistoryId")
                         .HasColumnType("int");
 
-                    b.Property<float>("Quantity")
-                        .HasColumnType("real");
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
 
                     b.Property<double>("TaxNDS")
                         .HasColumnType("float");
@@ -343,6 +360,9 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductTypeId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("isRequired")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductTypeId");
@@ -375,6 +395,9 @@ namespace gdm5._0.Migrations
                     b.Property<int?>("ProductTypeHistoryId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("isRequired")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductTypeHistoryId");
@@ -394,6 +417,9 @@ namespace gdm5._0.Migrations
 
                     b.Property<DateTime>("CreationDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Currency")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -424,17 +450,44 @@ namespace gdm5._0.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("PercentOfMarkup")
+                        .HasColumnType("int");
+
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<int>("PriceListId")
+                    b.Property<double>("PriceEUR")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PriceEURNDS")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("PriceListId")
                         .HasColumnType("int");
+
+                    b.Property<double>("PriceNDS")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PriceUSD")
+                        .HasColumnType("float");
+
+                    b.Property<double>("PriceUSDNDS")
+                        .HasColumnType("float");
 
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProductParameterUniqCode")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ProductParameterValueCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double>("Quantity")
                         .HasColumnType("float");
+
+                    b.Property<string>("Unit")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Version")
                         .HasColumnType("float");
@@ -491,8 +544,8 @@ namespace gdm5._0.Migrations
                     b.Property<int>("ProductTypeId")
                         .HasColumnType("int");
 
-                    b.Property<float>("Quantity")
-                        .HasColumnType("real");
+                    b.Property<double>("Quantity")
+                        .HasColumnType("float");
 
                     b.Property<double>("StandartCost")
                         .HasColumnType("float");
@@ -500,7 +553,10 @@ namespace gdm5._0.Migrations
                     b.Property<string>("Supplier")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("WareHouseId")
+                    b.Property<string>("Units")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("WareHouseId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -521,7 +577,7 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("CurrencyId")
+                    b.Property<int?>("CurrencyId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("DateOfChange")
@@ -575,10 +631,13 @@ namespace gdm5._0.Migrations
                     b.Property<string>("Supplier")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Units")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("WareHouseId")
+                    b.Property<int?>("WareHouseId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -597,10 +656,10 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ParameterId")
+                    b.Property<int?>("ParameterId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductId")
+                    b.Property<int?>("ProductId")
                         .HasColumnType("int");
 
                     b.Property<string>("Value")
@@ -622,10 +681,10 @@ namespace gdm5._0.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("ParameterHistoryId")
+                    b.Property<int?>("ParameterHistoryId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ProductHistoryId")
+                    b.Property<int?>("ProductHistoryId")
                         .HasColumnType("int");
 
                     b.Property<string>("Value")
@@ -781,8 +840,7 @@ namespace gdm5._0.Migrations
                     b.HasOne("gdm5._0.Models.Currency", "Currency")
                         .WithMany("Orders")
                         .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("gdm5._0.Models.Customer", "Customer")
                         .WithMany("Orders")
@@ -794,11 +852,17 @@ namespace gdm5._0.Migrations
                         .WithMany("Orders")
                         .HasForeignKey("OrderStatusId");
 
+                    b.HasOne("gdm5._0.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+
                     b.Navigation("Currency");
 
                     b.Navigation("Customer");
 
                     b.Navigation("OrderStatus");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("gdm5._0.Models.OrderProduct", b =>
@@ -874,8 +938,7 @@ namespace gdm5._0.Migrations
                     b.HasOne("gdm5._0.Models.PriceList", "PriceList")
                         .WithMany("PriceListValue")
                         .HasForeignKey("PriceListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("gdm5._0.Models.Product", "Product")
                         .WithMany("PriceListValue")
@@ -903,9 +966,7 @@ namespace gdm5._0.Migrations
 
                     b.HasOne("gdm5._0.Models.WareHouse", "WareHouse")
                         .WithMany("Products")
-                        .HasForeignKey("WareHouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("WareHouseId");
 
                     b.Navigation("Currency");
 
@@ -918,9 +979,7 @@ namespace gdm5._0.Migrations
                 {
                     b.HasOne("gdm5._0.Models.Currency", "Currency")
                         .WithMany()
-                        .HasForeignKey("CurrencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("CurrencyId");
 
                     b.HasOne("gdm5._0.Models.ProductTypeHistory", "ProductTypeHistory")
                         .WithMany("ProductHistory")
@@ -936,14 +995,12 @@ namespace gdm5._0.Migrations
                     b.HasOne("gdm5._0.Models.Parameter", "Parameter")
                         .WithMany("ProductParameters")
                         .HasForeignKey("ParameterId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("gdm5._0.Models.Product", "Product")
                         .WithMany("ProductParameters")
                         .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.Navigation("Parameter");
 
@@ -954,15 +1011,11 @@ namespace gdm5._0.Migrations
                 {
                     b.HasOne("gdm5._0.Models.ParameterHistory", "Parameter")
                         .WithMany("ProductParameterHistory")
-                        .HasForeignKey("ParameterHistoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParameterHistoryId");
 
                     b.HasOne("gdm5._0.Models.ProductHistory", "ProductHistory")
                         .WithMany("ProductParameterHistory")
-                        .HasForeignKey("ProductHistoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ProductHistoryId");
 
                     b.Navigation("Parameter");
 

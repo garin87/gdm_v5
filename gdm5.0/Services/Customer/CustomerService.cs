@@ -9,41 +9,28 @@ namespace gdm5._0.Services
 {
     public class CustomerService : BaseService<Customer>, ICustomerService
     {
-        private readonly DataContext _context;
-
         public CustomerService(DataContext context) : base(context)
         {
-            _context = context;
         }
 
         public Customer GetCustomerByNameCompany(string nameCompany)
         {
-
-            if (string.IsNullOrEmpty(nameCompany))
-                throw new ApplicationException("Enter valid name company");
-
+            ValidateCompanyName(nameCompany);
 
             var existcompany = _context.Customer.FirstOrDefault(customer => customer.NameCompany.ToLower() == nameCompany.ToLower());
-            if (existcompany == null) throw new ApplicationException("Entered name of company does not exist");
+            if (existcompany == null) 
+                throw new ApplicationException("Entered name of company does not exist");
 
             return existcompany;
         }
-
         public string[] GetNamesCompanies()
         {
             return _context.Customer.Select(customer => customer.NameCompany).OrderBy(customerName => customerName).ToArray();
         }
-
         public async Task<Customer> AddNewCustomer(addCustomerRequest newCustomer)
         {
-
-            if (string.IsNullOrEmpty(newCustomer.NameCompany?.Value))
-                throw new ApplicationException("Enter valid name company");
-
-
-            var existcompany = _context.Customer.FirstOrDefault(customer => customer.NameCompany == newCustomer.NameCompany.Value);
-            if (existcompany != null) throw new ApplicationException("Entered name of company exists");
-
+            ValidateCompanyName(newCustomer.NameCompany?.Value);
+            ValidateIsCustomerExists(newCustomer?.NameCompany?.Value);
 
             var customer = new Customer()
             {
@@ -56,29 +43,20 @@ namespace gdm5._0.Services
                 MobilePhoneSecond = newCustomer.MobilePhone2?.Value ?? "",
                 Description = newCustomer.Description?.Value ?? "",
                 Priority = newCustomer.Priority?.Value ?? "",
-                PriorityColor = newCustomer.PriorityColor?.Value ?? ""
-
+                PriorityColor = newCustomer.PriorityColor?.Value ?? "",
+                Email = newCustomer.Email?.Value ?? "",
+                EmailSecond = newCustomer.Email2?.Value ?? "",
             };
 
             _context.Customer.Add(customer);
             await _context.SaveChangesAsync();
 
-
             return customer;
         }
-
         public async Task<Customer> UpdateCustomer(UpdateCustomerRequest updatedCustomer)
         {
-            if (updatedCustomer.CustomerId == 0)
-                throw new ApplicationException("Enter valid CustomerId");
-
-            if (string.IsNullOrEmpty(updatedCustomer.NameCompany?.Value))
-                throw new ApplicationException("Enter valid name company");
-
-
-            var existcompany = _context.Customer.FirstOrDefault(customer => customer.Id == updatedCustomer.CustomerId);
-            if (existcompany == null) throw new ApplicationException("Entered customer does not exist");
-
+            ValidateCompanyName(updatedCustomer.NameCompany?.Value);
+            var existcompany = GetCustomerById(updatedCustomer.CustomerId);
 
             existcompany.NameCompany = updatedCustomer.NameCompany.Value; // needs check existed name 
             existcompany.AddressCompany = updatedCustomer.AddressCompany?.Value ?? "";
@@ -90,11 +68,38 @@ namespace gdm5._0.Services
             existcompany.Description = updatedCustomer.Description?.Value ?? "";
             existcompany.Priority = updatedCustomer.Priority?.Value ?? "";
             existcompany.PriorityColor = updatedCustomer.PriorityColor?.Value ?? "";
-
+            existcompany.Email = updatedCustomer.Email?.Value ?? "";
+            existcompany.EmailSecond = updatedCustomer.Email2?.Value ?? "";
             await _context.SaveChangesAsync();
             return existcompany;
         }
 
+        protected void ValidateCompanyName(string nameCompany)
+        {
+            if (string.IsNullOrEmpty(nameCompany))
+                throw new ApplicationException("Enter valid name company");
+        }
+        protected void ValidateCustomerId(int customerId)
+        {
+            if (customerId == 0)
+                throw new ApplicationException("Enter valid id of company");
+        }
+        protected void ValidateIsCustomerExists(string customerName)
+        {
+            var existcompany = _context.Customer.Any(customer => customer.NameCompany.Trim().ToLower() == customerName.Trim().ToLower());
+            if (existcompany)
+                throw new ApplicationException("Entered name of company exists");
+        }
+        protected Customer GetCustomerById(int customerId)
+        {
+            ValidateCustomerId(customerId);
+
+            var existcompany = _context.Customer.FirstOrDefault(customer => customer.Id == customerId);
+            if (existcompany == null)
+                throw new ApplicationException("Entered customer does not exist");
+
+            return existcompany;
+        }
     }
 
 

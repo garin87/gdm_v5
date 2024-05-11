@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { BehaviorSubject } from "rxjs";
 import { ProductTypeInstancesRequest } from "../objects/common";
+import { CurrenciesService } from "./currencies.service";
 
 
 @Injectable()
@@ -39,8 +40,25 @@ export class AppStateService {
     public selectedProductName = undefined;
     
     // Currency 
-    public Cur_OfficialRate_USD:number = undefined;
-    public Cur_OfficialRate_EUR:number = undefined;
+    private Cur_OfficialRate_USD_V:number = undefined;
+    private Cur_OfficialRate_EUR_V:number = undefined;
+   
+    get Cur_OfficialRate_USD(){
+        return this.Cur_OfficialRate_USD_V;
+    };
+    
+    set Cur_OfficialRate_USD(value){
+        this.Cur_OfficialRate_USD_V = value;
+    }
+
+    get Cur_OfficialRate_EUR(){
+        return this.Cur_OfficialRate_EUR_V;
+    };
+    
+    set Cur_OfficialRate_EUR(value){
+        this.Cur_OfficialRate_EUR_V = value;
+    }
+
     public currencyNBRB:Array<any> = undefined;
     
     // Grid spinner
@@ -57,6 +75,8 @@ export class AppStateService {
     public filter_clickByTileFilter = new BehaviorSubject<any>(undefined);
     public filter_initCreateFilterTileComponent = new BehaviorSubject<any>(undefined);
 
-    constructor() {}
+    constructor() {
+
+    }
 
 }

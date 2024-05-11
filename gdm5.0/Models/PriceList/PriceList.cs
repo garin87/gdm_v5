@@ -9,7 +9,7 @@ namespace gdm5._0.Models
         public string Name { get; set; }
         public string Description { get; set; }
         public double Version { get; set; }
-   //    public string Currency { get; set; }
+        public string Currency { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime LastModifiedDate { get; set; }
 

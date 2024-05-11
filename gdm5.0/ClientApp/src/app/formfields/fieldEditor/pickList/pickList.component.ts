@@ -14,9 +14,13 @@ export class PickListComponent implements OnInit {
     @Input("valueUpdated") valueUpdated: Subject<valueUpdatedData>;
     @Input("property") _property: any;
     @Input("items") items: Observable<ISelectableItem[]>;
+    @Input("listCreatedField") _listCreatedField: any;
+
     @ViewChild("selectedOption") selectedOption: any;
     @ViewChild("textInput") textInput: ElementRef;
+    @ViewChild("matOption") matOption: ElementRef;
 
+    
     name: string;
     typeName:string;
     isDateTimeRange: boolean;
@@ -34,9 +38,6 @@ export class PickListComponent implements OnInit {
     constructor() {}
 
     ngOnInit(){
-        console.log(" init  pickList");
-        console.log(this._property);
-        console.log(this.valueUpdated);
         this.localvalueUpdated = this.valueUpdated;
         this.category = this._property.category;
         this.listOptions = this._property.name?.toLowerCase() == "currency" ? of(currencies) : this.items;
@@ -59,7 +60,6 @@ export class PickListComponent implements OnInit {
     
     ngOnChanges(change){
         if(change["items"]){
-          console.log("------------- -------ngOnChanges ========== items");
           this.listOptions = this.items;
         }
     };
@@ -74,14 +74,25 @@ export class PickListComponent implements OnInit {
         this.inputControl.setValue(this.selectedOption.value);
 
     }
+
     changeText(){
         if(this.readOnly) return;
         
-        console.log(this.textInput);
         if(this.textInput){
             this.valChanged(this.textInput.nativeElement.value);
         }
 
+    }
+    ngAfterViewInit(){
+        this.setCreatedField();
+    }
+
+    private setCreatedField(){
+        let p = {
+            propertyName: this.name,
+            htmlRef: this.textInput
+        }
+        this._listCreatedField.push(p);
     }
     valChanged(tValue:string){
       
@@ -110,23 +121,6 @@ export class PickListComponent implements OnInit {
             })
         )
     }
-    // onKey(value) { 
-    //   //  this.listOptions = this.search(value);
-    // }
-    // search(value: string):Observable<ISelectableItem[]> { 
-    //     let filterValue = value.toLowerCase();
-    //     return this.items.pipe(
-    //         filter(
-    //             (option:any) => {
-    //                 if(option.value.toLowerCase().includes(filterValue)){
-    //                     return option
-    //                 }else return;
-    //             }
-    //         )
-    //      )
-    //     // return this.items.filter((option:ISelectableItem) => option.value.toLowerCase().startsWith(filter));
-    // }
-    
 }
 
 const currencies:ISelectableItem[] = [

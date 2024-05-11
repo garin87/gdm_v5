@@ -17,7 +17,6 @@ const routes: Routes = [
     { path: 'modeling', component: ModelingComponent, canActivate: [AuthorizeGuard]},
     { path: 'order', component: OrderComponent, canActivate: [AuthorizeGuard]},
     
-    
     { path: '', redirectTo: '/home', pathMatch: 'full' },
     { path: '**', redirectTo: ''}
   ];

@@ -10,10 +10,10 @@ namespace gdm5._0.Models
     public class ProductParameter : BaseObject, IDbSortingModel
     {
 
-        public int ProductId { get; set; }
+        public int? ProductId { get; set; }
         public virtual Product Product { get; set; }
 
-        public int ParameterId { get; set; }
+        public int? ParameterId { get; set; }
         public virtual Parameter Parameter { get; set; }
 
         public string Value { get; set; }

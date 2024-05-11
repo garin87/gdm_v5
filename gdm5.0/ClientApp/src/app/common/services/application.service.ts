@@ -87,6 +87,10 @@ export class ApplicationService {
       return  this.http.get(siteURI + "api/customer/GetNamesCustomeres");
     }
 
+    getProcessingOrderInfo():Observable<any>{
+      return  this.http.get(siteURI + "api/orders/getProcessingOrderInfo");
+    }
+
     addWareHouse(body:any):Observable<any> {
       return this.http.post<UserForRegistrationDto> (siteURI + "api/warehouse/AddNewWareHouse", body,{
         headers: new HttpHeaders ({
@@ -155,6 +159,9 @@ export class ApplicationService {
       return this.http.delete(siteURI + "api/сurrency/DeleteСurrency/" + `${id}`);
     }
 
+    getPriceListByName(name):Observable<any>{
+      return  this.http.get(siteURI + "api/pricelist/getPriceListByName/" + `${name}`);
+    }
 
     getPriceLists():Observable<any>{
       return  this.http.get(siteURI + "api/pricelist/GetAll");
@@ -184,8 +191,20 @@ export class ApplicationService {
       });
     }
 
+    updatePriceListValues(body:any):Observable<any> {
+      return this.http.post<UserForRegistrationDto> (siteURI + "api/pricelistvalue/updatePriceListValues", body,{
+        headers: new HttpHeaders ({
+          "Content-Type": "application/json"
+          })
+      });
+    }
+    
     deletePriceList(id):Observable<any>{
       return this.http.delete(siteURI + "api/pricelist/deletePriceList/" + `${id}`);
+    }
+
+    deletePriceListValues(id):Observable<any>{
+      return this.http.delete(siteURI + "api/pricelistvalue/deletePriceListValues/" + `${id}`);
     }
 
     addInstanceProduct(body:any):Observable<any> {
@@ -253,8 +272,7 @@ export class ApplicationService {
     }
 
     getOrders(getOrdersInstancesRequest:IGetOrderInstancesRequest):Observable<any>{ 
-     
-      const body = getOrdersInstancesRequest; //JSON.stringify(getOrdersInstancesRequest);
+      const body = getOrdersInstancesRequest; 
       return this.http.post<UserForRegistrationDto> 
       (siteURI + "api/orders/getOrderProduct", body,{
          headers: new HttpHeaders ({
@@ -306,7 +324,6 @@ export class ApplicationService {
     }
 
     getProductParameters(nameProduct:string):Observable<any>{
-      console.log("--[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ getProductParameters ]]]]]]]]]]]]]]]");
        const param = nameProduct;
        return  this.http.get(
               siteURI + "api/productTypes/getProductTypeParameters/" + param
@@ -314,7 +331,6 @@ export class ApplicationService {
     }
 
     getProductParameters2(nameProduct:string):Observable<any>{
-      console.log("--[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ getProductParameters 2]]]]]]]]]]]]]]]");
        const param = nameProduct;
        return  this.http.get(
               siteURI + "api/productTypes/getProductTypeParameters/" + param
@@ -322,7 +338,6 @@ export class ApplicationService {
     }
 
     getProductParameters3(nameProduct:string):Observable<any>{
-      console.log("--[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ getProductParameters 3]]]]]]]]]]]]]]]");
        const param = nameProduct;
        return  this.http.get(
               siteURI + "api/productTypes/getProductTypeParameters/" + param
@@ -359,6 +374,40 @@ export class ApplicationService {
 
     GetCartOrderCount():Observable<any>{
       return  this.http.get(siteURI + "api/orders/GetCartOrderCount");
+    }
+
+    // Price list values
+
+    addPriceListValues(body:any):Observable<any> {
+      return this.http.post<UserForRegistrationDto> (siteURI + "api/pricelistvalue/addPriceListValues", body,{
+        headers: new HttpHeaders ({
+          "Content-Type": "application/json"
+        })
+      });
+    }
+
+    loadOrederReport(parameters):Observable<any>{
+
+      const body = JSON.stringify(parameters); //JSON.stringify(getOrdersInstancesRequest);
+      return this.http.post<UserForRegistrationDto> 
+      (siteURI + "api/orders/loadOrederReport", body,{
+         headers: new HttpHeaders ({
+           "Content-Type": "application/json"
+          })
+       });
+
+    }
+
+    loadProductReport(parameters):Observable<any>{
+
+      const body = JSON.stringify(parameters);
+      return this.http.post<UserForRegistrationDto> 
+      (siteURI + "api/productTypes/loadProductReport", body,{
+         headers: new HttpHeaders ({
+           "Content-Type": "application/json"
+          })
+       });
+
     }
 
     getNBRBCurrencies(date = 0, period = 0):Observable<any>{

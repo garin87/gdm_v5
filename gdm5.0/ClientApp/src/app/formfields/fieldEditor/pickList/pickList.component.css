@@ -38,3 +38,10 @@
     color: #797968;
 }
 
+
+input[disabled]{
+    background: #9f9f9d;
+}
+input[disabled] + mat-select{
+    pointer-events: none;
+}

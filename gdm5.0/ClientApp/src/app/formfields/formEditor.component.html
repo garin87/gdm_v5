@@ -1,8 +1,10 @@
 <div  class="app-form-field-row" id="{{metadataTypeName + 'controls-id'}}" *ngIf="properties | async" >
      <div *ngFor="let property of(properties) | async" class="row-property">
        <field-editor  class="app-property-row" [property]="property" 
-            [valueUpdated]="this._formEditorService.valueUpdated" 
+            [valueUpdated]="valueUpdated" 
             [listCreatedField]="this._formEditorService.listCreatedField" >
         </field-editor>
      </div>
 </div>
+
+<!-- [valueUpdated]="this._formEditorService.valueUpdated"  -->

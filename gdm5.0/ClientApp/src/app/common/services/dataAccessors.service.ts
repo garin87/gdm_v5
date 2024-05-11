@@ -35,21 +35,18 @@ export class DataAccessorsService {
 
     public loadParameterFields = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any) =>{
-          console.log(" ------- ------ - - -- - - --  init --- Accessor --- loadParametersField");
-          console.log(value);
-          console.log(propertyContext);
+
           let listParameters = [];
           this._applicationService.getProductParameters(value).subscribe((data:IParameter[] | any[]) =>{
              if(typeof data == "object" && data.length > 0){
                  data.forEach((item:IParameter) => {
-                    const p = new MetadataProperty(item.value, "string", undefined, 
+                    const p = new MetadataProperty(item.value, item?.nameType ?? "string", undefined, 
                     item.id, item.value, undefined,undefined,undefined,
-                    undefined,undefined, item.priority,true,item.priority,false,true,false,true,true,false, propertyContext.category);
+                    undefined,undefined, item.priority,true, item.priority, item.isRequired,true,false,true,true,false, propertyContext.category);
                     listParameters.push(p);//true,10,false,true
                  })
              }
-             console.log("--------- ------ listParameters");
-             console.log(listParameters);
+
              listParameters.push(
                  new MetadataProperty("TestParameter","string","",null, "Parameter","parameter",
                   undefined,undefined,undefined,
@@ -69,23 +66,18 @@ export class DataAccessorsService {
 
     public loadDependParameters = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any) =>{
-          console.log(" ------- ------ - - -- - - --  init --- Accessor --- loadDependParameters");
-          console.log(value);
-          console.log(propertyContext);
           let listParameters = [];
           this._appStateService.selectedInstancePanel = value;
           this._applicationService.getProductParameters(value).subscribe((data:IParameter[] | any[]) =>{
              if(typeof data == "object" && data.length > 0){
                  data.forEach((item:IParameter) => {
-                    const p = new MetadataProperty(item.value, "string", undefined, 
+                    const p = new MetadataProperty(item.value, item?.nameType ?? "string", undefined, 
                     item.id, item.value, undefined,undefined,undefined,
-                    undefined,undefined,item.priority,false,item.priority,false,false,false,false,true,false, propertyContext.category);
+                    undefined,undefined,item.priority,false, item.priority, item.isRequired,false,false,false,true,false, propertyContext.category);
                     listParameters.push(p);
                  })
              }
-             console.log("--------- ------ listParameters");
-             console.log(listParameters);
-        
+
              delete this._FormEditorService.instanceData.parameters;    
              this._FormEditorService.listParameters = {};
              const dependentProperties: IDependentProperties = {
@@ -111,13 +103,12 @@ export class DataAccessorsService {
         .subscribe((data:IParameter[] | any[]) =>{
            if(typeof data == "object" && data.length > 0){
                data.forEach((item:IParameter) => {
-                   const p = new MetadataProperty(item.value, "string", undefined, 
+                   const p = new MetadataProperty(item.value, item?.nameType ?? "string", undefined, 
                    item.id, item.value,"picklist","picklist","loadInstancesParameterProduct",undefined,
                    undefined,item.priority,false,item.priority,true,false,false,false,true,false, selectedProduct);
                    listParameters.push(p);
                })
-                   console.log("--------- ------ listParameters");
-                   console.log(listParameters);
+
               
                const dateofreceipt = this._FormEditorService.instanceData["dateofreceipt"];
                const currencyname =  this._FormEditorService.instanceData["currencyname"];
@@ -140,32 +131,94 @@ export class DataAccessorsService {
            }
            
        })
-        // setTimeout(() => {             
-          
-        //  }, 0);
-       
 
     })
+
+    public  createJustParametersAsPickList = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+
+        this._FormEditorService.resetValueUpdated();
+        let listParameters = [];
+        let selectedProduct = value;
+        this._appStateService.selectedProductName = selectedProduct;
+
+        const metaDataTypeName = propertyContext.category;
+               
+        //this._appStateService.refreshAddProductSection.next(true);
+        this._applicationService.getProductParameters2(selectedProduct)
+        .subscribe((data:IParameter[] | any[]) =>{
+           if(typeof data == "object" && data.length > 0){
+               data.forEach((item:IParameter) => {
+                   if(item.value.toLowerCase() !== "номер"){
+                    const p = new MetadataProperty(item.value, item?.nameType ?? "string", undefined, 
+                    item.id, item.value,"picklist","picklist","loadInstancesParameterProduct",undefined,
+                    undefined,item.priority,false,item.priority,false,false,false,false,true,false, selectedProduct);
+                    listParameters.push(p);
+                   }
+                   
+               })
+
+               const name = { name : "name", navPriority : 1, type : "string", value: selectedProduct};
+               this._FormEditorService.instanceData = {};  
+
+               this._FormEditorService.instanceData["name"] = name;
+               this._appStateService.selectedInstancePanel = selectedProduct;
+                if(this._FormEditorService.dependentProperties.observers.length == 0){
+                   this._FormEditorService.dependentProperties = new Subject<any>();
+                }
+
+                this._FormEditorService.listParameters = {};
+                const dependentProperties: IDependentProperties = {
+                    metadataTypeName : "",
+                    properties : listParameters
+                }
+                this._FormEditorService.dependentProperties.next(dependentProperties);
+           }
+           
+       })
+
+    })
+
 
     public  createParametersAsSelect = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any) => {
         this._FormEditorService.resetValueUpdated();
         let listParameters = [];
         let selectedProduct = value;
-        //this._appStateService.selectedProductName = selectedProduct;
-       // const metaDataTypeName = propertyContext.category;  
-      //  this._appStateService.refreshAddProductSection.next(true);
         this._applicationService.getProductParameters2(selectedProduct)
         .subscribe((data:IParameter[] | any[]) =>{
            if(typeof data == "object" && data.length > 0){
                data.forEach((item:IParameter) => {
-                   const p = new MetadataProperty(item.value, "string", undefined, 
-                   item.id, item.value,"picklist","picklist","loadInstancesParameterProduct",undefined,
-                   undefined,item.priority,false,item.priority,false,false,false,false,true,false, selectedProduct);
-                   listParameters.push(p);
-               })
-    
 
+                   if(item?.value && (item.value.toLocaleLowerCase() == "диаметр" || 
+                   item.value.toLocaleLowerCase() == "размер")){
+                    const p = new MetadataProperty(item.value, item?.nameType ?? "string", undefined, 
+                    item.id, item.value,"picklist","picklist","loadInstancesParameterProduct", undefined,
+                    "disableFilterDimension", item.priority, false, item.priority, item.isRequired, false,
+                    false, false, true, false, selectedProduct);
+                    listParameters.push(p);
+                   }else{
+                    const p = new MetadataProperty(item.value, item?.nameType ?? "string", undefined, 
+                    item.id, item.value,"picklist","picklist","loadInstancesParameterProduct",undefined,
+                    undefined, item.priority,false,item.priority,item.isRequired,false,false,false,true,false, selectedProduct);
+                    listParameters.push(p);
+                   }
+
+                   if(item?.value && (item.value.toLocaleLowerCase() == "диаметр" || 
+                                      item.value.toLocaleLowerCase() == "размер")){
+                    let p = new MetadataProperty("FilterStartDimension", item?.nameType ?? "string", undefined, 
+                    item.id, "FilterStartDimension", "picklist", "picklist", "loadInstancesPP", undefined, 
+                    "disableDimensionField", item.priority, false, item.priority, item.isRequired, false, false, false, true, false,
+                    selectedProduct, item.value);
+                    listParameters.push(p);
+                    p = new MetadataProperty("FilterEndDimension", item?.nameType ?? "string", undefined, 
+                    item.id, "FilterEndDimension", "picklist", "picklist", "loadInstancesPP", undefined,
+                    "disableDimensionField",item.priority,false,item.priority,item.isRequired,false,false,false,true,false, 
+                    selectedProduct, item.value);
+                    listParameters.push(p);
+                   }
+               })
+            
                if(this._FormEditorService.dependentProperties.observers.length == 0){
                    this._FormEditorService.dependentProperties = new Subject<any>();
                 }
@@ -175,9 +228,9 @@ export class DataAccessorsService {
                 metadataTypeName : "OptionOfPriceListProduct",
                 properties : listParameters
                }
-               setTimeout(function(){
-                   this._FormEditorService.dependentProperties.next(dependentProperties);
-               }, 0)
+
+               propertyContext.dependentProperties = dependentProperties;
+               this._FormEditorService.dependentProperties.next(dependentProperties);
                
            }
            
@@ -186,9 +239,7 @@ export class DataAccessorsService {
 
     public loadDependParametersAsPickList = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any) => {
-          console.log("------------- Accessor --- loadDependParametersAaPickList");
-          console.log(value);
-          console.log(propertyContext);
+
           let listParameters = [];
           //this._appStateService.selectedInstancePanel = value;
           let productName = value;
@@ -203,9 +254,6 @@ export class DataAccessorsService {
                  })
              }
 
-             console.log("--------- ------ listParameters");
-             console.log(listParameters);
-        
              delete this._FormEditorService.instanceData.parameters;    
              this._FormEditorService.listParameters = {};
           
@@ -221,9 +269,7 @@ export class DataAccessorsService {
 
     public loadDependParametersForDialog = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any) =>{
-          console.log(" -------- Accessor --- loadDependParametersForDialog");
-          console.log(value);
-          console.log(propertyContext);
+
           let listParameters = [];
           this._applicationService.getProductParameters3(value).subscribe((data:IParameter[] | any[]) =>{
              if(typeof data == "object" && data.length > 0){
@@ -234,9 +280,7 @@ export class DataAccessorsService {
                     listParameters.push(p);
                  })
              }
-             console.log("--------- ------ listParameters");
-             console.log(listParameters);
-        
+
              delete this._FormEditorService.instanceData.parameters;    
              this._FormEditorService.listParameters = {};
              this._FormEditorService.dependentPropertiesforDialog.next(listParameters);
@@ -246,9 +290,6 @@ export class DataAccessorsService {
 
     public getGridDataByParameter = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any, property:IMetadataProperty) =>{
-          console.log(" ------- ------ - - -- - - --  init --- Accessor --- getGridDataByParameter");
-          console.log(value);
-          console.log(propertyContext);
           const option:gridParameter = {
             isParameter: property.isParameter,
             value: value,
@@ -262,11 +303,29 @@ export class DataAccessorsService {
      
     })
 
+    public  setValueTotalPrice = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+
+        if(value || value == ""){
+            // const ndsValue = (value * 1.2).toFixed(2); // 20%
+            // this._FormEditorService.listCreatedField.forEach( item =>{
+            //     if(item.propertyName == "totalprice"){
+            //         setTimeout(()=>{
+            //             item.htmlRef.value = ndsValue;
+            //         }, 500)
+                 
+            //     }
+            // })
+            // let d = new valueUpdatedData("totalprice", parseFloat(ndsValue), "double");
+            // this._FormEditorService.valueUpdated.next(d);
+        }
+
+    })
+
     public  createPriceNDS = new PropertyAccessor( undefined, 
         (value:any, propertyContext:any) => {
-         console.log("-------------- createPriceNDS");
+
         if(value || value == ""){
-          
             const ndsValue = (value * 1.2).toFixed(2); // 20%
             let stdCost = 0;
             this._FormEditorService.listCreatedField.forEach( item =>{
@@ -280,7 +339,6 @@ export class DataAccessorsService {
                    if(stdCost){
                      item.htmlRef.value = (value - stdCost).toFixed(2);
                    }
-                   
                 }
             })
             let d = new valueUpdatedData("totalpricends", ndsValue, "double");
@@ -289,6 +347,95 @@ export class DataAccessorsService {
 
     })
 
+
+    public  disablePrice = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+
+        if(value){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "Price".toLowerCase()){
+                   item.htmlRef.disabled = true;
+                }
+            })
+        }
+
+        if(value == ""){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "Price".toLowerCase()){
+                    item.htmlRef.disabled = false;
+                }
+            })
+        }
+    })
+
+    public  disablePercent = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+
+        if(value){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "PercentOfMarkup".toLowerCase()){
+                   item.htmlRef.disabled = true;
+                }
+            })
+        }
+
+        if(value == ""){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "PercentOfMarkup".toLowerCase()){
+                   item.htmlRef.disabled = false;
+                }
+            })
+        }
+    })
+
+    
+    public  disableDimensionField = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+
+        if(value){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "диаметр" || item.propertyName.toLowerCase() == "размер"){
+                   item.htmlRef.nativeElement.disabled = true;
+                }
+            })
+        }
+
+        if(value == ""){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "диаметр" || item.propertyName.toLowerCase() == "размер"){
+                    item.htmlRef.nativeElement.disabled = false;
+                }
+            })
+        }
+
+    })
+
+    public  disableFilterDimension = new PropertyAccessor( undefined, 
+        (value:any, propertyContext:any) => {
+
+        if(value || value == ""){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "FilterStartDimension".toLowerCase()){
+                   item.htmlRef.nativeElement.disabled = true;
+                }
+                if(item.propertyName.toLowerCase() == "FilterEndDimension".toLowerCase()){
+                   item.htmlRef.nativeElement.disabled = true;
+                }
+            })
+        }
+
+        if(value == ""){
+            this._FormEditorService.listCreatedField.forEach( item =>{
+                if(item.propertyName.toLowerCase() == "FilterStartDimension".toLowerCase()){
+                    item.htmlRef.nativeElement.disabled = false;
+                }
+                if(item.propertyName.toLowerCase() == "FilterEndDimension".toLowerCase()){
+                    item.htmlRef.nativeElement.disabled = false;
+                }
+            })
+        }
+
+    })
 }
 
 export class PropertyAccessor {

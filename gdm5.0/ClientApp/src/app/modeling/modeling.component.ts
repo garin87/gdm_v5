@@ -1,12 +1,13 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { AlertService } from '../alert/alert.service';
 import { ApplicationService } from '../common/services/application.service';
 import { AppStateService } from '../common/services/appState.service';
 import { FormEditorService } from '../common/services/formEditor.service';
 import { LabelsService } from '../common/services/labels.service';
+import { IMetadataProperty } from '../common/objects/common';
 
 @Component({
   selector: 'app-modeling-component',
@@ -23,6 +24,7 @@ export class ModelingComponent {
       public isWareHousePage: boolean = false;
       public isCurrencyPage: boolean = false;
       public isPriceListPage: boolean = false;
+      public isPriceListBasePage: boolean = false;
       public isProductPage: boolean = false;
       
       public instanceName:string = 'Product';
@@ -36,9 +38,11 @@ export class ModelingComponent {
       public currentModelInstanceName : string;
       public modelingIntems : any = [{ Name:"Company", DisplayName: "Company"},
       { Name:"Currency", DisplayName: "Currency"},
-      { Name:"PriceList", DisplayName: "PriceList"},
+      { Name:"PriceListBase", DisplayName: "Price List Base"},
+      { Name:"PriceList", DisplayName: "Price List"},
       { Name:"WareHouse", DisplayName: "WareHouse"},
       { Name:"Product", DisplayName: "Product"}];
+
       public companyIntems : any = [];
       public productTypes : any = [];
       public priceListValuesData:any = undefined;
@@ -47,6 +51,8 @@ export class ModelingComponent {
       private selectedSideSubPanelValueSubscription$:Subscription;
       private refreshListOfPtopsofSubPanelSubscription$:Subscription;
 
+      public properties;
+      public properties2;
       // Product
       public isNewProduct: boolean = false;
       public isEditParamProduct: boolean = false;
@@ -65,6 +71,11 @@ export class ModelingComponent {
         return this.currentModelInstanceName;
       }
 
+      // @HostListener('document:keydown.enter')
+      // onDocumentKeydownEnter() {
+      //   this.saveModel()
+      // }  
+      
       constructor(private _alertService : AlertService,
                   private _applicationService : ApplicationService, 
                   private _formEditorService : FormEditorService,
@@ -76,7 +87,8 @@ export class ModelingComponent {
       }
                          
       ngOnInit(){
-      
+        this.properties = new BehaviorSubject<IMetadataProperty[]>(undefined);
+        this.properties2 = new BehaviorSubject<IMetadataProperty[]>(undefined);
         this._appStateService.detectClickOnPanel.next(true);
         this.selectedSidePaneModelingValueSubscription$ = this._appStateService.selectedSidePaneModelingValue
         .subscribe((nameModel:string) => {
@@ -90,6 +102,7 @@ export class ModelingComponent {
             this.isWareHousePage = false;
             this.isCurrencyPage = false;
             this.isPriceListPage = false;
+            this.isPriceListBasePage = false;
             this.isProductPage = false;
             
             this._appStateService.instanceOfProduct = undefined;
@@ -105,6 +118,9 @@ export class ModelingComponent {
                 break;
               case 'Currency':
                 this.getCurrencies();
+                break;
+              case 'PriceListBase':
+                this.getPriceList();
                 break;
               case 'PriceList':
                 this.getPriceList();
@@ -139,6 +155,9 @@ export class ModelingComponent {
             this.getCurrencyByName(data);
           };
           if(this.currentModelName == "pricelist"){
+            this.getPriceListWithValuesByName(data);
+          };
+          if(this.currentModelName == "pricelistbase"){
             this.getPriceListByName(data);
           };
         });
@@ -148,10 +167,7 @@ export class ModelingComponent {
         });
 
        this.routerEvents$ = this.router.events.subscribe((event) => {
-          console.log("--------------------------------   this.router.events");
           if (event instanceof NavigationEnd) {
-            // this.currentModelName = "";
-            // this.currentModelInstanceName = "";
           }
         })
       }
@@ -213,8 +229,26 @@ export class ModelingComponent {
             console.log(err);
         });
       }
+      
 
       getPriceListByName(data){
+        this.isLoadingResults = true;
+        this._applicationService.getPriceListByName(data?.element)
+                                .subscribe( data =>{
+          this.isLoadingResults = false;                        
+          this._appStateService.instanceOfProduct = data;
+          this.resetModelingObjects();
+          this.isPriceListBasePage = true;
+          this._appStateService.initRightActionPanel = true;
+        },
+        err => {
+            this.isLoadingResults = false;
+            this.alertService.error(err?.error?.message || err?.message);
+            console.log(err);
+        });
+      }
+
+      getPriceListWithValuesByName(data){
         this.isLoadingResults = true;
         this._applicationService.getPriceListWithValuesByName(data?.element)
                                 .subscribe( data =>{
@@ -222,12 +256,12 @@ export class ModelingComponent {
           this._appStateService.instanceOfProduct = data;
           this.resetModelingObjects();
           this.isPriceListPage = true;
-         // this._appStateService.initRightActionPanel = true;
-          this.priceListValuesData = data.PriceListValue;
+          this._appStateService.initRightActionPanel = true;
+          this.priceListValuesData = data?.priceListValue;
         },
         err => {
             this.isLoadingResults = false;
-            this.alertService.error(err?.message || err?.error?.message);
+            this.alertService.error(err?.error?.message || err?.message);
             console.log(err);
         });
       }
@@ -239,6 +273,7 @@ export class ModelingComponent {
             this.isWareHousePage = false;
             this.isCurrencyPage = false;
             this.isPriceListPage = false;
+            this.isPriceListBasePage = false;
             this._appStateService.selectedSideSubPanelValueName.next(undefined);
           } else if(namePanel == "isAddNewProduct"){
             this.isNewProduct = true;
@@ -270,6 +305,8 @@ export class ModelingComponent {
           this.saveCurrency();
         }else if(this.currentModelName == "pricelist"){
           this.savePriceList();
+        }else if(this.currentModelName == "pricelistbase"){
+          this.savePriceList();
         }
 
         
@@ -288,7 +325,7 @@ export class ModelingComponent {
             },
             err => {
               this.isLoadingResults = false;
-                this.alertService.error(err?.message || err?.error?.message);
+                this.alertService.error(err?.error?.message || err?.message);
                 console.log("----  error addCompany");
                 console.log(err);
             });
@@ -310,7 +347,7 @@ export class ModelingComponent {
             },
             err => {
                 this.isLoadingResults = false;
-                this.alertService.error(err?.message || err?.error?.message);
+                this.alertService.error(err?.error?.message || err?.message);
                 console.log(err);
             });
 
@@ -345,7 +382,12 @@ export class ModelingComponent {
                 this.alertService.success(response.message);
                 this._formEditorService.resetValueProperties();
                 this.isCreateModel = false;
-                this._appStateService.selectedSidePaneModelingValue.next("PriceList");
+                if(this.currentModelName == "pricelist"){
+                  this._appStateService.selectedSidePaneModelingValue.next("PriceList");
+                }
+                if(this.currentModelName == "pricelistbase"){
+                  this._appStateService.selectedSidePaneModelingValue.next("PriceListBase");
+                }
             },
             err => {
                 this.isLoadingResults = false;
@@ -435,22 +477,90 @@ export class ModelingComponent {
         },
         err => {
             this.isLoadingResults = false;
-            this.alertService.error(err?.message || err?.error?.message);
+            this.alertService.error(err?.error?.message);
             console.log(err);
         });
       }
-
-
-
-      // price value
 
       addPriceValue(){
 
       }
 
       savePriceValue(){
+        const instanceDataList = this.getInstanceDataListToSave();
+        let instanceDataP = instanceDataList['OptionOfPriceListProduct'];
+        let instanceDataPList = instanceDataList['pricelistContent'];
+       
+        instanceDataP.PriceListName = instanceDataPList['name']?.value;
+
+        let body = this.formPriceListValue();
+        this.isLoadingResults = true;
+        this._applicationService.addPriceListValues(body)
+        .subscribe(response => {
+              this.isLoadingResults = false;
+              this.alertService.success(response.message);
+              this._formEditorService.resetValueProperties();
+              this.isCreateModel = false;
+              let pl = {
+                "element": instanceDataP.PriceListName
+              }
+              this.getPriceListWithValuesByName(pl);
+            //  priceListValuesData
+              //this._appStateService.refreshGridData.next(true);
+        },
+        err => {
+              this.isLoadingResults = false;
+              this.alertService.error(err?.error?.message);
+              console.log(err);
+        });
+      }
+
+
+      formPriceListValue(){
+        const instanceDataList = this.getInstanceDataListToSave();
+        let instanceDataP = instanceDataList['OptionOfPriceListProduct'];
+        let instanceDataPList = instanceDataList['pricelistContent'];
+
+        const productName = instanceDataP.name?.value == undefined ? "" : instanceDataP.name?.value;
+        const parameters = instanceDataP.parameters;
+
+
+        let parm = [];
+        if(instanceDataP.parameters?.filterenddimension){
+           instanceDataP.filterenddimension = instanceDataP.parameters?.filterenddimension;
+           delete instanceDataP.parameters?.filterenddimension;
+        }
+
+        if(instanceDataP.parameters?.filterstartdimension){
+          instanceDataP.filterstartdimension = instanceDataP.parameters?.filterstartdimension;
+          delete instanceDataP.parameters?.filterstartdimension;
+        }
+        
+
+        if(instanceDataP?.parameters){
+          for(let item in instanceDataP?.parameters){
+            parm.push(instanceDataP?.parameters[item]);
+          }
+          instanceDataP.parameters = parm;
+        } 
+    
+        const currencyName = {
+          name: "currencyname",
+          navPriority: 1,
+          type: "text",
+          value: "BYN"
+        }
+
+        instanceDataP["currencyname"] = currencyName;
+
+ 
+        instanceDataP.PriceListName = instanceDataPList["name"]?.value;
+
+
+        return JSON.stringify(instanceDataP);
 
       }
+
       // Product
 
       // Edit Product
@@ -713,6 +823,7 @@ export class ModelingComponent {
           this.isCompanyPage = false;
           this.isCurrencyPage = false;
           this.isPriceListPage = false;
+          this.isPriceListBasePage = false;
           this.isProductPage = false;
           
       }
@@ -720,6 +831,10 @@ export class ModelingComponent {
       private  formModelInstanceToSave(){
           let productData = Object.assign({}, this._formEditorService.instanceData);
           return JSON.stringify(productData);
+      }
+
+      private  getInstanceDataListToSave(){
+        return Object.assign({}, this._formEditorService.instanceDataList);;
       }
 
 }

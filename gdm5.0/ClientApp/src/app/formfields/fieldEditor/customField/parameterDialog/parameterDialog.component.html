@@ -7,6 +7,22 @@
                 <input formControlName="parameterName"  matInput required>
             </mat-form-field>
             <mat-form-field class="parameter-dialog-input" appearance="fill">
+                <mat-label>Type name</mat-label>
+                <mat-select formControlName="typeName" required>
+                    <mat-option *ngFor="let type of typeNames" [value]="type.value">
+                     {{type.viewValue}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="parameter-dialog-input" appearance="fill">
+                <mat-label>Required</mat-label>
+                <mat-select formControlName="required" required>
+                    <mat-option *ngFor="let type of requiredTypes" [value]="type.value">
+                      {{type.viewValue}}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="parameter-dialog-input" appearance="fill">
                 <mat-label>Priority</mat-label>
                 <input formControlName="parameterPriority"  matInput type="number">
             </mat-form-field>

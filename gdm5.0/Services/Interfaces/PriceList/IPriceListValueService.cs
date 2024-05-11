@@ -6,9 +6,10 @@ namespace gdm5._0.Services.Interfaces
 {
     public interface IPriceListValueService : IBaseServices<PriceListValue>
     {
-        public void AddPriceListValues(addPriceListValuesRequest addPriceListValues);
-        public void UpdatePriceListValues(addPriceListValuesRequest addPriceListValues);
+        public void AddPriceListValues(addPriceListValueRequest addPriceListValues);
+        public void UpdatePriceListValues(addPriceListValueRequest addPriceListValues);
+        public void UpdatePriceListValueProduct(addPriceListValueRequest addPriceListValue);
         public List<PriceListValue> GetPriceListValues(int priceListId);
-        public void DeletePriceListValues(List<int> priceListValueIds);
+        public void DeletePriceListValues(int PriceListValueProductUniqCode);
     }
 }

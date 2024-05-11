@@ -8,6 +8,7 @@ export class gdmLabelsRU implements IGdmLabels  {
     globalMenu_Product:string = "Продукты";
     globalMenu_Modeling:string = "Моделинг";
     globalMenu_Order:string = "Заказы";
+    globalMenu_Report:string = "Отчеты";
     globalMenu_Account:string = "Аккаунт";
     globalMenu_SingUP:string = "Регистрация";
     globalMenu_Logout:string = "Выйти";
@@ -15,6 +16,7 @@ export class gdmLabelsRU implements IGdmLabels  {
     // Product command
     productCommand_Product: string = "Продукты";
     productCommand_AddProduct: string = "Добавить продукт";
+    productCommand_ReportProduct: string = "Статистика продуктов";
     productCommand_AddNewProduct: string = "Добавить новый продукт";
     productCommand_EditProduct: string = "Редактировать параметры продукта";
 
@@ -63,7 +65,8 @@ export class gdmLabelsRU implements IGdmLabels  {
     // Order
     orderComandButton_Cart:string = "Корзина";
     orderComandButton_OrderHistory:string = "История заказов";
-    
+    orderComandButton_OrderReport:string = "Статистика заказов";
+
     // Order title
     orderTitleCart_InfoTitle:string = "Информация о текущем заказе";
     orderTitleCart_NameCompany:string = "Имя компани";

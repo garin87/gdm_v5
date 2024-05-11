@@ -56,6 +56,12 @@ export class rightActionPanelComponent implements OnInit{
       if(this._appStateService.optionValue == "OrderGrid"){
         this.executeCommands = this.orderActions;
       }
+      if(this._appStateService.optionValue == "PriceListValuesGrid"){
+        this.executeCommands = this.priceValuesActions;
+      }
+
+
+      
       if(this._appStateService.initRightActionPanel && !this.drawer.opened){
           this.drawer.open();
       }
@@ -74,7 +80,9 @@ export class rightActionPanelComponent implements OnInit{
       if(this._appStateService?.selectedInstancePanel == "Currency") {
         this.executeCommands = this.currencyActions;    
       };
-      
+      if(this._appStateService?.selectedInstancePanel == "PriceListBase") {
+        this.executeCommands = this.priceListBaseActions;    
+      };
       this.drawer.open();
     });  
   };
@@ -89,8 +97,6 @@ export class rightActionPanelComponent implements OnInit{
   }
 
   actionManager(command:ExecuteCommand){
-    console.log(command);
-
     const dialogRef = this.dialog.open(ActionDialogComonent, {
       width: '930px',
       data: {commandName: command.command, 
@@ -102,9 +108,6 @@ export class rightActionPanelComponent implements OnInit{
     });
 
     dialogRef.afterClosed().subscribe((result:any) => {
-      console.log("---------------------- ActionDialogComonent close");
-      console.log(command.data.typeInstance);
-      console.log(result);
       if(result){
         const excommand = new ExecuteCommand(command.command,"","","", 
         {data: this._formEditorService.instanceData, typeInstance: command.data.typeInstance,
@@ -114,7 +117,7 @@ export class rightActionPanelComponent implements OnInit{
       }
 
       this._formEditorService.customProperties = new Subject<any>();
-      this._formEditorService.dependentProperties = new Subject<any>();
+    //  this._formEditorService.dependentProperties = new Subject<any>();
       this._formEditorService.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
       this._formEditorService.instanceData = {};
       this._formEditorService.listParameters = {};
@@ -138,7 +141,7 @@ export class rightActionPanelComponent implements OnInit{
 
   disposeFormProperties(){
     this._formEditorService.customProperties = new Subject<any>();
-    this._formEditorService.dependentProperties = new Subject<any>();
+   // this._formEditorService.dependentProperties = new Subject<any>();
     this._formEditorService.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
     this._formEditorService.instanceData = {};
     this._formEditorService.listParameters = {};
@@ -155,6 +158,37 @@ export class rightActionPanelComponent implements OnInit{
     {typeInstance:'selectedOrder', actionName: "Delete order", actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteOrder, 
     actionButton: this._labelsService.labels.productActionPopUpButton_Delete, parentType:"orderProduct"})
   ];
+  private priceListBaseActions: any = [
+    new ExecuteCommand("Edit", this._labelsService.labels.productActionMenu_Edit,"edit","", 
+      {typeInstance:'pricelistbaseEdit', 
+      actionName: "Edit", 
+      actiontitle:this._labelsService.labels.modelingActionPopUp_UpdateCompany, 
+      actionButton:this._labelsService.labels.productActionPopUpButton_Update, 
+      parentType:"pricelistbase"}),
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", 
+      {typeInstance:'pricelistbase', 
+      actionName: "Delete", 
+      actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteOrder, 
+      actionButton: this._labelsService.labels.productActionPopUpButton_Delete, 
+      parentType:"pricelistbase"})
+  ];
+
+
+  private priceValuesActions: any = [
+    new ExecuteCommand("Edit", this._labelsService.labels.productActionMenu_Edit,"edit","", 
+      {typeInstance:'PriceListValuesRowSelected', 
+      actionName: "Edit", 
+      actiontitle:this._labelsService.labels.modelingActionPopUp_UpdateCompany, 
+      actionButton:this._labelsService.labels.productActionPopUpButton_Update, 
+      parentType:"PriceListValuesGrid"}),
+    new ExecuteCommand("Delete",this._labelsService.labels.productActionMenu_Delete,"delete","", 
+      {typeInstance:'selectedOrder', 
+      actionName: "Delete", 
+      actiontitle:this._labelsService.labels.modelingActionPopUp_DeleteOrder, 
+      actionButton: this._labelsService.labels.productActionPopUpButton_Delete, 
+      parentType:"PriceListValuesGrid"})
+  ];
+
 
   private companyActions: any = [
     new ExecuteCommand("Edit",this._labelsService.labels.productActionMenu_Edit,"edit","", 

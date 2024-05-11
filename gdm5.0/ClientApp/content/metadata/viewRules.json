@@ -269,6 +269,16 @@
         "isSortable": true,
         "Order": 970
       },
+      "priceValueEUR":{
+        "Name": "priceValueEUR",
+        "Type":"double",
+        "DisplayedName":"PriceValue"
+      },
+      "priceValueEURNDS":{
+        "Name": "priceValueEURNDS",
+        "Type":"double",
+        "DisplayedName":"PriceValue NDS"
+      },
       "StandartCost":{
         "Name": "standartCost",
         "Type":"double",
@@ -336,6 +346,86 @@
         "isSortable": true
       }
    },
+   "ReportCommanProduct":{
+    "Name":{
+      "Name": "Name",
+      "Order": 9999,
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Provider":"loadProductParameters",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "Accessor":"createJustParametersAsPickList",
+      "DisplayedName":"Name",
+      "category":"ReportCommanProduct"
+    },
+    "Manufacturer":{
+      "Name": "Manufacturer",
+      "TypeView":"picklist",
+      "Type":"string",
+      "Accessor":"getGridDataByParameter",
+      "Editor":"picklist",
+      "Provider":"loadProductManufacturersByProductName",
+      "OptionOfProvider":"{paramertName='Manufacturer', instanceName='product'}",
+      "DefaultValue":"",
+      "category":"ReportCommanProduct"
+    }
+   },
+   "ReportProduct":{
+    "Name":{
+      "Name": "Name",
+      "Order": 9999,
+      "TypeView":"selector",
+      "Editor":"selector",
+      "Provider":"loadProductParameters",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "Accessor":"createJustParametersAsPickList",
+      "DisplayedName":"Name",
+      "category":"ReportProduct"
+    },
+    "Manufacturer":{
+      "Name": "Manufacturer",
+      "TypeView":"picklist",
+      "Type":"string",
+      "Accessor":"getGridDataByParameter",
+      "Editor":"picklist",
+      "Provider":"loadProductManufacturersByProductName",
+      "OptionOfProvider":"{paramertName='Manufacturer', instanceName='product'}",
+      "DefaultValue":"",
+      "category":"ReportProduct"
+    },
+    "NameCompany":{
+      "Name": "nameCompany",
+      "TypeView":"selector",
+      "Type":"string",
+      "Accessor":"getGridDataByParameter",
+      "Editor":"selector",
+      "Provider":"loadCompanies",
+      "DefaultValue":"",
+      "category":"ReportProduct"
+    },
+    "FilterStartDate":{
+      "Name": "FilterStartDate",
+      "TypeView":"DateTime",
+      "Accessor":"getGridDataByParameter",
+      "Type":"DateTime",
+      "DefaultValue":"2020-01-01 00:00:00.00",
+      "DisplayedName":"Start date",
+      "category":"OptionalOfOrder"
+    },
+    "FilterEndDate":{
+      "Name": "FilterEndDate",
+      "TypeView":"DateTime",
+      "Type":"DateTime",
+      "Accessor":"getGridDataByParameter",
+      "DefaultValue":"",
+      "DisplayedName":"End date",
+      "category":"OptionalOfOrder"
+    }
+   },
    "OptionalOfProduct":{
       "Manufacturer":{
         "Name": "Manufacturer",
@@ -396,17 +486,18 @@
     },
     "Supplier":{
       "Name": "supplier",
-      "TypeView":"input",
+      "TypeView":"picklist",
       "Type":"string",
       "DisplayedName":"Supplier",
-      "ParentName":"OptionOfPriceListProduct"
+      "Editor":"picklist",
+      "Provider":"getProductSuppliersByProductName"
     },
     "Quantity":{
       "Name": "Quantity",
       "TypeView":"input",
       "Type":"double",
-      "DefaultValue":"",
-      "ParentName":"OptionOfPriceListProduct"
+      "ParentName":"OptionOfPriceListProduct",
+      "DefaultValue": "1"
     },
     "Price":{
       "Name": "Price",
@@ -414,18 +505,19 @@
       "Type":"double",
       "DefaultValue":"",
       "Required":true,
-      "ParentName":"OptionOfPriceListProduct"
+      "ParentName":"OptionOfPriceListProduct",
+      "Accessor":"disablePercent"
     },
-    "CurrencyName":{
-      "Name": "CurrencyName",
-      "TypeView":"selector",
-      "Editor":"selector",
-      "Type":"string",
-      "DefaultValue":"BYR",
-      "Provider":"loadNamesCurrencies",
-      "DisplayedName":"Currency name",
-      "ParentName":"OptionOfPriceListProduct"
+    "PercentOfMarkup":{
+      "Name": "PercentOfMarkup",
+      "TypeView":"input",
+      "Type":"int",
+      "DefaultValue":"",
+      "Required":true,
+      "ParentName":"OptionOfPriceListProduct",
+      "Accessor":"disablePrice"
     }
+
    },
    "OptionalOfOrder":{
     "NameCompany":{
@@ -492,6 +584,13 @@
         "DefaultValue":"",
         "DisplayedName":"Mobile Phone"
       },
+      "Email":{
+        "Name": "Email",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Email"
+      },
       "CustomerName2":{
         "Name": "CustomerName2",
         "TypeView":"input",
@@ -505,6 +604,13 @@
         "Type":"string",
         "DefaultValue":"",
         "DisplayedName":"Mobile Phone 2"
+      },
+      "Email2":{
+        "Name": "Email2",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Email 2"
       },
       "Description":{
         "Name": "Description",
@@ -568,6 +674,14 @@
         "DisplayedName":"Mobile Phone",
         "ReadOnly":true
       },
+      "Email":{
+        "Name": "Email",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Email",
+        "ReadOnly":true
+      },
       "CustomerName2":{
         "Name": "CustomerName2",
         "TypeView":"input",
@@ -582,6 +696,14 @@
         "Type":"string",
         "DefaultValue":"",
         "DisplayedName":"Mobile Phone 2",
+        "ReadOnly":true
+      },
+      "Email2":{
+        "Name": "Email2",
+        "TypeView":"input",
+        "Type":"string",
+        "DefaultValue":"",
+        "DisplayedName":"Email 2",
         "ReadOnly":true
       },
       "Description":{
@@ -738,6 +860,13 @@
       "DefaultValue":"",
       "DisplayedName":"Mobile Phone"
     },
+    "Email":{
+      "Name": "Email",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Email"
+    },
     "CustomerName2":{
       "Name": "CustomerName2",
       "TypeView":"input",
@@ -751,6 +880,13 @@
       "Type":"string",
       "DefaultValue":"",
       "DisplayedName":"Mobile Phone 2"
+    },
+    "Email2":{
+      "Name": "Email2",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Email 2"
     },
     "Description":{
       "Name": "Description",
@@ -793,6 +929,54 @@
     }
    },
    "pricelist":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "DisplayedName":"Name"
+    },
+    "Description":{
+      "Name": "Description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Description"
+    },
+    "Version":{
+      "Name": "Version",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Version"
+    }
+   },
+   "pricelistbase":{ 
+    "Name":{
+      "Name": "Name",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "Required":true,
+      "DisplayedName":"Name"
+    },
+    "Description":{
+      "Name": "Description",
+      "TypeView":"input",
+      "Type":"string",
+      "DefaultValue":"",
+      "DisplayedName":"Description"
+    },
+    "Version":{
+      "Name": "Version",
+      "TypeView":"input",
+      "Type":"double",
+      "DefaultValue":"",
+      "DisplayedName":"Version"
+    }
+   },
+   "pricelistbaseEdit":{ 
     "Name":{
       "Name": "Name",
       "TypeView":"input",
@@ -887,6 +1071,7 @@
       "TypeView":"input",
       "Type":"double",
       "DefaultValue":"",
+      "Accessor":"setValueTotalPrice",
       "DisplayedName":"Product standart cost",
       "category":"OrderProduct",
       "ReadOnly":true
@@ -947,6 +1132,41 @@
     }
   
    },
+   "ProductReportGrid":{
+    "Position":{
+      "Name": "position",
+      "Type":"string",
+      "DisplayedName":"No.",
+      "Order": 1010,
+      "isSortable": false
+    },
+    "name":{
+      "Name": "name",
+      "Type":"string",
+      "DisplayedName":"Product Name",
+      "category":"ProductReportGrid",
+      "isSortable": true,
+      "Order": 1003
+    },
+    "diameter":{
+      "Name": "diameter",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Diameter",
+      "category":"ProductReportGrid",
+      "Required":true,
+      "Order": 1002
+    },
+    "totalAmount":{
+      "Name": "totalAmount",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Total Amount",
+      "category":"ProductReportGrid",
+      "Required":true,
+      "Order": 1001
+    }
+   },
    "OrderGrid":{
     "Position":{
       "Name": "position",
@@ -1001,7 +1221,7 @@
       "Name": "position",
       "Type":"string",
       "DisplayedName":"No.",
-      "Order": 1000,
+      "Order": 1010,
       "isSortable": false
     },
     "productName":{
@@ -1009,7 +1229,7 @@
       "Type":"string",
       "DisplayedName":"Product Name",
       "isSortable": true,
-      "Order": 980
+      "Order": 1003
     },
     "quantity":{
       "Name": "quantity",
@@ -1017,7 +1237,8 @@
       "Type":"double",
       "DisplayedName":"Quantity",
       "category":"OrderProduct",
-      "Required":true
+      "Required":true,
+      "Order": 1002
     },
     "totalprice":{
       "Name": "totalPrice",
@@ -1025,28 +1246,130 @@
       "Type":"double",
       "DisplayedName":"Total Price",
       "category":"OrderProduct",
-      "Required":true
+      "Required":true,
+      "Order": 1001
     },
     "manufacturer":{
       "Name": "manufacturer",
       "Type":"string",
-      "DisplayedName":"Manufacturer"
+      "DisplayedName":"Manufacturer",
+      "Order": 1000
     }
+   },
+   "OrderReportGrid":{
+    "Position":{
+      "Name": "position",
+      "Type":"string",
+      "DisplayedName":"No.",
+      "Order": 1010,
+      "isSortable": false
+    },
+    "name":{
+      "Name": "name",
+      "Type":"string",
+      "DisplayedName":"Продукт",
+      "category":"OrderReportGrid",
+      "isSortable": true,
+      "Order": 1003
+    },
+    "diameter":{
+      "Name": "diameter",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Деаметр",
+      "category":"OrderReportGrid",
+      "Required":true,
+      "Order": 1002
+    },
+    "totalAmount":{
+      "Name": "totalAmount",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Количество продано",
+      "category":"OrderReportGrid",
+      "Required":true,
+      "Order": 1001
+    },
+    "realAmountProduct":{
+      "Name": "realAmountProduct",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Количество на складе",
+      "category":"OrderReportGrid",
+      "Required":true,
+      "Order": 1000
+    }
+
+    
    },
    "PriceListValuesGrid":{
     "Position":{
       "Name": "position",
       "Type":"string",
       "DisplayedName":"No.",
-      "Order": 1000,
+      "Order": 1001,
       "isSortable": false
     },
     "productName":{
       "Name": "productName",
       "Type":"string",
+      "DisplayedName":"Имя продукта",
+      "Order": 1000
+    },
+    "quantity":{
+      "Name": "quantity",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Количестов",
+      "category":"priceList"
+    },
+    "price":{
+      "Name": "price",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Цена",
+      "category":"priceList"
+    },
+    "priceNDS":{
+      "Name": "priceNDS",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Цена с НДС",
+      "category":"priceList"
+    },
+
+    "percentOfMarkup":{
+      "Name": "percentOfMarkup",
+      "TypeView":"input",
+      "Type":"int",
+      "DisplayedName":"Процент наценки",
+      "category":"priceList"
+    },
+    "unit":{
+      "Name": "unit",
+      "Type":"string",
+      "DisplayedName":"Ед. изм."
+    },
+    "manufacturer":{
+      "Name": "manufacturer",
+      "Type":"string",
+      "DisplayedName":"Производитель"
+    },
+    "productParameterUniqCode":{
+      "Name": "productParameterUniqCode",   
+      "TypeView":"input",
+      "Type":"int",
+      "DisplayedName":"ProductParameter код",
+      "category":"priceList"
+    }
+   },
+   "PriceListValuesRowSelected":{
+    "productName":{
+      "Name": "productName",
+      "Type":"string",
       "DisplayedName":"Product Name",
-      "isSortable": true,
-      "Order": 980
+      "Order": 1000,
+      "ReadOnly":true
     },
     "quantity":{
       "Name": "quantity",
@@ -1054,20 +1377,49 @@
       "Type":"double",
       "DisplayedName":"Quantity",
       "category":"priceList",
-      "Required":true
+      "ReadOnly":true
     },
-    "totalprice":{
-      "Name": "totalPrice",
+    "percentOfMarkup":{
+      "Name": "percentOfMarkup",
+      "TypeView":"input",
+      "Type":"int",
+      "DisplayedName":"Percent Of Markup",
+      "category":"priceList"
+    },
+    "price":{
+      "Name": "price",
       "TypeView":"input",
       "Type":"double",
-      "DisplayedName":"Total Price",
+      "DisplayedName":"Price",
+      "category":"priceList"
+    },
+    "priceNDS":{
+      "Name": "priceNDS",
+      "TypeView":"input",
+      "Type":"double",
+      "DisplayedName":"Price NDS",
       "category":"priceList",
-      "Required":true
+      "ReadOnly":true
+    },
+    "unit":{
+      "Name": "unit",
+      "Type":"string",
+      "DisplayedName":"Unit",
+      "ReadOnly":true
     },
     "manufacturer":{
       "Name": "manufacturer",
       "Type":"string",
-      "DisplayedName":"Manufacturer"
+      "DisplayedName":"Manufacturer",
+      "ReadOnly":true
+    },
+    "productParameterUniqCode":{
+      "Name": "productParameterUniqCode",
+      "TypeView":"input",
+      "Type":"int",
+      "DisplayedName":"Product uniq code",
+      "category":"priceList",
+      "ReadOnly":true
     }
    },
    "TestPickList":{

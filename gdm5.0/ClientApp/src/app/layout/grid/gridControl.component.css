@@ -65,3 +65,6 @@ th.mat-header-cell {
     padding: 0px;
 }
 
+/* .mdc-data-table__cell, .mdc-data-table__header-cell{
+    padding: 0px !important;
+} */

@@ -14,17 +14,11 @@ namespace gdm5._0.Services.Interfaces
         string[] GetProductManufacturers(string productName);
         string[] GetProductSuppliers();
         string[] GetProductSuppliers(string productName);
-        Task<IEnumerable<ProductDTO>> GetProducts(int id);
-        Task<ProductDTO> AddProducts(ProductDTO productDTO);
-        ProductNewDTO AddInstanceProduct(ProductNewDTO productNewDTO);
-        Task<updateProductInstancesRequest> UpdateProduct(updateProductInstancesRequest productDTO);
-        Task<Product> DeleteProducts(int id);
-        List<ProductParametrDTO> getInstancesOfProductParameter(getInstancesOfProductParameterRequest requestParameters);
+        ProductNewDTO AddInstanceProduct(ProductNewDTO productNewDTO, string currentUserName);
+        Task<updateProductInstancesRequest> UpdateProduct(updateProductInstancesRequest productDTO, string currentUserName);
         List<ProductParametrDTO> GetInstancesOfProductParameterUpdated(getInstancesOfProductParameterRequest requestParameters);
-
-        
-        addNewProductTypeRequest AddOtherProducts(addNewProductTypeRequest productNewDTO);
-        Task<ProductHistory> DeleteProductInstance(Nullable<int> id); 
+        addNewProductTypeRequest AddOtherProducts(addNewProductTypeRequest productNewDTO, string currentUserName);
+        Task<ProductHistory> DeleteProductInstance(int? id, string currentUserName); 
         byte[] GeneratePDF();
     }
 }

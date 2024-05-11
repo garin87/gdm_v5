@@ -39,6 +39,7 @@ export class AuthorizeService {
   private getUserRole():string{
      return localStorage.getItem("userRole");
   }
+
   private async tryRefreshingTokens(token: string):Promise<boolean> {
 
     const refreshToken: string = localStorage.getItem("refreshToken");
@@ -49,9 +50,6 @@ export class AuthorizeService {
     let isRefreshSuccess: boolean;
 
     await this._applicationService.refreshToken(credentials).then(response => {
-      console.log("----- tryRefreshingTokens");
-      console.log(response);
-
       const newToken = (<any>response).body.accessToken;
       const newRefreshToken = (<any>response).body.refreshToken;
       const userRole = (<any>response).body.userRole;

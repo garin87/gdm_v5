@@ -11,12 +11,10 @@
                     <mat-icon *ngIf="this.appSidePanel.drawer.opened">chevron_right</mat-icon>
                     {{this._labelsService.labels.productCommand_Product}}
                 </button>
-                <button class="product-command-button" mat-raised-button color="primary"
+                <button [class.selected-panel]="isAddProduct" class="product-command-button" mat-raised-button color="primary"
                     (click)="activePanel('isAddProduct')"> {{this._labelsService.labels.productCommand_AddProduct}}</button>
-                <!-- <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isAddNewProduct')" > {{this._labelsService.labels.productCommand_AddNewProduct}}</button> 
-                <button class="product-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('isEditParamProduct')" > {{this._labelsService.labels.productCommand_EditProduct}}</button>  -->
+                <button [class.selected-panel]="isReportProduct" class="product-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('isReportProduct')"> {{this._labelsService.labels.productCommand_ReportProduct}}</button>
             </mat-card-actions>
         </mat-card>
 
@@ -27,7 +25,7 @@
                 <form-editor class="container-list-add-porduct-fields"  [instanceName]="'AddInstanceProduct'"></form-editor>
                 <mat-card-actions style="padding-left: 4px;">
                     <div class="product-save-button" >
-                        <button  mat-raised-button color="primary" (click)="saveInstanceProduct2()">{{this._labelsService.labels.productButton_SaveInstanceProduct}}</button>    
+                        <button  mat-raised-button color="primary" (keyup)="saveInstanceProduct2()" (click)="saveInstanceProduct2()">{{this._labelsService.labels.productButton_SaveInstanceProduct}}</button>    
                     </div>
                 </mat-card-actions>
             </mat-card>
@@ -58,6 +56,21 @@
                     [gridMetadataType]="gridMetadaType" [typeFilter]="'OptionalOfProduct'"></grid-control>
                 </div>
                 <rightActionPanel *ngIf="this._appStateService.initRightActionPanel"></rightActionPanel>
+            </mat-card>
+            <mat-card class="order-card grid-order-report"  *ngIf="isReportProduct" style="box-shadow: none;">
+                <mat-card-title style="padding-left: 0px;">Общее количество</mat-card-title> 
+                <div class="order-report-content" style="margin-left: -4px;"> 
+                    <form-editor class="container-report-porduct-fields"  [instanceName]="'ReportCommanProduct'"></form-editor>
+                    <div class="order-action-report-bth">
+                        <div class="order-report-button">
+                            <button  mat-raised-button color="primary" (click)="loadProductReport()">Показать общее количество</button> 
+                        </div>
+                    </div> 
+                </div>
+                <div class="order-grid-content" *ngIf="gridProductReportData">
+                    <gridPlain-control [selectedProduct]="'ProductReport'" [gridData]="gridProductReportData" 
+                      [gridMetadataType]="'ProductReportGrid'" ></gridPlain-control>
+                </div>
             </mat-card> 
             <div class="loading-shade" *ngIf="isLoadingResults">
                 <mat-spinner *ngIf="isLoadingResults"></mat-spinner>

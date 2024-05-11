@@ -12,6 +12,7 @@ namespace gdm5._0.Models
         public string Name { get; set; }
         public string NameType { get; set; }
         public int Priority { get; set; }
+        public bool isRequired { get; set; }
 
         public int DeletedParameterId { get; set; }
         public int DeletedProductTypeId { get; set; }

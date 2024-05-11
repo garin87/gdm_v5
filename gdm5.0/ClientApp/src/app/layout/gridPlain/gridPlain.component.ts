@@ -2,12 +2,13 @@
 import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTable } from '@angular/material/table';
-import { Observable } from 'rxjs';
+import { Observable, Subscription } from 'rxjs';
 import { gridParameter, IGetOrderInstancesRequest,
   IGridColumnDefinition, IParameter, ISortOption, OrdersRequest, PageFilter } from 'src/app/common/objects/common';
 import { ApplicationService } from 'src/app/common/services/application.service';
 import { AppStateService } from 'src/app/common/services/appState.service';
 import { MetadataService } from 'src/app/common/services/metadata.service';
+import { CommonUtil } from 'src/app/common/utils/common-utils';
 
 
 @Component({
@@ -39,6 +40,7 @@ export class gridPlainComponent implements OnInit{
   selectedRow:any;
   dataTile:any;
   listProps : Observable<string[]>;
+  refreshGridDataSubscription$:Subscription;
 
   constructor(private _metadataService:MetadataService,
               private _appStateService:AppStateService,
@@ -51,6 +53,7 @@ export class gridPlainComponent implements OnInit{
       this.gridcolumns = this.gridcolumns.filter(item => item != undefined);
       this.dataSource = this.gridData || [];
       this.gridcolumns = this.gridcolumns.concat(this.convertParametersToColumn(this.dataSource));
+      this.gridcolumns = CommonUtil.sortProperties(this.gridcolumns);
       this.gridcolumns = this.gridcolumns.filter(item => item != undefined);
       this.displayedColumns = this.gridcolumns.map(c => c.columnDef);
       this.totalRecords = this.gridData?.totalRecords;
@@ -67,8 +70,7 @@ export class gridPlainComponent implements OnInit{
       //   }
       // });
 
-
-      // this._appStateService.refreshGridPainData.subscribe(data => {
+      // this.refreshGridDataSubscription$ = this._appStateService.refreshGridPainData.subscribe(data => {
       //   if(data){
       //         this.refreshGridData();
       //   }
@@ -76,8 +78,6 @@ export class gridPlainComponent implements OnInit{
   };
  
   ngOnChanges(changes): void {
-    console.log("--------------------- -----console.log(changes);");
-    console.log(changes);
     if(changes['gridData']) {
       if( this.gridData?.data || this.gridData?.currentValue || changes['gridData']?.currentValue){
         this.dataSource = [];
@@ -109,8 +109,6 @@ export class gridPlainComponent implements OnInit{
         
     
     this._applicationService.getOrderProductList(this.GetOrdersRequest).subscribe(response => {
-      console.log("--------- getGridData ------------ getOrderProductList");
-      console.log(response);
       this.isLoadingResults = false;
       this.dataSource = response.data;
       this.totalRecords = this.gridData?.totalRecords;
@@ -125,8 +123,6 @@ export class gridPlainComponent implements OnInit{
     });
   }
 
-
-
   refreshGridData(){
     this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
                      this.pageFilterPublick.pageSize = 20, this.sortOptionsPublick);
@@ -140,8 +136,10 @@ export class gridPlainComponent implements OnInit{
         if(element?.parameters){
           element?.parameters.forEach(param => {
               if(param.name && !uniqParameterNames.includes(param.name)){
-                 uniqParameterNames.push(param.name);
-                 uniqParameters.push(param);
+                if(param.name.toLowerCase() !== 'номер'){
+                   uniqParameterNames.push(param.name);
+                   uniqParameters.push(param);
+                }
               }  
           });
         };
@@ -173,7 +171,9 @@ export class gridPlainComponent implements OnInit{
       }
     }
 
-    return typeof valueColumn == "undefined" ? null : valueColumn;
+  
+
+    return typeof valueColumn == "undefined" ? "" : valueColumn;
   }
   
   private getCellValue2(row: any, column: any, i: number): string | number | null {
@@ -189,8 +189,26 @@ export class gridPlainComponent implements OnInit{
       return startPageNumber;
     }
   
+   
+
     let valueColumn = row[column.columnDef];
-  
+    
+    if(column.columnDef  == "price"){
+      if(valueColumn == 0){
+         const priceEUR = row["priceEUR"];
+         const CurEUR = this._appStateService.Cur_OfficialRate_EUR;
+         valueColumn = (priceEUR * CurEUR).toFixed(2);
+      }
+    }
+
+    if(column.columnDef  == "priceNDS"){
+      if(valueColumn == 0){
+         const priceEURNDS = row["priceEURNDS"];
+         const CurEUR = this._appStateService.Cur_OfficialRate_EUR;
+         valueColumn = (priceEURNDS * CurEUR).toFixed(2);
+      }
+    }
+
     if (valueColumn === undefined || valueColumn === null) {
       if (row?.parameters) {
         const parameter = row.parameters.find((param) => param.name === column.columnDef);
@@ -202,13 +220,16 @@ export class gridPlainComponent implements OnInit{
       return null;
     }
   
-    // If the column is a date column, format the value as a string
     if (column.columnDef === 'dateOfReceipt') {
       const date = new Date(valueColumn);
       return date.toISOString().split('T')[0];
     }
-  
-    return valueColumn;
+
+    if(valueColumn === null){
+       valueColumn = ""
+    }
+    
+    return typeof valueColumn == "undefined" ? "" : valueColumn;
   }
 
   createColumns(gridMetadata){
@@ -237,8 +258,6 @@ export class gridPlainComponent implements OnInit{
   }
 
   selectRow(row){
-     console.log("-------- grid ------ selectRow");
-     console.log(row);
      this.selectedRow = row;
      this._appStateService.initRightActionPanel = false;
      if(this.gridMetadataType == "OrderProductGrid"){
@@ -247,7 +266,12 @@ export class gridPlainComponent implements OnInit{
        this._appStateService.instanceOfProduct = row;
        this._appStateService.selectedRowGrid.next(row);
      }
-    
+     if(this.gridMetadataType == "PriceListValuesGrid"){
+      this._appStateService.optionValue = "PriceListValuesGrid";
+      this._appStateService.initRightActionPanel = true;
+      this._appStateService.instanceOfProduct = row;
+      this._appStateService.selectedRowGrid.next(row);
+    }
   }
 
   public  loadCustomParameters(selectedProduct:string){
@@ -263,6 +287,7 @@ export class gridPlainComponent implements OnInit{
 
   ngOnDestroy(){
     this.dispose();
+  //  this.refreshGridDataSubscription$.unsubscribe();
   }
 
   dispose(){

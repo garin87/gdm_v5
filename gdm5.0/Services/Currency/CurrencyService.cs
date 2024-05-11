@@ -11,11 +11,8 @@ namespace gdm5._0.Services
 {
     public class CurrencyService : BaseService<Currency>, ICurrencyService
     {
-        private readonly DataContext _context;
-
         public CurrencyService(DataContext context) : base(context)
         {
-            _context = context;
         }
 
         public string[] GetNamesCurrencies()
@@ -26,26 +23,22 @@ namespace gdm5._0.Services
         public Currency GetCurrencyByName(string nameCurrency)
         {
 
-            if (string.IsNullOrEmpty(nameCurrency))
-                throw new ApplicationException("Enter valid name currency");
+            ValidateCurrencyName(nameCurrency);
 
-            var existCurrency = _context.Currencies.FirstOrDefault(customer => customer.CurrencyName.ToLower() == nameCurrency.ToLower());
-            if (existCurrency == null) throw new ApplicationException("Entered name of currency does not exist");
+            var existCurrency = GetCurrency(nameCurrency);
+            if (existCurrency == null) 
+                throw new ApplicationException("Entered name of currency does not exist");
 
             return existCurrency;
         }
 
         public async Task<Currency> AddNewCurrency(addCurrencyRequest newcurrency)
         {
+            ValidateCurrencyName(newcurrency.CurrencyName?.Value);
 
-            if (string.IsNullOrEmpty(newcurrency.CurrencyName?.Value))
-                throw new ApplicationException("Enter valid name currency");
-
-
-            var existCurrency = _context.Currencies.FirstOrDefault(currency =>
-            currency.CurrencyName == newcurrency.CurrencyName.Value);
-            if (existCurrency != null) throw new ApplicationException("Entered name of currency exists");
-
+            var existCurrency = GetCurrency(newcurrency.CurrencyName.Value);
+            if (existCurrency != null) 
+                throw new ApplicationException("Entered name of currency exists");
 
             var currency = new Currency()
             {
@@ -61,21 +54,44 @@ namespace gdm5._0.Services
 
         public async Task<Currency> UpdateCurrency(UpdateCurrencyRequest updatedCurrency)
         {
-            if (updatedCurrency.CurrencyId == 0)
-                throw new ApplicationException("Enter valid currency Id");
+            ValidateCurrencyId(updatedCurrency.CurrencyId);
+            ValidateCurrencyName(updatedCurrency.CurrencyName?.Value);
 
-            if (string.IsNullOrEmpty(updatedCurrency.CurrencyName?.Value))
-                throw new ApplicationException("Enter valid name currency");
-
-
-            var existCurrency = _context.Currencies.FirstOrDefault(customer => customer.Id == updatedCurrency.CurrencyId);
-            if (existCurrency == null) throw new ApplicationException("Entered currency does not exist");
-
-
+            var existCurrency = GetCurrencyById(updatedCurrency.CurrencyId);
             existCurrency.CurrencyName = updatedCurrency.CurrencyName.Value;
 
             await _context.SaveChangesAsync();
             return existCurrency;
+        }
+
+        protected Currency GetCurrencyById(int currencyId)
+        {
+            ValidateCurrencyId(currencyId);
+
+            var existCurrency = _context.Currencies.FirstOrDefault(customer => customer.Id == currencyId);
+            if (existCurrency == null) 
+                throw new ApplicationException("Entered currency does not exist");
+
+            return existCurrency;
+        }
+        protected void ValidateCurrencyId(int currencyId)
+        {
+            if (currencyId == 0)
+                throw new ApplicationException("Enter valid currency Id");
+        }
+        protected void ValidateCurrencyName(string currencyName)
+        {
+            if (string.IsNullOrEmpty(currencyName))
+                throw new ApplicationException("Enter valid name currency");
+        }
+        protected void ValidateExistsCurrency(Currency? currency)
+        {
+            if (currency == null)
+                throw new ApplicationException("Entered currency does not exist");
+        }
+        protected Currency GetCurrency(string currencyName)
+        {
+            return _context.Currencies.FirstOrDefault(customer => customer.CurrencyName.ToLower() == currencyName.Trim().ToLower());
         }
     }
 

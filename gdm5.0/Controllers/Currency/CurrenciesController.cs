@@ -4,6 +4,7 @@ using gdm5._0.Requests.Customer;
 using gdm5._0.Requests.Product;
 using gdm5._0.Services;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -18,16 +19,15 @@ namespace gdm5._0
     [ApiController]
     public class CurrenciesController : Controller
     {
-        private readonly DataContext _context;
         private readonly ICurrencyService _сurrencyService;
-        public CurrenciesController(DataContext context, ICurrencyService сurrencyService) 
+        public CurrenciesController(ICurrencyService сurrencyService) 
         {
-            _context = context;
             _сurrencyService = сurrencyService;
         }
 
 
         // GET: api/сurrency/GetAll
+        [Authorize]
         [HttpGet]
         [Route("GetAll")]
         public IActionResult GetAll()
@@ -37,6 +37,7 @@ namespace gdm5._0
         }
 
         // GET: api/сurrency/GetСurrency/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetСurrency(int id)
         {   
@@ -56,6 +57,7 @@ namespace gdm5._0
         }
 
         // POST: api/сurrency/AddСurrency
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddСurrency(Currency сurrency)
         {    
@@ -69,7 +71,7 @@ namespace gdm5._0
             return Ok(productNew);
         }
 
-
+        [Authorize]
         [Route("DeleteСurrency/{id}")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteСurrency([FromRoute] int id)
@@ -88,6 +90,7 @@ namespace gdm5._0
             return Ok(product);
         }
 
+        [Authorize]
         [Route("GetNamesCurrencies")]
         [HttpGet]
         public IActionResult GetNamesCurrencies()
@@ -103,6 +106,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [Route("getCurrencyByNameCurrency/{nameCurrency}")]
         [HttpGet]
         public IActionResult getCurrencyByNameCurrency([FromRoute] string nameCurrency)
@@ -118,6 +122,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("AddNewCurrency")]
         public async Task<IActionResult> AddNewCurrency(addCurrencyRequest currency)
@@ -137,6 +142,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("UpdateCurrency")]
         public async Task<IActionResult> UpdateCurrency(UpdateCurrencyRequest currency)

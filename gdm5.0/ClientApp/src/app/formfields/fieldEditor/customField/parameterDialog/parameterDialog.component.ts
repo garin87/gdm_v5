@@ -13,26 +13,40 @@ export class ParameterDialogComponent implements OnInit {
   
     parameterName = new UntypedFormControl( '', [Validators.required,]);
     parameterPriority  = new UntypedFormControl( '');
-    
+    typeName  = new UntypedFormControl('string', [Validators.required,]);
+    required  = new UntypedFormControl(false, [Validators.required,]);
     constructor( public dialogRef: MatDialogRef<ParameterDialogComponent>,
                  @Inject(MAT_DIALOG_DATA) public data: any ) {}
-    
+
+    typeNames: any[] = [
+        {value: 'string', viewValue: 'String'},
+        {value: 'int', viewValue: 'Int'},
+        {value: 'double', viewValue: 'Double'},
+        {value: 'dateTime', viewValue: 'DateTime'},
+    ];
+
+    requiredTypes: any[] = [
+        {value: false, viewValue: 'False'},
+        {value: true, viewValue: 'True'},
+    ];
+
     onNoClick(): void {
-        console.log("--------- onNoClick():");
         this.dialogRef.close();
     }
+
     ngOnInit(){
-        console.log(" init TextEditorComponent");
+      //  this.typeName = "String";
+
         this.parameterForm = new UntypedFormGroup({
             parameterName: this.parameterName ,
-            parameterPriority: this.parameterPriority
+            parameterPriority: this.parameterPriority,
+            typeName: this.typeName,
+            required: this.required,
         });
     }
   
     saveParameters(data:ParameterForm){
        this.dialogRef.close(data);
-       console.log("----- --------- -------------- ----------- saveParameters");
-       console.log(data);
     }
 }
 

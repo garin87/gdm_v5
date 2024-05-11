@@ -6,7 +6,8 @@ export class gdmLabelsENG implements IGdmLabels  {
     globalMenu_Home:string = "Home";
     globalMenu_Product:string = "Products";
     globalMenu_Modeling:string = "Modeling";
-    globalMenu_Order:string = "Order";
+    globalMenu_Order:string = "Orders";
+    globalMenu_Report:string = "Reports";
     globalMenu_Account:string = "Account";
     globalMenu_SingUP:string = "Sing up";
     globalMenu_Logout:string = "Logout";
@@ -14,6 +15,7 @@ export class gdmLabelsENG implements IGdmLabels  {
     // Product command
     productCommand_Product: string = "Products";
     productCommand_AddProduct: string = "Add a product";
+    productCommand_ReportProduct: string = "Product statistics";
     productCommand_AddNewProduct: string = "Add a new product";
     productCommand_EditProduct: string = "Edit product parameters";
 
@@ -88,6 +90,7 @@ export class gdmLabelsENG implements IGdmLabels  {
     // Order
     orderComandButton_Cart:string = "Cart";
     orderComandButton_OrderHistory:string = "Order history";
+    orderComandButton_OrderReport:string = "Order statistics";
     
     // Order title
     orderTitleCart_InfoTitle:string = "Current order info";

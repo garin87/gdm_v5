@@ -37,6 +37,13 @@ export class ActionManager{
         this.updateCurrency();
       }
 
+      if(command.data?.parentType == "PriceListValuesGrid"){
+        this.updatePriceListValue();
+      }
+
+      if(command.data?.parentType == "pricelistbase"){
+        this.updatePriceList();
+      }
     }
 
     if(command.command == "Delete"){
@@ -57,6 +64,12 @@ export class ActionManager{
       }
       if(command.data?.parentType == "orderProduct"){
         this.deleteOrderProduct();
+      }
+      if(command.data?.parentType == "PriceListValuesGrid"){
+        this.deletePriceListValue();
+      }
+      if(command.data?.parentType == "pricelistbase"){
+        this.deletePriceList();
       }
     }
     if(command.command == "Order"){
@@ -86,7 +99,7 @@ export class ActionManager{
      },
      err => {
        this._appStateService.LoadingGridResults.next(false);
-       this._alertService.error(err.error.message);
+       this._alertService.error(err?.error?.message || err?.message);
      });
   }
 
@@ -103,12 +116,18 @@ export class ActionManager{
      },
      err => {
        this._appStateService.LoadingGridResults.next(false);
-       this._alertService.error(err.error.message);
+       this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
   orderProduct(){
- 
+    const isValidOrderQuantity = this.validateQuantity();
+    
+    if(!isValidOrderQuantity){
+      this._alertService.error("Введите корректное количество продукта");
+      return;
+    }
+
     const orderData = this.formOrderProduct();
     this._appStateService.LoadingGridResults.next(true);
     this._applicationService.addOrderProduct(orderData)
@@ -122,11 +141,18 @@ export class ActionManager{
      },
      err => {
          this._appStateService.LoadingGridResults.next(false);
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
      });
   }
 
   addToCartProduct(){
+    const isValidOrderQuantity = this.validateQuantity();
+    
+    if(!isValidOrderQuantity){
+      this._alertService.error("Введите корректное количество продукта");
+      return;
+    }
+    
     const orderData = this.formOrderProduct();
     this._appStateService.LoadingGridResults.next(true);
    
@@ -143,7 +169,7 @@ export class ActionManager{
       },
       err => {
           this._appStateService.LoadingGridResults.next(false);
-          this._alertService.error(err.error.message);
+          this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
@@ -156,10 +182,48 @@ export class ActionManager{
        this.dispose();
      },
      err => {
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
      });
   }
 
+  // updatePriceListValue(){
+  //   const updatedInstance = this.forPriceListValueToUpdate();
+  //   this._applicationService.updateСurrency(updatedInstance)
+  //   .subscribe(response => {
+  //      this._alertService.success(response.message);
+  //      this._appStateService.refreshSubPanelContentData.next(true);
+  //      this.dispose();
+  //    },
+  //    err => {
+  //        this._alertService.error(err?.error?.message || err?.message);
+  //    });
+  // }
+
+  updatePriceList(){
+    const updatedInstance = this.forPriceListToUpdate();
+    this._applicationService.updatePriceList(updatedInstance)
+    .subscribe(response => {
+       this._alertService.success(response.message);
+      // this._appStateService.refreshSubPanelContentData.next(true);
+       this.dispose();
+     },
+     err => {
+         this._alertService.error(err?.error?.message || err?.message);
+     });
+  }
+
+  updatePriceListValue(){
+    const updatedInstance = this.forPriceListValueToUpdate();
+    this._applicationService.updatePriceListValues(updatedInstance)
+    .subscribe(response => {
+       this._alertService.success(response.message);
+       this.dispose();
+     },
+     err => {
+         this._alertService.error(err?.error?.message || err?.message);
+     });
+  }
+  
   updateCurrency(){
     const updatedInstance = this.forCurrencyInstanceToSave();
     this._applicationService.updateСurrency(updatedInstance)
@@ -169,7 +233,7 @@ export class ActionManager{
        this.dispose();
      },
      err => {
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
      });
   }
   
@@ -182,7 +246,7 @@ export class ActionManager{
        this.dispose();
      },
      err => {
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
      });
   }
 
@@ -195,7 +259,7 @@ export class ActionManager{
        this._appStateService.refreshListOfPtopsofSubPanel.next({lastItems:"company"});
      },
      err => {
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
@@ -208,7 +272,7 @@ export class ActionManager{
        //this._appStateService.refreshListOfPtopsofSubPanel.next({lastItems:"currency"});
      },
      err => {
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
@@ -221,7 +285,7 @@ export class ActionManager{
        this._appStateService.refreshListOfPtopsofSubPanel.next({lastItems:"warehouse"});
      },
      err => {
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
@@ -237,7 +301,7 @@ export class ActionManager{
      err => {
         
          console.log(err);
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
@@ -252,10 +316,39 @@ export class ActionManager{
      err => {
         
          console.log(err);
-         this._alertService.error(err.error.message);
+         this._alertService.error(err?.error?.message || err?.message);
     });
   }
 
+  deletePriceListValue(){
+    const idOrderProduct = this._appStateService.instanceOfProduct?.productParameterUniqCode;
+    this._applicationService.deletePriceListValues(idOrderProduct)
+    .subscribe(response => {
+       this._alertService.success(response.message);
+       this.dispose();
+       //this._appStateService.refreshOrderGrid.next(true);
+     },
+     err => {
+         console.log(err);
+         this._alertService.error(err?.error?.message || err?.message);
+    });
+  }
+
+  deletePriceList(){
+    const idPriceList = this._appStateService.instanceOfProduct?.id;
+
+    this._applicationService.deletePriceList(idPriceList)
+    .subscribe(response => {
+       this._alertService.success(response.message);
+       this.dispose();
+       this._appStateService.selectedSidePaneModelingValue.next("PriceListBase");
+     },
+     err => {
+         console.log(err);
+         this._alertService.error(err?.error?.message || err?.message);
+    });
+  }
+  
   formProductInstanceToSave(){
     let parm = [];
     let productData = Object.assign({}, this._formEditorService.instanceData);
@@ -396,10 +489,21 @@ export class ActionManager{
   }
 
   loadCurrencyOnDate(date, curName){
-    
     this._currenciesService.loadCurrencyInfoOnDate(date, "USD");
-
     return this._currenciesService.getCurrencyInfoByAbbreviation(this._appStateService.currencyNBRB, curName);
+  }
+
+  validateQuantity(){
+    let orderData = Object.assign({}, this._formEditorService.instanceData);
+    const quantityOrder = parseFloat(orderData?.quantityorder?.value);
+    const quantityProduct = parseFloat(orderData?.quantity?.value);
+
+    if(quantityOrder > 0){
+      if(quantityOrder < quantityProduct || quantityProduct == quantityOrder){
+              return true;
+      }
+    }
+    return false;
   }
 
   formOrderProduct(){
@@ -446,9 +550,37 @@ export class ActionManager{
     return JSON.stringify(currencyData);
   }
 
+  forPriceListToUpdate(){
+    let priceListData = Object.assign({}, this._formEditorService.instanceData);
+    priceListData.idPriceList = this._appStateService.instanceOfProduct?.id 
+    priceListData.version.value =  priceListData?.version?.value.toString();
+
+    return JSON.stringify(priceListData);
+  }
+
+  forPriceListValueToUpdate(){
+    let priceListData = Object.assign({}, this._formEditorService.instanceData);
+    priceListData.priceListId = this._appStateService.instanceOfProduct?.priceListId;
+    priceListData.productId = this._appStateService.instanceOfProduct?.productId;
+    priceListData.PriceListValueProductUniqCode = this._appStateService.instanceOfProduct?.productParameterUniqCode;
+    priceListData.PercentOfMarkup = {
+      Name:"PercentOfMarkup",
+      Value:  priceListData?.percentofmarkup.value
+    }
+
+    priceListData.quantity.value =  priceListData?.quantity?.value.toString();
+   
+  //  priceListData.percentofmarkup.value =  priceListData?.percentofmarkup?.value.toString();
+  //  priceListData.quantity.value =  priceListData?.quantity?.value.toString();
+  //  priceListData.price.value =  priceListData?.price?.value.toString();
+   // priceListData.pricends.value =  priceListData?.pricends?.value.toString();
+    // priceListData.version.value =  priceListData?.version?.value.toString();
+    return JSON.stringify(priceListData);
+  }
+
   dispose(){
     this._formEditorService.customProperties = new Subject<any>();
-    this._formEditorService.dependentProperties = new Subject<any>();
+   // this._formEditorService.dependentProperties = new Subject<any>();
     this._formEditorService.valueUpdated = new BehaviorSubject<valueUpdatedData>(undefined);
     this._formEditorService.instanceData = {};
     this._formEditorService.listParameters = {};

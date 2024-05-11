@@ -19,6 +19,7 @@ namespace gdm5._0.Models
         public string Description { get; set; }
         public string Supplier { get; set; }
         public string LastEditedByUser { get; set; }
+        public string Units { get; set; }
         public DateTime DateOfReceipt { get; set; }
         public DateTime DateOfLastChanged { get; set; }
 
@@ -29,7 +30,7 @@ namespace gdm5._0.Models
         public int? CurrencyId { get; set; }
 
         [ForeignKey("WareHouse")]
-        public int WareHouseId { get; set; }
+        public int? WareHouseId { get; set; }
         public virtual ProductType ProductType { get; set; }
         public virtual Currency  Currency { get; set; }
         public virtual WareHouse WareHouse { get; set; }
@@ -54,8 +55,11 @@ namespace gdm5._0.Models
                 var paramValue = this.ProductParameters
                             .Where(el => el.ParameterId == parmId).FirstOrDefault()?.Value;
                 double parsedValue = 0;
-                if (!string.IsNullOrWhiteSpace(paramValue) && ((sortOption.Name.ToLower()).Equals(("диаметр"))||
-                    (sortOption.Name.ToLower()).Equals(("размер"))))
+                if (!string.IsNullOrWhiteSpace(paramValue) && (
+                    (sortOption.Name.ToLower()).Equals(("диаметр"))||
+                    (sortOption.Name.ToLower()).Equals(("размер")) ||
+                    (sortOption.Name.ToLower()).Equals(("внутренний диаметр"))
+                    ))
                 {
                     if (double.TryParse(paramValue, out parsedValue))
                     {
@@ -117,29 +121,6 @@ namespace gdm5._0.Models
             return "";
         }
 
-        //    }
-
-        //private double? TryParseDouble(string value)
-        //{
-        //    if (double.TryParse(value, out double parsedValue))
-        //    {
-        //        return parsedValue;
-        //    }
-
-        //    return null;
-        //}
-
-        //private double? GetDiameterFromValue(string value)
-        //{
-        //    string[] parts = value.Split('*');
-        //    if (parts.Length > 0 && double.TryParse(parts[0], out double number))
-        //    {
-        //        return number;
-        //    }
-
-        //    return null;
-        //}
-
         private static readonly Dictionary<string, Func<Product, string>> SortFieldMappings = new Dictionary<string, Func<Product, string>>
     {
         { "quantity", p => p.Quantity.ToString() },
@@ -151,7 +132,6 @@ namespace gdm5._0.Models
         { "primecosteur", p => p.PrimeCostEUR.ToString() },
         { "dateofreceipt", p => p.DateOfReceipt.ToString() },
         { "warehousename", p => p.Manufacturer }
-        // Добавьте другие поля, если необходимо
     };
     }
 }

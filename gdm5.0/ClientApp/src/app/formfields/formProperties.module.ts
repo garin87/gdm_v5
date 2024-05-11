@@ -15,8 +15,8 @@ import { DateTimePikerComponent } from './fieldEditor/dateTimePiker/dateTimePike
 import { SelectorComponent } from './fieldEditor/selector/selector.component';
 import { CustomFieldComponent } from './fieldEditor/customField/customField.component';
 import { ParameterDialogComponent } from './fieldEditor/customField/parameterDialog/parameterDialog.component';
-import {MatExpansionModule} from '@angular/material/expansion';
-import {MatSidenavModule} from '@angular/material/sidenav';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatSidenavModule } from '@angular/material/sidenav';
 import { SidePanelComponent } from "../layout/sidePanel/sidePanel.component";
 import { GridControlComponent } from '../layout/grid/gridControl.component';
 import { MatSortModule } from '@angular/material/sort';
@@ -38,6 +38,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatPaginatorModule } from '@angular/material/paginator';
+import { BaseFieldEditorComponent } from './baseFieldEditor/baseFieldEditor.component';
 
 @NgModule({
   imports: [
@@ -78,7 +79,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
                  FilterTileComponent,
                  BaseFilterPanelComponent,
                  ActionDialogComonent,
-                 PickListComponent],
+                 PickListComponent,
+                 BaseFieldEditorComponent],
   exports: [FormEditorComponent, 
             FieldEditorComponent, 
             TextEditorComponent, 
@@ -97,7 +99,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
             filterPanelComponent,
             FilterTileComponent,
             BaseFilterPanelComponent,
-            PickListComponent],
+            PickListComponent,
+            BaseFieldEditorComponent],
   providers: [  
     MatDatepickerModule
   ],

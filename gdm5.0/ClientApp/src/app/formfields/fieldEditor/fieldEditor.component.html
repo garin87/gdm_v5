@@ -24,7 +24,8 @@
            </selector-list-parametrs>
         </div>
         <div *ngSwitchCase="'picklist'">
-            <pickList-editor [items]="property?.selectableItems"  [property]="property"  [valueUpdated]="valueUpdated">
+            <pickList-editor [items]="property?.selectableItems"  [property]="property"  
+             [listCreatedField]="listCreatedField" [valueUpdated]="valueUpdated">
             </pickList-editor>
          </div>
         <div *ngSwitchDefault>

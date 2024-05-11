@@ -25,6 +25,8 @@ namespace gdm5._0.DTO
         public double? PrimeCostUSD { get; set; }
         public double? PrimeCostEUR { get; set; }
         public double? StandartCost { get; set; }
+        public double? PriceValueEUR { get; set; }
+        public double? PriceValueEURNDS { get; set; }
         public string DateOfReceipt { get; set; }
         public string DateOfLastChanged { get; set; }
         public string LastEditedByUser { get; set; }

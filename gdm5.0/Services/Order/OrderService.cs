@@ -4,275 +4,413 @@ using System.Linq;
 using System.Threading.Tasks;
 using gdm5._0.Models;
 using gdm5._0.DTO;
-using gdm5._0.Controllers;
 using Microsoft.EntityFrameworkCore;
 using gdm5._0.Services.Interfaces;
 using gdm5._0.Requests.Product;
 using gdm5._0.Extensions;
-using Microsoft.AspNetCore.Http;
 using gdm5._0.Domain.Models.Filters;
 using gdm5._0.Filters;
 using gdm5._0.Helpers;
 using gdm5._0.Domain.Models.Order;
 using gdm5._0.Shared.Constants;
 using gdm5._0.Domain.Models;
+using gdm5._0.Requests.Order;
+using gdm5._0.Services.OrderB;
 
 namespace gdm5._0.Services
 {
-    public class OrderService : BaseService<Order>, IOrderService
+    public class OrderService : BaseOrderService<Order>, IOrderService
     {
-        private readonly DataContext _context;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IProductService _productService;
         private readonly IUriService _uriService;
-        public OrderService(DataContext context, IHttpContextAccessor httpContextAccessor,
-            IProductService ProductService, IUriService uriService) : base(context)
+        public OrderService(DataContext context, IProductService ProductService, IUriService uriService) : base(context)
         {
-            _context = context;
-            _httpContextAccessor = httpContextAccessor;
             _productService = ProductService;
-            this._uriService = uriService;
+            _uriService = uriService;
         }
 
         public string[] getOrderNameCompanies()
         {
-            return _context.Orders.Select(order => order.NameCompany).Distinct().ToArray();
+            return _context.Orders.Select(order => order.NameCompany)
+                                  .Distinct()
+                                  .AsNoTracking()
+                                  .ToArray();
         }
-
         public string[] getOrderNameCompanies(string NameCompany)
         {
-            if (string.IsNullOrEmpty(NameCompany))
-                throw new ApplicationException("Enter valid name company");
+            ValidateNameCompany(NameCompany);
 
             return _context.Orders.Where(order => order.NameCompany == NameCompany)
                                   .Select(order => order.NameCompany)
-                                  .Distinct().ToArray();
+                                  .Distinct()
+                                  .AsNoTracking()
+                                  .ToArray();
         }
-
         public string[] getNamesProduct()
         {
             return _context.Orders.SelectMany(order => order.OrderProduct
                                                       .Select(pp => pp.Product.ProductType.NameType))
-                                                      .Distinct().ToArray();
+                                                      .Distinct()
+                                                      .AsNoTracking()
+                                                      .ToArray();
         }
 
-        public async Task<Order> DeleteOrder(int id)
+
+        //public async Task AddOrder(AddOrderRequest orderData, string currentUserName)
+        //{
+        //    var product = GetProductById(orderData.ProductId);
+        //    var companyId = GetCustomerByName(orderData.company.Value);
+
+        //    var roundedQ = Math.Round(product.Quantity, 2);
+        //    if (roundedQ >= orderData.quantityorder?.Value.ParseDouble())
+        //    {
+        //        var newQuantity = roundedQ - orderData.quantityorder?.Value.ParseDouble();
+        //        product.Quantity = newQuantity ?? product.Quantity;
+        //        product.DateOfLastChanged = DateTimeHelper.DateTimeNowWithOffset();
+        //        product.LastEditedByUser = currentUserName;
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    else
+        //        throw new ApplicationException("Entered quantity of product invalid");
+
+        //    var orderStatusCompletedId = GetCompletedOrderStatusId();
+
+        //    int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
+        //    double orderQ = orderData.quantityorder.Value.ParseDouble();
+        //    double priceForQ = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQ;
+
+        //    var order = new Order
+        //    {
+        //        Id = 0,
+        //        NameCompany = orderData.company?.Value,
+        //        TotalPrice = priceForQ,
+        //        OrderCreatedTime = DateTimeHelper.DateTimeNowWithOffset(), // utcoffset +3
+        //        OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
+        //        OrderCreatedByUser = currentUserName,
+        //        Description = orderData.description?.Value,
+        //        CurrencyId = currencyId,
+        //        CustomerId = companyId,
+        //        OrderStatusId = orderStatusCompletedId
+        //    };
+
+        //    _context.Orders.Add(order);
+        //    await _context.SaveChangesAsync();
+
+        //    ProductHistory deletedProduct = null;
+        //    if (product.Quantity == 0)
+        //    {
+        //        deletedProduct = await _productService.DeleteProductInstance(product.Id, currentUserName);
+        //    }
+        //    if (deletedProduct == null)
+        //    {
+        //        var orderProduct = new OrderProduct
+        //        {
+        //            OrderId = order.Id,
+        //            ProductId = orderData.ProductId,
+        //            Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+        //            TotalPrice = priceForQ,
+        //            TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
+        //            Markup = orderData.markup?.Value.ParseDouble() ?? 0,
+
+        //        };
+        //        _context.OrderProducts.Add(orderProduct);
+        //    }
+        //    else
+        //    {
+        //        var orderProduct = new OrderProductHistory
+        //        {
+        //            OrderId = order.Id,
+        //            ProductHistoryId = deletedProduct.Id,
+        //            Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+        //            TotalPrice = priceForQ,
+        //         //   TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
+        //         //   Markup = orderData.markup?.Value.ParseDouble() ?? 0,
+        //        };
+        //        _context.OrderProductHistory.Add(orderProduct);
+        //    }
+
+
+        //    await _context.SaveChangesAsync();
+        //}
+
+        //public async Task AddToCartOrder1(AddOrderRequest orderData, string currentUserName)
+        //{
+        //    var userId = GetUserIdByContext(currentUserName);
+        //    var product = GetProductById(orderData.ProductId);
+        //    var orderStatusProcessingId = GetProcessingOrderStatusId();
+
+        //    // need change on multi orders
+        //    Order cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessingId && order.UserId == userId);
+
+        //    int orderId;
+        //    double orderQ = orderData.quantityorder.Value.ParseDouble();
+        //    double priceForQ = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQ;
+        //    if (cartOrder == null)
+        //    {
+        //        var companyId = GetCustomerByName(orderData.company.Value);
+        //        await CheckAndChangeQuantityProduct(product, orderData, currentUserName);
+        //        int currencyId = GetOrCreateCurrency("BYN");
+
+        //        var newOrder = new Order
+        //        {
+        //            Id = 0,
+        //            NameCompany = orderData.company?.Value,
+        //            TotalPrice = priceForQ,
+        //            OrderCreatedTime = DateTimeHelper.DateTimeNowWithOffset(),
+        //            OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
+        //            OrderCreatedByUser = currentUserName,
+        //            Description = orderData.description?.Value,
+        //            CurrencyId = currencyId,
+        //            CustomerId = companyId,
+        //            OrderStatusId = orderStatusProcessingId,
+        //            UserId = userId
+        //        };
+        //        _context.Orders.Add(newOrder);
+        //        await _context.SaveChangesAsync();
+
+        //        orderId = newOrder.Id;
+        //    }
+        //    else
+        //    {
+        //        orderId = cartOrder.Id;
+        //        await CheckAndChangeQuantityProduct(product, orderData, currentUserName);
+        //    }
+
+        //    ProductHistory deletedProduct = null;
+        //    if (product.Quantity == 0)
+        //    {
+        //        deletedProduct = await this._productService.DeleteProductInstance(product.Id, currentUserName);
+        //    }
+        //    if (deletedProduct == null)
+        //    {
+        //        var orderProduct = new OrderProduct
+        //        {
+        //            OrderId = orderId,
+        //            ProductId = orderData.ProductId,
+        //            Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+        //            TotalPrice = priceForQ,
+        //            TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
+        //            Markup = orderData.markup?.Value.ParseDouble() ?? 0,
+
+        //        };
+        //        _context.OrderProducts.Add(orderProduct);
+        //    }
+        //    else
+        //    {
+        //        var orderProduct = new OrderProductHistory
+        //        {
+        //            OrderId = orderId,
+        //            ProductHistoryId = deletedProduct.Id,
+        //            Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+        //            TotalPrice = priceForQ,
+        //            Markup = orderData?.markup?.Value.ParseDouble() ?? 0,
+        //            TaxNDS = orderData?.taxnds?.Value.ParseDouble() ?? 0,
+        //        };
+        //        _context.OrderProductHistory.Add(orderProduct);
+        //    }
+
+        //    await _context.SaveChangesAsync();
+        //}
+
+        public async Task AddOrder(AddOrderRequest orderData, string currentUserName)
         {
-            Order order = _context.Orders
-              .Where(o => o.Id == id)
-              .FirstOrDefault();
+            // Input validation
+            if (orderData == null)
+                throw new ArgumentNullException(nameof(orderData));
 
-            var product = _context.OrderProducts
-                                  .Include(k => k.Product)
-                                  .Where(f => f.OrderId == id).Select(dd => dd.Product).FirstOrDefault();
-            if (product != null)
-            {
-                //   await UpdateOrderQuantity(id);
-            }
+            // Validate other input parameters
 
-            _context.Orders.Remove(order);
-            await _context.SaveChangesAsync();
-            return order;
-        }
-
-        public async Task<Order> UpdateOrder(int id, Order order)
-        {
-            Order p = await GetItem(order.Id);
-            p.NameCompany = order.NameCompany;
-            p.TotalPrice = order.TotalPrice;
-            p.OrderCreatedTime = order.OrderCreatedTime;
-
-            await _context.SaveChangesAsync();
-
-            return order;
-        }
-
-        public async Task AddOrder(AddOrderRequest orderData)
-        {
-            if (orderData.ProductId == 0)
-                throw new ApplicationException("Enter valid ProductId");
-
-            var product = _context.Products.FirstOrDefault(product => (product.Id == orderData.ProductId));
+            // Retrieve product
+            var product = GetProductById(orderData.ProductId);
             if (product == null)
-                throw new ApplicationException("Product Id does not exist");
+                throw new ArgumentException("Invalid ProductId", nameof(orderData.ProductId));
 
-            if (string.IsNullOrEmpty(orderData.company?.Value))
-                throw new ApplicationException("Entered name of company does not exist");
+            // Validate quantity
+            double orderQuantity = orderData.quantityorder?.Value.ParseDouble() ?? 0;
+            var productQuantity = Math.Round(product.Quantity, 2);
 
-            var company = _context.Customer.FirstOrDefault(Customer => (Customer.NameCompany == orderData.company.Value));
-            var companyId = 0;
-            if (company != null)
+            if (productQuantity < orderQuantity)
+                throw new ArgumentException("Entered quantity of product is invalid");
+
+            // Update product quantity
+            double newQuantity = Math.Max(0, productQuantity - orderQuantity);
+            product.Quantity = newQuantity;
+            product.DateOfLastChanged = DateTimeHelper.DateTimeNowWithOffset();
+            product.LastEditedByUser = currentUserName;
+
+            // Save changes to product
+            await _context.SaveChangesAsync();
+
+            // Create order
+            var order = new Order
             {
-                companyId = company.Id;
-            }
-            else throw new ApplicationException("Entered name of company does not exist"); ;
+                NameCompany = orderData.company?.Value,
+                TotalPrice = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQuantity,
+                OrderCreatedTime = DateTimeHelper.DateTimeNowWithOffset(),
+                OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
+                OrderCreatedByUser = currentUserName,
+                Description = orderData.description?.Value,
+                CurrencyId = GetOrCreateCurrency("BYN"),
+                CustomerId = GetCustomerByName(orderData.company.Value),
+                OrderStatusId = GetCompletedOrderStatusId()
+            };
 
-            var roundedQ = Math.Round(product.Quantity, 2);
-            if (roundedQ >= orderData.quantityorder?.Value.ParseDouble())
+            // Add order to context
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            // Handle product history
+            var deletedProduct = (product.Quantity == 0)
+                ? await _productService.DeleteProductInstance(product.Id, currentUserName)
+                : null;
+
+            // Add order product or order product history
+            if (deletedProduct == null)
             {
-                var newQuantity = roundedQ - orderData.quantityorder?.Value.ParseDouble();
-                product.Quantity = newQuantity ?? product.Quantity;
-                product.DateOfLastChanged = DateTime.Now;
-                product.LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name;
-                await _context.SaveChangesAsync();
+                var orderProduct = new OrderProduct
+                {
+                    OrderId = order.Id,
+                    ProductId = orderData.ProductId,
+                    Quantity = orderQuantity,
+                    TotalPrice = order.TotalPrice,
+                    TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
+                    Markup = orderData.markup?.Value.ParseDouble() ?? 0
+                };
+                _context.OrderProducts.Add(orderProduct);
             }
             else
-                throw new ApplicationException("Entered quantity of product invalid");
+            {
+                var orderProductHistory = new OrderProductHistory
+                {
+                    OrderId = order.Id,
+                    ProductHistoryId = deletedProduct.Id,
+                    Quantity = orderQuantity,
+                    TotalPrice = order.TotalPrice
+                    // Add other properties if needed
+                };
+                _context.OrderProductHistory.Add(orderProductHistory);
+            }
 
-            var orderStatusCompleted = _context.OrderStatus.FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Completed);
+            // Save changes to the context
+            await _context.SaveChangesAsync();
+        }
 
-            int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
-            double orderQ = orderData.quantityorder.Value.ParseDouble();
-            double priceForQ = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQ;
+        public async Task AddToCartOrder(AddOrderRequest orderData, string currentUserName)
+        {
+            var userId = GetUserIdByContext(currentUserName);
+            var product = GetProductById(orderData.ProductId);
+            var orderStatusProcessingId = GetProcessingOrderStatusId();
 
-            var order = new Order
+            Order cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessingId && order.UserId == userId);
+
+            if (cartOrder == null)
+            {
+                await CreateNewOrder(orderData, currentUserName, userId, product, orderStatusProcessingId);
+            }
+            else
+            {
+                await UpdateExistingOrder(cartOrder, orderData, currentUserName, product);
+            }
+        }
+
+        private async Task CreateNewOrder(AddOrderRequest orderData, string currentUserName, int userId, Product product, int orderStatusProcessingId)
+        {
+            var companyId = GetCustomerByName(orderData.company.Value);
+            await CheckAndChangeQuantityProduct(product, orderData, currentUserName);
+            int currencyId = GetOrCreateCurrency("BYN");
+
+            var newOrder = new Order
             {
                 Id = 0,
                 NameCompany = orderData.company?.Value,
-                TotalPrice = priceForQ,
-                OrderCreatedTime = DateTime.Now,
+                TotalPrice = CalculateTotalPrice(orderData),
+                OrderCreatedTime = DateTimeHelper.DateTimeNowWithOffset(),
                 OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
-                OrderCreatedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name,
+                OrderCreatedByUser = currentUserName,
                 Description = orderData.description?.Value,
                 CurrencyId = currencyId,
                 CustomerId = companyId,
-                OrderStatusId = orderStatusCompleted.Id
+                OrderStatusId = orderStatusProcessingId,
+                UserId = userId
             };
 
-            _context.Orders.Add(order);
+            _context.Orders.Add(newOrder);
             await _context.SaveChangesAsync();
-            ProductHistory deletedProduct = null;
+
+            await CreateOrUpdateProductQ(newOrder.Id, orderData, currentUserName, product);
+        }
+
+        private async Task UpdateExistingOrder(Order cartOrder, AddOrderRequest orderData, string currentUserName, Product product)
+        {
+            await CheckAndChangeQuantityProduct(product, orderData, currentUserName);
+            await CreateOrUpdateProductQ(cartOrder.Id, orderData, currentUserName, product);
+        }
+
+        private async Task CreateOrUpdateProductQ(int orderId, AddOrderRequest orderData, string currentUserName, Product product)
+        {
+
             if (product.Quantity == 0)
             {
-                deletedProduct = await this._productService.DeleteProductInstance(product.Id);
-            }
-            if (deletedProduct == null)
-            {
-                var orderProduct = new OrderProduct
-                {
-                    OrderId = order.Id,
-                    ProductId = orderData.ProductId,
-                    Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
-                    TotalPrice = priceForQ,
-                    TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
-                    Markup = orderData.markup?.Value.ParseDouble() ?? 0,
+                var deletedProduct = await _productService.DeleteProductInstance(product.Id, currentUserName);
 
-                };
-                _context.OrderProducts.Add(orderProduct);
+                if (deletedProduct == null)
+                {
+                    AddOrderProduct(orderId, orderData);
+                }
+                else
+                {
+                    AddOrderProductHistory(orderId, deletedProduct, orderData);
+                }
             }
             else
             {
-                var orderProduct = new OrderProductHistory
-                {
-                    OrderId = order.Id,
-                    ProductHistoryId = deletedProduct.Id,
-                    Quantity = orderData.quantityorder?.Value.ParseFloat() ?? 0,
-                    TotalPrice = priceForQ,
-                 //   TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
-                 //   Markup = orderData.markup?.Value.ParseDouble() ?? 0,
-                };
-                _context.OrderProductHistory.Add(orderProduct);
+                AddOrderProduct(orderId, orderData);
             }
-
-
-            await _context.SaveChangesAsync();
         }
-        public async Task AddToCartOrder(AddOrderRequest orderData)
+
+        private void AddOrderProduct(int orderId, AddOrderRequest orderData)
         {
-            if (orderData.ProductId == 0)
-                throw new ApplicationException("Enter valid ProductId");
+            var priceForQ = CalculateTotalPrice(orderData);
 
-            var product = _context.Products.FirstOrDefault(product => (product.Id == orderData.ProductId));
-            if (product == null)
-                throw new ApplicationException("Product Id does not exist");
+            var orderProduct = new OrderProduct
+            {
+                OrderId = orderId,
+                ProductId = orderData.ProductId,
+                Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+                TotalPrice = priceForQ,
+                TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
+                Markup = orderData.markup?.Value.ParseDouble() ?? 0,
+            };
 
-           
+            _context.OrderProducts.Add(orderProduct);
+            _context.SaveChanges();
+        }
+        private void AddOrderProductHistory(int orderId, ProductHistory deletedProduct, AddOrderRequest orderData)
+        {
+            var priceForQ = CalculateTotalPrice(orderData);
 
-            var orderStatusProcessing = _context.OrderStatus.FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
-            var cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
+            var orderProductHistory = new OrderProductHistory
+            {
+                OrderId = orderId,
+                ProductHistoryId = deletedProduct.Id,
+                Quantity = orderData.quantityorder?.Value.ParseDouble() ?? 0,
+                TotalPrice = priceForQ,
+                Markup = orderData?.markup?.Value.ParseDouble() ?? 0,
+                TaxNDS = orderData?.taxnds?.Value.ParseDouble() ?? 0,
+            };
 
-            int orderId;
+            _context.OrderProductHistory.Add(orderProductHistory);
+            _context.SaveChanges();
+        }
+
+        private double CalculateTotalPrice(AddOrderRequest orderData)
+        {
             double orderQ = orderData.quantityorder.Value.ParseDouble();
             double priceForQ = (orderData.totalprice?.Value.ParseDouble() ?? 0) * orderQ;
-            if (cartOrder == null)
-            {
-                if (string.IsNullOrEmpty(orderData.company?.Value))
-                    throw new ApplicationException("Cart is Empty. Enter name of company for order");
-
-                var company = _context.Customer.FirstOrDefault(Customer => (Customer.NameCompany == orderData.company.Value));
-                var companyId = 0;
-                if (company != null)
-                {
-                    companyId = company.Id;
-                }
-                else throw new ApplicationException("Entered name of company does not exist");
-
-                await CheckAndChangeQuantityProduct(product, orderData);
-
-                int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
-
-               
-                var newOrder = new Order
-                {
-                    Id = 0,
-                    NameCompany = orderData.company?.Value,
-                    TotalPrice = priceForQ,
-                    OrderCreatedTime = DateTime.Now,
-                    OrderNumber = orderData.number?.Value.ParseInt() ?? 0,
-                    OrderCreatedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name,
-                    Description = orderData.description?.Value,
-                    CurrencyId = currencyId,
-                    CustomerId = companyId,
-                    OrderStatusId = orderStatusProcessing.Id
-                };
-                _context.Orders.Add(newOrder);
-                await _context.SaveChangesAsync();
-
-                orderId = newOrder.Id;
-            }
-            else
-            {
-                orderId = cartOrder.Id;
-                await CheckAndChangeQuantityProduct(product, orderData);
-            }
-
-                       
-            ProductHistory deletedProduct = null;
-            if (product.Quantity == 0)
-            {
-                deletedProduct = await this._productService.DeleteProductInstance(product.Id);
-            }
-            if (deletedProduct == null)
-            {
-                var orderProduct = new OrderProduct
-                {
-                    OrderId = orderId,
-                    ProductId = orderData.ProductId,
-                    Quantity = orderData.quantityorder?.Value.ParseFloat() ?? 0,
-                    TotalPrice = priceForQ,
-                    TaxNDS = orderData.taxnds?.Value.ParseDouble() ?? 0,
-                    Markup = orderData.markup?.Value.ParseDouble() ?? 0,
-
-                };
-                _context.OrderProducts.Add(orderProduct);
-            }
-            else
-            {
-                var orderProduct = new OrderProductHistory
-                {
-                    OrderId = orderId,
-                    ProductHistoryId = deletedProduct.Id,
-                    Quantity = orderData.quantityorder?.Value.ParseFloat() ?? 0,
-                    TotalPrice = priceForQ,
-                    Markup = orderData?.markup?.Value.ParseDouble() ?? 0,
-                    TaxNDS = orderData?.taxnds?.Value.ParseDouble() ?? 0,
-                };
-                _context.OrderProductHistory.Add(orderProduct);
-            }
-
-            await _context.SaveChangesAsync();
+            return priceForQ;
         }
-        private async Task CheckAndChangeQuantityProduct(Product product, AddOrderRequest orderData)
+
+        private async Task CheckAndChangeQuantityProduct(Product product, AddOrderRequest orderData, string currentUserName)
         {
 
             var roundedQ = Math.Round(product.Quantity, 2);
@@ -280,144 +418,94 @@ namespace gdm5._0.Services
             {
                 var newQuantity = roundedQ - orderData.quantityorder?.Value.ParseDouble();
                 product.Quantity = newQuantity ?? product.Quantity;
-                product.DateOfLastChanged = DateTime.Now;
-                product.LastEditedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name;
+                product.DateOfLastChanged = DateTimeHelper.DateTimeNowWithOffset();
+                product.LastEditedByUser = currentUserName;
                 await _context.SaveChangesAsync();
             }
             else
                 throw new ApplicationException("Entered quantity of product invalid");
         }
-        public async Task addOrderProductList(addOrderListProductRequest orderData)
+
+        public async Task addOrderProductList(addOrderListProductRequest orderData, int currentUserId, string currentUserName)
         {
-
-            if (orderData.orderProductList.Count() <= 1) throw new ApplicationException("Order ProductList is empty"); ;
-
-            // validate ProductList
-            foreach (var productOrder in orderData.orderProductList)
-            {
-                if (productOrder.ProductId == 0)
-                    throw new ApplicationException("Enter valid ProductId");
-
-                var product = _context.Products.FirstOrDefault(product => (product.Id == productOrder.ProductId));
-                if (product == null)
-                    throw new ApplicationException("Product Id does not exist");
-
-
-                if (product.Quantity >= productOrder.quantityorder?.Value.ParseDouble())
-                {
-                }
-                else
-                    throw new ApplicationException("Entered quantity: " + product.Quantity + 
-                       "of product: " + product.Name + "ProductNumber " + product.ProductNumber + " invalid" );
-            }
-          
-
-            
-            var company = _context.Customer.FirstOrDefault(Customer => (Customer.NameCompany == orderData.company.Value));
-            var companyId = 0;
-            if (company != null)
-            {
-                companyId = company.Id;
-            }
-            else throw new ApplicationException("Entered name of company does not exist");
-
-            
+            ValidateOrderProductList(orderData);
+            var companyId = GetCustomerByName(orderData.company.Value);
             int currencyId = GetOrCreateCurrency("BYN"); //BYN; 
 
-            var totalPriceList = orderData.orderProductList.Select(product => product.totalprice.Value.ParseDouble());
-            var totalOrderPrice = totalPriceList.Sum();
+            var totalOrderPrice = orderData.orderProductList.Select(product => product.totalprice.Value.ParseDouble())
+                                                            .Sum();
+
             var order = new Order
             {
                 Id = 0,
                 NameCompany = orderData.company?.Value,
                 TotalPrice = totalOrderPrice,
-                OrderCreatedTime = DateTime.Now,
+                OrderCreatedTime = DateTime.UtcNow.AddHours(3),
                 OrderNumber = random.Next(9999999),
-                OrderCreatedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name,
+                OrderCreatedByUser = currentUserName,
                 Description = orderData.description?.Value,
                 CurrencyId = currencyId,
                 CustomerId = companyId,
+                UserId = currentUserId
             };
 
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-
-
             foreach (var productOrder in orderData.orderProductList) {
 
-                var product = _context.Products.FirstOrDefault(product => (product.Id == productOrder.ProductId));
+                var product = GetProductById(productOrder);
 
                 var newQuantity = product.Quantity - productOrder.quantityorder?.Value.ParseFloat();
                 product.Quantity = newQuantity ?? product.Quantity;
-                product.DateOfLastChanged = DateTime.Now;
+                product.DateOfLastChanged = DateTimeHelper.DateTimeNowWithOffset();
+                
                 await _context.SaveChangesAsync();
 
                 ProductHistory deletedProduct = null;
                 if (product.Quantity == 0)
-                {
-                    deletedProduct = await this._productService.DeleteProductInstance(product.Id);
-                }
-
+                    deletedProduct = await this._productService.DeleteProductInstance(product.Id, currentUserName);
 
                 if (deletedProduct == null)
-                {
-                    var orderProduct = new OrderProduct
-                    {
-                        OrderId = order.Id,
-                        ProductId = productOrder.ProductId,
-                        Quantity = productOrder.quantityorder?.Value.ParseFloat() ?? 0,
-                        TotalPrice = productOrder.totalprice?.Value.ParseDouble() ?? 0,
-                        TaxNDS = productOrder.taxnds?.Value.ParseDouble() ?? 0,
-                        Markup = productOrder.markup?.Value.ParseDouble() ?? 0,
-                    };
-                    _context.OrderProducts.Add(orderProduct);
-                }
+                    AddOrderProduct(order, productOrder);
                 else
-                {
-                    var orderProduct = new OrderProductHistory
-                    {
-                        OrderId = order.Id,
-                        ProductHistoryId = deletedProduct.Id,
-                        Quantity = productOrder.quantityorder?.Value.ParseFloat() ?? 0,
-                        TotalPrice = productOrder.totalprice?.Value.ParseDouble() ?? 0,
-                        TaxNDS = productOrder.taxnds?.Value.ParseDouble() ?? 0,
-                        Markup = productOrder.markup?.Value.ParseDouble() ?? 0,
-                    };
-                    _context.OrderProductHistory.Add(orderProduct);
-                }
-
+                    AddOrderProductHistory(order, deletedProduct, productOrder);
+                
                 await _context.SaveChangesAsync();
-
             }
-
-           
         }
-
-        public async Task saveOrderCart()
+        public async Task saveOrderCart(string currentUserName, int CurrentUserId)
         {
-
-            var orderStatusProcessing = _context.OrderStatus
-                .FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
-            var cartOrder = _context.Orders
-                .FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
+            var orderStatusProcessingId = GetProcessingOrderStatusId();
+            var cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessingId && order.UserId == CurrentUserId);
 
             if (cartOrder == null)
                 throw new ApplicationException("Cart is empty");
 
-            var orderStatusCompleted = _context.OrderStatus
-                .FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Completed);
+            var orderStatusCompletedId = GetCompletedOrderStatusId();
 
-
-            cartOrder.OrderStatusId = orderStatusCompleted.Id;
-            cartOrder.OrderCreatedTime = DateTime.Now;
-            cartOrder.OrderCreatedByUser = this._httpContextAccessor.HttpContext.User.Identity.Name;
+            cartOrder.OrderStatusId = orderStatusCompletedId;
+            cartOrder.OrderCreatedTime = DateTimeHelper.DateTimeNowWithOffset();
+            cartOrder.OrderCreatedByUser = currentUserName;
             await _context.SaveChangesAsync();
         }
 
-        public PagedResponseDTO<List<OrderDomain>> getOrderProduct(string companyName,
-           PaginationFilterDTO pageFilter, string route, SortOptionsDTO sortOption,
-           OrderFilter filter)
+
+        public String GetProcessingOrderInfo(int CurrentUserId)
+        {
+            var orderStatusProcessingId = GetProcessingOrderStatusId();
+            var cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessingId && order.UserId == CurrentUserId);
+
+            if (cartOrder == null)
+                throw new ApplicationException("Cart is empty");
+
+            return cartOrder.NameCompany;
+        }
+
+        
+
+        public PagedResponseDTO<List<OrderDomain>> getOrderProduct(string companyName, PaginationFilterDTO pageFilter, string route, 
+            SortOptionsDTO sortOption, OrderFilter filter)
         {
             var validFilter = new PaginationFilterDTO(pageFilter.PageNumber, pageFilter.PageSize);
             if (!string.IsNullOrEmpty(companyName))
@@ -425,15 +513,13 @@ namespace gdm5._0.Services
                 filter.NameCompany = companyName;
             }
   
-
             var isSortActive = string.IsNullOrEmpty(sortOption.Name) && string.IsNullOrEmpty(sortOption.Direction);
 
             filter.StartIndex = validFilter.PageNumber - 1;
             filter.CountInstances = validFilter.PageSize;
 
             var filterAssigner = new OrderAssigner(filter);
-            var instancesOfOrder = _context.Orders.AsNoTracking()
-                                                  .Include(order => order.OrderProduct)
+            var instancesOfOrder = _context.Orders.Include(order => order.OrderProduct)
                                                      .ThenInclude(orderProduct => orderProduct.Product)
                                                      .ThenInclude(product => product.ProductType)
                                                      .ThenInclude(productType => productType.Parameters)
@@ -441,13 +527,10 @@ namespace gdm5._0.Services
                                                   .Include(product => product.Currency)
                                                   .Include(order => order.OrderProductHistory)
                                                      .ThenInclude(parameters => parameters.ProductHistory)
+                                                  .AsNoTracking()
                                                   .ApplyPagingFilter(filterAssigner);
 
-           
-
             var orders = new List<OrderDomain>();
-
-
             foreach (var order in instancesOfOrder)
             {
                 var orderP = order.OrderProduct;
@@ -458,7 +541,7 @@ namespace gdm5._0.Services
                 var OCurrency = "";
                 var OProductName = "";
                 var OQuantity = 0.0;
-                   if (orderP.Count() > 0)
+                if (orderP.Count() > 0)
                 {
                     OProductNumber = order.OrderProduct.Select(orderProduct => orderProduct.Product.ProductNumber).FirstOrDefault();
                     OManufacturer = order.OrderProduct.Select(orderProduct => orderProduct.Product.Manufacturer).FirstOrDefault();
@@ -471,9 +554,7 @@ namespace gdm5._0.Services
                 {
                     OProductNumber = order.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory.ProductNumber).FirstOrDefault();
                     OManufacturer = order.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory.Manufacturer).FirstOrDefault();
-                   // OCurrency = product.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory..CurrencyName).FirstOrDefault();
                     OProductName = order.OrderProductHistory.Select(orderProduct => orderProduct.ProductHistory.Name).FirstOrDefault();
-                   
                     OQuantity = order.OrderProductHistory.Select(orderProduct => orderProduct.Quantity).FirstOrDefault();
                     OQuantity = Math.Round(OQuantity, 2);
                 }
@@ -526,7 +607,6 @@ namespace gdm5._0.Services
 
             return orderReponse;
         }
-
         public PagedResponseDTO<List<OrderProductListDomain>> getOrderProducts(string companyName, PaginationFilterDTO pageFilter,
                                                                string route, SortOptionsDTO sortOption, OrderFilter filter)
         {
@@ -541,7 +621,6 @@ namespace gdm5._0.Services
 
             var instancesOfOrder = _context.Orders.Where(order=> order.OrderStatusId != orderStatusProcessing.Id)
                                                   .OrderByDescending(order => order.OrderCreatedTime)
-                                                  .AsNoTracking()
                                                   .Include(order => order.OrderProduct)
                                                      .ThenInclude(orderProduct => orderProduct.Product)
                                                      .ThenInclude(productParameter => productParameter.ProductType.Parameters)
@@ -549,13 +628,14 @@ namespace gdm5._0.Services
                                                   .Include(order => order.OrderProductHistory)
                                                      .ThenInclude(parameters => parameters.ProductHistory)
                                                      .ThenInclude(productHistory => productHistory.ProductParameterHistory)
+                                                  .AsNoTracking()
                                                   .ApplyPagingFilter(filterAssigner);
 
 
             var parametersValueOfOrder = _context.Orders.Where(order => order.OrderStatusId != orderStatusProcessing.Id).AsNoTracking()
-                                                 .Include(order => order.OrderProduct)
-                                                    .ThenInclude(orderProduct => orderProduct.Product)
-                                                    .ThenInclude(product => product.ProductParameters).ToList();
+                                                        .Include(order => order.OrderProduct)
+                                                          .ThenInclude(orderProduct => orderProduct.Product)
+                                                          .ThenInclude(product => product.ProductParameters).ToList();
 
             var orders = new List<OrderProductListDomain>();
 
@@ -646,35 +726,29 @@ namespace gdm5._0.Services
 
             return orderReponse;
         }
-
-        public PagedResponseDTO<List<OrderProductListDomain>> getCartOrderProducts(string route)
+        public PagedResponseDTO<List<OrderProductListDomain>> getCartOrderProducts(string route, int currentUserId)
         {
             var validFilter = new PaginationFilterDTO(1, 100);
-
             var orderStatusProcessing = _context.OrderStatus.FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
-            var cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
+
+            Order cartOrder = _context.Orders.FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id && order.UserId == currentUserId);
 
             if (cartOrder == null)
             {
                 return PaginationHelper.CreatePagedReponse<OrderProductListDomain>(new List<OrderProductListDomain>(),
-               validFilter, 1, _uriService, route);
+                validFilter, 1, _uriService, route);
             }
 
-            var OrderProcessing = _context.Orders.Where(order => order.Id == cartOrder.Id)
-                                                  .Include(order => order.OrderProduct)
-                                                     .ThenInclude(orderProduct => orderProduct.Product)
-                                                     .ThenInclude(product => product.ProductType.Parameters)
-                                                     .ThenInclude(parameters => parameters.ProductParameters)
-                                                  .Include(product => product.Currency)
-                                                  .Include(order => order.OrderProductHistory)
-                                                     .ThenInclude(parameters => parameters.ProductHistory);
-
-
+            var OrderProcessing = _context.Orders.Where(order => order.Id == cartOrder.Id && order.UserId == currentUserId)
+                                    .Include(order => order.OrderProduct)
+                                       .ThenInclude(orderProduct => orderProduct.Product)
+                                       .ThenInclude(parameters => parameters.ProductParameters)
+                                    .Include(order => order.OrderProductHistory)
+                                       .ThenInclude(parameters => parameters.ProductHistory)
+                                       .AsNoTracking();
 
 
             var orders = new List<OrderProductListDomain>();
-
-
             foreach (var order in OrderProcessing)
             {
                 var orderP = order.OrderProduct;
@@ -701,7 +775,7 @@ namespace gdm5._0.Services
 
                         };
 
-                        var oProductParameters = orderProduct.Product.ProductType.Parameters;
+                        var oProductParameters = _context.Parameters.Where(p => p.ProductTypeId == orderProduct.Product.ProductTypeId).ToList();
                         var orderProductParameters = _context.ProductParameters
                             .Where(pParameter => pParameter.ProductId == orderProduct.Product.Id).ToList();
 
@@ -741,7 +815,7 @@ namespace gdm5._0.Services
                     }
                 }
 
-               //orderProductListDTO.ToList().Reverse();
+                orderProductListDTO.ToList().Reverse();
                 var orderDTO = new OrderProductListDomain()
                 {
                     OrderId = order.Id,
@@ -750,13 +824,13 @@ namespace gdm5._0.Services
                     Description = order.Description,
                     OrderCreatedTime = order.OrderCreatedTime.ToString("MM/dd/yyyy HH:mm"),
                     OrderCreatedByUser = order.OrderCreatedByUser,
-                    Currency = order.Currency.CurrencyName,
+                    Currency = "BYN",//order.Currency.CurrencyName,
                     Products = orderProductListDTO
                 };
 
                 orders.Add(orderDTO);
             }
-           // orders.Reverse();
+            orders.Reverse();
             var totalRecords = 1;
             var orderReponse = PaginationHelper.CreatePagedReponse<OrderProductListDomain>(orders,
                 validFilter, totalRecords, this._uriService, route);
@@ -811,48 +885,7 @@ namespace gdm5._0.Services
 
             return oProduct;
         }
-
-        public async Task<OrderDTO> AddOrders(OrderDTO orderDTO)
-        {
-            var EntryOrder = _context.Orders.Find(orderDTO.Id);
-            if (EntryOrder != null) return orderDTO;
-
-            var order = new Order
-            {
-                Id = orderDTO.Id,
-                NameCompany = orderDTO.NameCompany,
-                TotalPrice = orderDTO.TotalPrice,
-                OrderCreatedTime = DateTime.Now
-
-            };
-
-            _context.Orders.Add(order);
-
-            var orderProduct = new OrderProduct
-            {  
-                OrderId = order.Id,
-                ProductId = orderDTO.ProductId,
-                Quantity = orderDTO.Quantity
-            };
-
-            _context.OrderProducts.Add(orderProduct);
-
-         
-            Product product = _context.Products.Find(orderDTO.ProductId);
-            if(product.Quantity >= orderDTO.Quantity)
-            {
-                var newAmout = product.Quantity - orderDTO.Quantity;
-                product.Quantity = newAmout;
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-               return null;
-            }
-            
-            return orderDTO;
-        }
-
+       
         public void cancelOrderCart()
         {
             var orderStatusProcessing = _context.OrderStatus
@@ -923,12 +956,11 @@ namespace gdm5._0.Services
 
 
         }
-
         public void DeleteCartProduct(int? id)
         {
             if (!id.HasValue) throw new ApplicationException("idProduct does not exist");
 
-            var orderStatusProcessing = _context.OrderStatus.FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
+            var orderStatusProcessingId = GetProcessingOrderStatusId();
             var cartOrder = _context.Orders
                                     .Include(order =>order.OrderProduct)
                                        .ThenInclude(orderProduct => orderProduct.Product)
@@ -936,7 +968,7 @@ namespace gdm5._0.Services
                                        .ThenInclude(orderProductHistory => orderProductHistory.ProductHistory)
                                        .ThenInclude(productHistory => productHistory.ProductTypeHistory.ParameterHistory)
                                        .ThenInclude(parameterHistory => parameterHistory.ProductParameterHistory)
-                                    .FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
+                                    .FirstOrDefault(order => order.OrderStatusId == orderStatusProcessingId);
 
 
             if(cartOrder == null)
@@ -1013,7 +1045,6 @@ namespace gdm5._0.Services
             _context.SaveChanges();
 
         }
-
         public void DeleteCartProduct2(int? id)
         {
             if (id == null)
@@ -1064,7 +1095,6 @@ namespace gdm5._0.Services
 
             _context.SaveChanges();
         }
-
         public void DeleteOrderProduct(int? idProduct, int? idOrder)
         {
             if (idProduct == null)
@@ -1075,7 +1105,7 @@ namespace gdm5._0.Services
             {
                 throw new ArgumentNullException(nameof(idOrder), "Order ID is null");
             }
-            // var orderStatusProcessing = _context.OrderStatus.FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
+
             var order = _context.Orders
                                     .Include(order => order.OrderProduct)
                                        .ThenInclude(orderProduct => orderProduct.Product)
@@ -1118,7 +1148,6 @@ namespace gdm5._0.Services
 
             _context.SaveChanges();
         }
-
         private void RollbackProductHistory(OrderProductHistory orderProductHistory)
         {
             var productType = GetOrCreateProductType(orderProductHistory.ProductHistory.ProductTypeHistory.NameType);
@@ -1165,16 +1194,15 @@ namespace gdm5._0.Services
             _context.Products.Add(product);
             _context.SaveChanges();
         }
-
-        public CountCartProducts GetCartOrderCount()
+        public CountCartProducts GetCartOrderCount(int currentUserId)
         {
-            var orderStatusProcessing = _context.OrderStatus
-                .FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
+            var orderStatusProcessing = _context.OrderStatus.AsNoTracking()
+                                                            .FirstOrDefault(oStatus => oStatus.OrderStatusName == OrderStatusConstants.Processing);
 
-            var cartOrder = _context.Orders
-                .Include(order => order.OrderProduct)
-                .Include(order => order.OrderProductHistory)
-                .FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id);
+            var cartOrder = _context.Orders.Include(order => order.OrderProduct)
+                                           .Include(order => order.OrderProductHistory)
+                                           .AsNoTracking()
+                                           .FirstOrDefault(order => order.OrderStatusId == orderStatusProcessing.Id && order.UserId == currentUserId);
 
             int productCount = 0;
             bool isEmptyCart = false;
@@ -1196,27 +1224,9 @@ namespace gdm5._0.Services
                 isEmptyCart = isEmptyCart
             };
         }
-
-
-
-
-        //private ProductType GetOrCreateProductType2(string nameType)
-        //{
-        //    var productType = _context.ProductTypes.FirstOrDefault(pt => pt.NameType == nameType);
-
-        //    if (productType == null)
-        //    {
-        //        productType = new ProductType { NameType = nameType };
-        //        _context.ProductTypes.Add(productType);
-        //        _context.SaveChanges();
-        //    }
-
-        //    return productType;
-        //}
-
         private int GetOrCreateProductType(string productTypeName)
         {
-            var productType = _context.ProductTypes.FirstOrDefault(pt => pt.NameType == productTypeName);
+            var productType = _context.ProductTypes.AsNoTracking().FirstOrDefault(pt => pt.NameType == productTypeName);
             var idTypeProduct = 0;
 
             if (productType == null)
@@ -1238,16 +1248,13 @@ namespace gdm5._0.Services
 
             return idTypeProduct;
         }
-
         private Random random = new Random();
-
         private string RandomString(int length)
         {
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, length)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
-
         private int GetOrCreateCurrency(string currencyName)
         {
             var currency = _context.Currencies.FirstOrDefault(c => c.CurrencyName == currencyName);
@@ -1272,6 +1279,307 @@ namespace gdm5._0.Services
             }
 
             return currencyId;
+        }
+        public List<OrderTotalQuantity> LoadOrderReport(loadOrderReportRequest request)
+        {
+            int productTypeID = GetProductTypeID(request.Name?.Value);
+            int productTypeHistoryID = GetProductTypeHistoryID(request.Name?.Value);
+
+            int parameterDiameterID = GetParameterDiameterID(productTypeID);
+            int parameterHistoryDiameterID = GetParameterHistoryDiameterID(productTypeHistoryID);
+           
+            var filterOrderReportAssigner = createOrderReportAssigner(request);
+            if (request.Parameters != null && request.Parameters.Length > 0)
+            {
+                foreach (var param in request.Parameters)
+                {
+                    if (!string.IsNullOrEmpty(param.Name))
+                    {
+                        param.ParameterId = _context.Parameters
+                            .FirstOrDefault(item => item.Name.Equals(param.Name) && item.ProductTypeId == productTypeID).Id;
+                    }
+                }
+            }
+
+            ProductFilter filter = new ProductFilter() {
+               Parameters = request.Parameters,
+               Manufacturer = request.Manufacturer?.Value
+            };
+            var filterAssigner = new ProductAssigner(filter);
+            var filterProductHistoryAssigner = new ProductHistoryAssigner(filter);
+
+            var OrderProductTotalQ = getOrderProductQuantityByParameter(productTypeID, parameterDiameterID, filterOrderReportAssigner, filterAssigner);
+          //  var test11 = OrderProductTotalQ.ToQueryString();
+          //  var test22 = OrderProductTotalQ.ToList();
+
+            var OrderProductHistoryTotalQ = getOrderProductHistoryQuantityByParameter(productTypeHistoryID, parameterHistoryDiameterID,
+                filterOrderReportAssigner, filterProductHistoryAssigner);
+            //var test1 = OrderProductHistoryTotalQ.ToQueryString();
+            //var test = OrderProductHistoryTotalQ.ToList();
+
+            var combinedResults = OrderProductTotalQ.Union(OrderProductHistoryTotalQ);
+            var combinedResultsList = combinedResults.ToList();
+
+            var realAmountProduct = getProductQuantityByParameter(productTypeID, parameterDiameterID, filterAssigner);
+            var realAmountProductList = realAmountProduct.ToList();
+
+
+          
+
+            var groupedResults = combinedResults
+                .GroupBy(t => t.Diameter)
+                .Select(g => new OrderTotalQuantity
+                {
+                    Name = request.Name.Value,
+                    Diameter = g.Key,
+                    TotalAmount = (double)Math.Round((double)(g.Sum(t => t.TotalAmount)), 2),
+                })
+                .OrderByDescending(t => t.TotalAmount)
+                .ToList();
+
+
+            var mergedList = from orderR in groupedResults
+                             join realP in realAmountProductList on orderR.Diameter equals realP.Diameter
+                             select new OrderTotalQuantity
+                             {
+                                 Name = orderR.Name,
+                                 Diameter = orderR.Diameter,
+                                 TotalAmount = orderR.TotalAmount,
+                                 RealAmountProduct = (double)Math.Round((double)(realP.TotalAmount), 2),
+                             };
+
+            var mergedLZero = from orderR in groupedResults
+                              join realP in realAmountProductList on orderR.Diameter equals realP.Diameter into matches
+                              from realP in matches.DefaultIfEmpty()
+                              where realP == null
+                              select new OrderTotalQuantity
+                              {
+                                  Name = orderR.Name,
+                                  Diameter = orderR.Diameter,
+                                  TotalAmount = orderR.TotalAmount,
+                                  RealAmountProduct = realP != null ? (double)Math.Round((double)realP.TotalAmount, 2) : 0
+                              };
+
+         //   var test6 = mergedLZero.ToList();
+
+            var combinedOutcomeLists = mergedList.Union(mergedLZero);
+
+
+            var groupedOutcomeList = combinedOutcomeLists
+                                     .OrderByDescending(t => t.TotalAmount)
+                                     .ToList();
+
+            return groupedOutcomeList;
+        }
+
+        public IQueryable<OrderTotalQuantity> getOrderProductQuantityByParameter(int productTypeID, int parameterID,
+            OrderReportAssigner filterOrderReportAssigner, ProductAssigner filterProductAssigner)
+        {
+            return from subT in (
+                           from o in _context.Orders
+                           .ApplyFilter(filterOrderReportAssigner)
+                           join op in _context.OrderProducts on o.Id equals op.OrderId
+                           join p in _context.Products.ApplyFilter(filterProductAssigner) on op.ProductId equals p.Id
+                           join pt in _context.ProductTypes on p.ProductTypeId equals pt.Id
+                           join param in _context.Parameters on pt.Id equals param.ProductTypeId
+                           join pp in _context.ProductParameters on param.Id equals pp.ParameterId
+                           where pt.Id == productTypeID && pp.ParameterId == parameterID
+                           select new {
+                               Diameter = pp.Value,
+                               ProductIDF = p.Id,
+                               pp.ProductId,
+                               pp.ParameterId,
+                               ProductIDP = op.ProductId,
+                               OrderId = o.Id,
+                               Amount = op.Quantity,
+                               o.OrderCreatedTime,
+                           })
+                      join pp in _context.ProductParameters on subT.ProductIDF equals pp.ProductId
+                      where subT.ProductIDF == subT.ProductId && pp.ParameterId == parameterID
+                      group subT by subT.Diameter into g
+                      select new OrderTotalQuantity
+                      {
+                          Diameter = g.Key,
+                          TotalAmount = g.Sum(subT => subT.Amount)
+                      };
+        }
+        public IQueryable<OrderTotalQuantity> getOrderProductHistoryQuantityByParameter(int productTypeHistoryID, 
+            int parameterHistoryID, OrderReportAssigner filterOrderReportAssigner, ProductHistoryAssigner filterProductHistoryAssigner)
+        {
+            return from subT in (
+                             from o in _context.Orders.ApplyFilter(filterOrderReportAssigner)
+                             join op in _context.OrderProductHistory on o.Id equals op.OrderId
+                             join p in _context.ProductHistory.ApplyFilter(filterProductHistoryAssigner) on op.ProductHistoryId equals p.Id
+                             join pt in _context.ProductTypeHistory on p.ProductTypeHistoryId equals pt.Id
+                             join param in _context.ParameterHistory on pt.Id equals param.ProductTypeHistoryId
+                             join pp in _context.ProductParameterHistory on param.Id equals pp.ParameterHistoryId
+                             where pt.Id == productTypeHistoryID && pp.ParameterHistoryId == parameterHistoryID
+                             select new {
+                                 Diameter = pp.Value,
+                                 ProductIDF = p.Id,
+                                 pp.ProductHistoryId,
+                                 pp.ParameterHistoryId,
+                                 ProductIDP = op.ProductHistoryId,
+                                 OrderId = o.Id,
+                                 Amount = op.Quantity })
+                   join pp in _context.ProductParameterHistory on subT.ProductIDF equals pp.ProductHistoryId
+                   where subT.ProductIDF == subT.ProductHistoryId && pp.ParameterHistoryId == parameterHistoryID
+                   group subT by subT.Diameter into g
+                   select new OrderTotalQuantity
+                   {
+                       Diameter = g.Key,
+                       TotalAmount = g.Sum(subT => subT.Amount)
+                   };
+        }
+
+
+        private IQueryable<OrderTotalQuantity> getProductQuantityByParameter(int productTypeID, int parameterID,
+            ProductAssigner filterProductAssigner)
+        {
+            return from subT in (
+                           from p in _context.Products.ApplyFilter(filterProductAssigner)
+                           join pt in _context.ProductTypes on p.ProductTypeId equals pt.Id
+                           join param in _context.Parameters on pt.Id equals param.ProductTypeId
+                           join pp in _context.ProductParameters on param.Id equals pp.ParameterId
+                           where pt.Id == productTypeID && pp.ParameterId == parameterID
+                           select new {
+                               Diameter = pp.Value,
+                               ProductIDF = p.Id,
+                               pp.ProductId,
+                               pp.ParameterId,
+                               Amount = p.Quantity,
+                           })
+                   join pp in _context.ProductParameters on subT.ProductIDF equals pp.ProductId
+                   where subT.ProductIDF == subT.ProductId && pp.ParameterId == parameterID
+                   group subT by subT.Diameter into g
+                   select new OrderTotalQuantity
+                   {
+                       Diameter = g.Key,
+                       TotalAmount = g.Sum(subT => subT.Amount)
+                   };
+        }
+        private OrderReportAssigner createOrderReportAssigner(loadOrderReportRequest request)
+        {
+            DateTime dtStartV;
+            DateTime dtEndV;
+
+            OrderReportFilter filterOrderReport = new OrderReportFilter()
+            {
+                NameCompany = request.NameCompany?.Value,
+                FilterStartDate = DateTime.TryParse(request.FilterStartDate?.Value, out dtStartV) ? dtStartV : null,
+                FilterEndDate = DateTime.TryParse(request.FilterEndDate?.Value, out dtEndV) ? dtEndV : null,
+            };
+
+            return new OrderReportAssigner(filterOrderReport);
+        }
+        public IQueryable<Order> getOrderProductByParameter(int productTypeID, int parameterID)
+        {
+            return from o in _context.Orders
+                   join op in _context.OrderProducts on o.Id equals op.OrderId
+                   join p in _context.Products on op.ProductId equals p.Id
+                   join pt in _context.ProductTypes on p.ProductTypeId equals pt.Id
+                   join param in _context.Parameters on pt.Id equals param.ProductTypeId
+                   join pp in _context.ProductParameters on param.Id equals pp.ParameterId
+                   where pt.Id == productTypeID && pp.ParameterId == parameterID
+                   select o;
+
+        }
+        protected int GetUserIdByContext(string identityName)
+        {
+            if (string.IsNullOrEmpty(identityName))
+                throw new ApplicationException("Not found user " + identityName);
+
+            return _context.Users.AsNoTracking().FirstOrDefault(user => user.UserName.ToLower().Equals(identityName.ToLower())).Id;
+        }
+        protected void ValidateOrderProductList(addOrderListProductRequest orderData)
+        {
+            if (orderData.orderProductList.Count() < 1)
+                throw new ApplicationException("Order ProductList is empty"); ;
+
+            // validate ProductList
+            foreach (var productOrder in orderData.orderProductList)
+            {
+                var product = GetProductById(productOrder.ProductId);
+
+                if (product.Quantity < productOrder.quantityorder?.Value.ParseDouble())
+                    throw new ApplicationException("Entered quantity: " + product.Quantity + "of product: " + product.Name + "ProductNumber " + product.ProductNumber + " invalid");
+            }
+        }
+
+        protected Product GetProductById(OrderProductRequest productOrder)
+        {
+            var product = _context.Products.FirstOrDefault(product => product.Id == productOrder.ProductId);
+            if (product is null)
+                new ArgumentNullException(productOrder.ProductId.ToString());
+
+            return product;
+        }
+
+        protected void AddOrderProduct(Order order, OrderProductRequest productOrder)
+        {
+            var orderProduct = new OrderProduct
+            {
+                OrderId = order.Id,
+                ProductId = productOrder.ProductId,
+                Quantity = productOrder.quantityorder?.Value.ParseDouble() ?? 0,
+                TotalPrice = productOrder.totalprice?.Value.ParseDouble() ?? 0,
+                TaxNDS = productOrder.taxnds?.Value.ParseDouble() ?? 0,
+                Markup = productOrder.markup?.Value.ParseDouble() ?? 0,
+            };
+            _context.OrderProducts.Add(orderProduct);
+        }
+
+        protected void AddOrderProductHistory(Order order, ProductHistory deletedProduct, OrderProductRequest productOrder)
+        {
+            var orderProduct = new OrderProductHistory
+            {
+                OrderId = order.Id,
+                ProductHistoryId = deletedProduct.Id,
+                Quantity = productOrder.quantityorder?.Value.ParseDouble() ?? 0,
+                TotalPrice = productOrder.totalprice?.Value.ParseDouble() ?? 0,
+                TaxNDS = productOrder.taxnds?.Value.ParseDouble() ?? 0,
+                Markup = productOrder.markup?.Value.ParseDouble() ?? 0,
+            };
+            _context.OrderProductHistory.Add(orderProduct);
+        }
+
+        private int GetParameterDiameterID(int productTypeId)
+        {
+            var parameterDiameter = _context.Parameters.AsNoTracking().FirstOrDefault(p => p.ProductTypeId == productTypeId && 
+                                                                      (p.Name.ToLower().Equals("диаметр") ||
+                                                                       p.Name.ToLower().Equals("размер") ||
+                                                                       p.Name.ToLower().Equals("внутренний диаметр")
+                                                                       ));
+
+            if (parameterDiameter == null)
+                throw new ApplicationException("Product has no 'диаметр' or 'размер'");
+
+            return parameterDiameter.Id;
+        }
+        private int GetProductTypeHistoryID(string nameProductType)
+        {
+            if (string.IsNullOrEmpty(nameProductType))
+                throw new ApplicationException("Enter valid name product");
+
+            var productTypeHistory = _context.ProductTypeHistory.AsNoTracking().Where(type => type.NameType == nameProductType).FirstOrDefault();
+
+            if (productTypeHistory == null)
+                return 0;
+
+            return productTypeHistory.Id;
+        }
+        private int GetParameterHistoryDiameterID(int productTypeHistoryId)
+        {
+            var parameterDiameter = _context.ParameterHistory.AsNoTracking().FirstOrDefault(p => p.ProductTypeHistoryId == productTypeHistoryId &&
+                                                                      (p.Name.ToLower().Equals("диаметр") ||
+                                                                       p.Name.ToLower().Equals("размер") ||
+                                                                       p.Name.ToLower().Equals("внутренний диаметр")
+                                                                       ));
+
+            if (parameterDiameter == null)
+                return 0;
+
+            return parameterDiameter.Id;
         }
     }
 }

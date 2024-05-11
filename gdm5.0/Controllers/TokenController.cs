@@ -11,8 +11,7 @@ namespace gdm5._0.Controllers
     public class TokenController : ControllerBase
     {
         private readonly ITokenService _tokenService;
-
-        public TokenController(DataContext context, ITokenService tokenService)
+        public TokenController(ITokenService tokenService)
         {
             this._tokenService = tokenService ?? throw new ArgumentNullException(nameof(tokenService));
         }

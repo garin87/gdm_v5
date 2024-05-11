@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Input, OnDestroy, OnInit } from "@angular/core";
-import { BehaviorSubject, Subscription, of } from "rxjs";
+import { BehaviorSubject, Subject, Subscription, of } from "rxjs";
 import { IDependentProperties, IMetadataProperty, valueUpdatedData } from "../common/objects/common";
 import { DataAccessorsService } from "../common/services/dataAccessors.service";
 import { FormEditorService } from "../common/services/formEditor.service";
@@ -14,45 +14,47 @@ export class FormEditorComponent implements OnInit, OnDestroy {
 
     @Input("instanceName") metadataTypeName: string;
     @Input("selectedInstance") selectedInstance: string;
-    
-    properties = new BehaviorSubject<IMetadataProperty[]>(undefined);
+    //@Input("properties") properties: BehaviorSubject<IMetadataProperty[]>;
+    properties: BehaviorSubject<IMetadataProperty[]> = new BehaviorSubject<IMetadataProperty[]>(undefined);
+    valueUpdated: Subject<valueUpdatedData> = new Subject<valueUpdatedData>();
     private valueUpdatedSubscription$:Subscription;
     private customPropertiesSubscription$:Subscription;
     private dependentPropertiesSubscription$:Subscription;
     private dependentPropertiesforDialog$:Subscription;
-    customProperties
+   // public properties: Subject<IMetadataProperty[]>;
+    
+
     lodedOptionalFilter:boolean = false;
     constructor( private _formEditorService: FormEditorService,
-                 private _dataAccessorsService: DataAccessorsService){}
+                 private _dataAccessorsService: DataAccessorsService){
+                 
+    }
 
     ngOnInit(){
        //.pipe(debounceTime(500))
-        this.valueUpdatedSubscription$ = this._formEditorService.valueUpdated.subscribe((el:valueUpdatedData)=>{
+       // this.valueUpdatedSubscription$ = this._formEditorService.valueUpdated.subscribe((el:valueUpdatedData)=>{
+        this.valueUpdatedSubscription$ = this.valueUpdated.subscribe((el:valueUpdatedData)=>{ 
           if(el){
-            console.log("-------- ------ --  valueUpdated.subscribe");
-            console.log(el);
-            let prop = this._formEditorService.instanceProperties
-            .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase());
+              let prop = this._formEditorService.instanceProperties
+              .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase());
 
-            if(el.category && this._formEditorService?.setProperties[el.category]){
-               prop = this._formEditorService?.setProperties[el.category]
-              .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase())  
-            }
-           
-            if(prop[0]){
-              let contextProp = {category: el.category}
-              const accessor = prop[0]?.accessor;
-              if(accessor){
-                this._dataAccessorsService.CallSetter(el.value, contextProp, prop[0]);
+              if(el.category && this._formEditorService?.setProperties[el.category]){
+                prop = this._formEditorService?.setProperties[el.category]
+                .filter(p => p.name.toLowerCase() == el.propertyName.toLowerCase())  
               }
+            
+              if(prop[0]){
+                let contextProp = {category: el.category}
+                const accessor = prop[0]?.accessor;
+                if(accessor){
+                  this._dataAccessorsService.CallSetter(el.value, contextProp, prop[0]);
+                }
                 
-              this._formEditorService.setPropertyValue(prop, el.value, el.ValueType, el.navPriority,
-                                      el.propertyNewName, el.isEditedName, el.isDeletedProp);
-    
-              console.log("---- this.instanceData")
-              console.log(this._formEditorService.instanceData);
-            }
-          }   
+                this._formEditorService.setPropertyValue(this.metadataTypeName, prop, el.value, el.ValueType,
+                  el.navPriority, el.propertyNewName, el.isEditedName, el.isDeletedProp, el.isRequired);
+
+              }
+            }   
         });
 
         this.applyProps([]);
@@ -63,13 +65,18 @@ export class FormEditorComponent implements OnInit, OnDestroy {
 
         this.dependentPropertiesSubscription$ = this._formEditorService.dependentProperties
         .subscribe( (dependentProps) => {   
-               if(dependentProps.metadataTypeName){
-                  this.metadataTypeName = dependentProps.metadataTypeName
+              //  if(dependentProps.metadataTypeName){
+              //     this.metadataTypeName = dependentProps.metadataTypeName
+              //  }
+
+               if(dependentProps.metadataTypeName == "" || this.metadataTypeName == dependentProps.metadataTypeName){
+                 // this.metadataTypeName = dependentProps.metadataTypeName;
+                  this.applyProps(dependentProps.properties, true);
+                  if(this.metadataTypeName == "OptionalOfProduct"){
+                     this.lodedOptionalFilter = true;
+                  }
                }
-               this.applyProps(dependentProps.properties, true);
-               if(this.metadataTypeName == "OptionalOfProduct"){
-                  this.lodedOptionalFilter = true;
-               }
+              
         });
 
         this.dependentPropertiesforDialog$ = this._formEditorService.dependentPropertiesforDialog.subscribe( dependentProps => {
@@ -93,7 +100,6 @@ export class FormEditorComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(){
-      console.log("---------------- ngOnDestroy formfield");
       this.valueUpdatedSubscription$.unsubscribe();
       this.customPropertiesSubscription$.unsubscribe();
       this.dependentPropertiesSubscription$.unsubscribe();

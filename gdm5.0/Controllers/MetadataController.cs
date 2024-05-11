@@ -1,6 +1,7 @@
 ﻿using gdm5._0.Models;
 using gdm5._0.Services;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -24,6 +25,7 @@ namespace gdm5._0.Controllers
         [HttpGet, Route("getmetadatatypes")]
         public IActionResult GetMetadataTypes()
         {
+            var test = TimeZone.CurrentTimeZone.StandardName;
 
             return Ok(_metadataService.GetMetadataTypes());
         }

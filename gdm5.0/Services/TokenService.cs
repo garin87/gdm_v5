@@ -1,5 +1,6 @@
 ﻿using gdm5._0.Models;
 using gdm5._0.Services.Interfaces;
+using gdm5._0.Shared.Constants;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -28,19 +29,21 @@ namespace gdm5._0.Services
         public TokenApiDTO RefreshToken(TokenApiDTO tokenApi)
         {
             string accessToken = tokenApi.AccessToken;
-            string refreshToken = tokenApi.RefreshToken;
+           string refreshToken = tokenApi.RefreshToken;
 
-            var principal = this.GetPrincipalFromExpiredToken(accessToken);
-            var username = principal.Identity.Name;
+            var principal = GetPrincipalFromExpiredToken(accessToken);
+            //var username = principal.Identity.Name;
 
-            var user = this._context.Users.FirstOrDefault(u => u.UserName == username);
+            int currentUserId = GetUserId(principal.Claims);
+            var user = _context.Users.FirstOrDefault(u => u.Id == currentUserId);
+
             var roleName = this._context.Roles.FirstOrDefault(el => el.Id == user.RoleId)?.Name;
 
             if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpiryTime <= DateTime.Now)
                 throw new ApplicationException("Invalid client request");
 
             var newAccessToken = this.GenerateAccessToken(principal.Claims);
-            var newRefreshToken = this.GenerateRefreshToken();
+            var newRefreshToken = GenerateTokenString();
             
             user.RefreshToken = newRefreshToken;
             this._context.SaveChanges();
@@ -58,8 +61,6 @@ namespace gdm5._0.Services
                 Encoding.UTF8.GetBytes(_jwtSettings.GetSection("securityKey").Value));
             var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
             var tokeOptions = new JwtSecurityToken(
-                issuer: _jwtSettings.GetSection("validIssuer").Value,
-                audience: _jwtSettings.GetSection("validAudience").Value,
                 claims: claims,
                 expires: DateTime.Now.AddMinutes(Convert.ToDouble(_jwtSettings.GetSection("expiryInMinutes").Value)),
                 signingCredentials: signinCredentials
@@ -67,6 +68,8 @@ namespace gdm5._0.Services
             var tokenString = new JwtSecurityTokenHandler().WriteToken(tokeOptions);
             return tokenString;
         }
+                // issuer: _jwtSettings.GetSection("validIssuer").Value,
+                //audience: _jwtSettings.GetSection("validAudience").Value,
         public string GenerateRefreshToken()
         {
             var randomNumber = new byte[32];
@@ -76,6 +79,7 @@ namespace gdm5._0.Services
                 return Convert.ToBase64String(randomNumber);
             }
         }
+
         public ClaimsPrincipal GetPrincipalFromExpiredToken(string token)
         {
             var tokenValidationParameters = new TokenValidationParameters
@@ -96,15 +100,26 @@ namespace gdm5._0.Services
             return principal;
         }
 
-        public List<Claim> GetClaims(User user)
-        {
-            var claims = new List<Claim>
-                {
-                      new Claim(ClaimTypes.Name, user.UserName),
-                      new Claim(ClaimTypes.Role, "Admin") // by default 
-                };
 
-            return claims;
+        private int GetUserId(IEnumerable<Claim> claims)
+        {
+            if (!claims.Any())
+                return 0;
+
+            var userIdClaim = claims.FirstOrDefault(c => c.Type == ClaimsConstants.UserId);
+            return userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
+        }
+
+        private string GetUserName(IEnumerable<Claim> claims)
+        {
+            var userNameClaim = claims.FirstOrDefault(c => c.Type == "UserName");
+            return string.IsNullOrEmpty(userNameClaim.Value) ? "" : userNameClaim.Value;
+        }
+
+        private string GetUserRole(IEnumerable<Claim> claims)
+        {
+            var userNameClaim = claims.FirstOrDefault(c => c.Type == "Role");
+            return string.IsNullOrEmpty(userNameClaim.Value) ? "" : userNameClaim.Value;
         }
 
         public void RevokeRefreshToken(string username)
@@ -115,6 +130,19 @@ namespace gdm5._0.Services
 
             user.RefreshToken = null;
             this._context.SaveChanges();
+        }
+
+        private static string GenerateTokenString()
+        {
+            return CreateRandomString(25) + Guid.NewGuid();
+        }
+
+        private static string CreateRandomString(int length)
+        {
+            var random = new Random();
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            var charsLastIndex = chars.Length - 1;
+            return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(charsLastIndex)]).ToArray());
         }
     }
 

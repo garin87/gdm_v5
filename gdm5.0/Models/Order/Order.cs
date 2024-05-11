@@ -15,7 +15,7 @@ namespace gdm5._0.Models
         public string Description { get; set; }
 
         [ForeignKey("Currency")]
-        public int CurrencyId { get; set; }
+        public int? CurrencyId { get; set; }
         public virtual Customer Customer { get; set; }
         [ForeignKey("Customer")]
         public int CustomerId { get; set; }
@@ -23,6 +23,8 @@ namespace gdm5._0.Models
         [ForeignKey("OrderStatusId")]
         public int? OrderStatusId { get; set; }
         public virtual OrderStatus OrderStatus { get; set; }
+        public int? UserId { get; set; }
+        public virtual User User { get; set; }
         public ICollection<OrderProduct> OrderProduct { get; set; } = new List<OrderProduct>();
         public ICollection<OrderProductHistory> OrderProductHistory { get; set; } = new List<OrderProductHistory>();
         

@@ -24,38 +24,37 @@ export class ParameterSelectorsComponent implements OnInit {
     }
 
     ngOnInit(){
-        console.log(" init ParametrSelectorsComponent");
-        console.log(this._property);
         this.category = this._property.category;
         this.createParametersAsSelectors(this._property, this._appStateService.selectedInstancePanel)
     }
 
     public  createParametersAsSelectors(property:any, selectedProduct:string){
-        console.log(" ------- ------ - - -- - - --  init --- createParametersAsSelectors");
         let listParameters = [];
-            this._applicationService.getProductParameters2(selectedProduct)
-            .subscribe((data:IParameter[] | any[]) =>{
-                if(typeof data == "object" && data.length > 0){
-                    data = data.filter((item:IParameter)=> item.value.toLocaleLowerCase() !== "номер");
-                    data.forEach((item:IParameter) => {
-                        const p = new MetadataProperty(item.value, "string", undefined, 
-                        item.id, item.value,"selector","selector","loadInstancesParameter",undefined,
-                        "getGridDataByParameter",item.priority,false,item.priority,false,false,false,false,true,false, this.category);
-                        listParameters.push(p);
-                    })
+        let isRequired = property.category == "ReportProduct" ? true : false;
 
-                    delete this._FormEditorService.instanceData.parameters;    
-                    this._FormEditorService.listParameters = {};
-                    
-                    const dependentProperties: IDependentProperties = {
-                        metadataTypeName : "",
-                        properties : listParameters
-                    }
-                     
-                    this._FormEditorService.dependentProperties.next(dependentProperties);
-                }
+        this._applicationService.getProductParameters2(selectedProduct)
+        .subscribe((data:IParameter[] | any[]) =>{
+            if(typeof data == "object" && data.length > 0){
+                data = data.filter((item:IParameter)=> item.value.toLocaleLowerCase() !== "номер");
+                data.forEach((item:IParameter) => {
+                    const p = new MetadataProperty(item.value, "string", undefined, 
+                    item.id, item.value,"selector","selector","loadInstancesParameter",undefined,
+                    "getGridDataByParameter",item.priority,false,item.priority, isRequired ,false,false,false,true,false, this.category);
+                    listParameters.push(p);
+                })
+
+                delete this._FormEditorService.instanceData.parameters;    
+                this._FormEditorService.listParameters = {};
                 
-            })
+                const dependentProperties: IDependentProperties = {
+                    metadataTypeName : "",
+                    properties : listParameters
+                }
+                    
+                this._FormEditorService.dependentProperties.next(dependentProperties);
+            }
+            
+        })
 
     }
 }

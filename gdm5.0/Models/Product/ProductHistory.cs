@@ -20,15 +20,16 @@ namespace gdm5._0.Models
         public string Description { get; set; }
         public bool ProductDeleted { get; set; }
         public string Supplier { get; set; }
+        public string Units { get; set; }
         public DateTime DateOfChange { get; set; }
         public DateTime DateOfReceipt { get; set; }
-        public int WareHouseId { get; set; }
+        public int? WareHouseId { get; set; }
         public int DeletedProductId { get; set; }
         public int DeletedProductTypeId { get; set; }
 
         public string UserName { get; set; }
         [ForeignKey("Currency")]
-        public int CurrencyId { get; set; }
+        public int? CurrencyId { get; set; }
         public virtual Currency Currency { get; set; }
 
         [ForeignKey("ProductTypeHistory")]

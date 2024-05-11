@@ -59,19 +59,49 @@ namespace gdm5._0.Filters
                     if (!string.IsNullOrWhiteSpace(parameter.Value))
                     {
                         productInstances = productInstances.Where(c =>
-                        c.ProductParameters.Any(pp => pp.Value.Equals(parameter.Value)));
+                        c.ProductParameters.Any(pp => pp.Value.Equals(parameter.Value) &&
+                                                pp.ParameterId == parameter.ParameterId));
                     }
 
                 }
 
             }
-            GlobalVariables.TotalRecords = productInstances.Count();
-            GlobalVariables.TotalQuantity = productInstances.Sum(product => product.Quantity);
-            GlobalVariables.TotalPrimeCost = productInstances.Sum(product => product.PrimeCost * product.Quantity);
-            GlobalVariables.TotalPrimeCostEUR = productInstances.Sum(product => product.PrimeCostEUR * product.Quantity);
-            GlobalVariables.TotalPrimeCostUSD = productInstances.Sum(product => product.PrimeCostUSD * product.Quantity);
+
+            calculateTotal(productInstances);
 
             return productInstances;
+        }
+
+        private void calculateTotal(IQueryable<Product> productInstances)
+        {
+            var totals = productInstances
+            .GroupBy(p => 1)
+            .Select(group => new {
+                 TotalRecords = group.Count(),
+                 TotalQuantity = group.Sum(p => p.Quantity),
+                 TotalPrimeCost = group.Sum(p => p.PrimeCost * p.Quantity),
+                 TotalPrimeCostEUR = group.Sum(p => p.PrimeCostEUR * p.Quantity),
+                 TotalPrimeCostUSD = group.Sum(p => p.PrimeCostUSD * p.Quantity)
+             })
+            .FirstOrDefault();
+
+            if (totals != null)
+            {
+                GlobalVariables.TotalRecords = totals.TotalRecords;
+                GlobalVariables.TotalQuantity = totals.TotalQuantity;
+                GlobalVariables.TotalPrimeCost = totals.TotalPrimeCost;
+                GlobalVariables.TotalPrimeCostEUR = totals.TotalPrimeCostEUR;
+                GlobalVariables.TotalPrimeCostUSD = totals.TotalPrimeCostUSD;
+            }
+            else
+            {
+                GlobalVariables.TotalRecords = 0;
+                GlobalVariables.TotalQuantity = 0;
+                GlobalVariables.TotalPrimeCost = 0;
+                GlobalVariables.TotalPrimeCostEUR = 0;
+                GlobalVariables.TotalPrimeCostUSD = 0;
+            }
+
         }
     }
 }

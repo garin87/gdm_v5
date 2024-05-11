@@ -15,5 +15,7 @@ namespace gdm5._0.Requests.Customer
         public Property Description { get; set; }
         public Property Priority { get; set; }
         public Property PriorityColor { get; set; }
+        public Property Email { get; set; }
+        public Property Email2 { get; set; }
     }
 }

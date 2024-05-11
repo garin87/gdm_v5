@@ -1,5 +1,6 @@
 ﻿using gdm5._0.Models;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -10,15 +11,14 @@ namespace gdm5._0
     [ApiController]
     public class ComplexPriceListController : Controller
     {
-        private readonly DataContext _context;
         private readonly IComplexPriceListService _complexPriceListService;
-        public ComplexPriceListController(DataContext context, IComplexPriceListService ComplexPriceListService) 
+        public ComplexPriceListController(IComplexPriceListService ComplexPriceListService) 
         {
-            _context = context;
             _complexPriceListService = ComplexPriceListService;
         }
 
         // GET: api/complexpricelist/GetAll
+        [Authorize]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -27,6 +27,7 @@ namespace gdm5._0
         }
 
         // GET: api/complexpricelist/GetComplexPriceList/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetComplexPriceList(int id)
         {   
@@ -46,6 +47,7 @@ namespace gdm5._0
         }
 
         // POST: api/complexpricelist/AddComplexPriceList
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddComplexPriceList(ComplexPriceList piceList)
         {    
@@ -60,6 +62,7 @@ namespace gdm5._0
         }
 
         // DELETE: api/complexpricelist/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteComplexPriceList([FromRoute] int id)
         {

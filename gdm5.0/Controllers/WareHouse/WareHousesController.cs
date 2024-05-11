@@ -1,14 +1,10 @@
 ﻿using gdm5._0.DTO;
 using gdm5._0.Models;
 using gdm5._0.Requests.Customer;
-using gdm5._0.Requests.Product;
-using gdm5._0.Services;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace gdm5._0
@@ -18,16 +14,14 @@ namespace gdm5._0
     [ApiController]
     public class WareHousesController : Controller
     {
-        private readonly DataContext _context;
         private readonly IWareHouseService _wareHouseService;
-        public WareHousesController(DataContext context, IWareHouseService WareHouseService) 
+        public WareHousesController(IWareHouseService WareHouseService) 
         {
-            _context = context;
             _wareHouseService = WareHouseService;
         }
 
-
         // GET: api/warehouse/GetAll
+        [Authorize]
         [HttpGet]
         [Route("GetAll")]
         public IActionResult GetAll()
@@ -37,6 +31,7 @@ namespace gdm5._0
         }
 
         // GET: api/warehouse/GetWareHouse/5
+        [Authorize]
         [HttpGet("{id}")]
         [Route("GetWareHouse")]
         public async Task<IActionResult> GetWareHouse(int id)
@@ -57,6 +52,7 @@ namespace gdm5._0
         }
 
         // POST: api/warehouse/AddWareHouse
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddWareHouse(WareHouse wareHouse)
         {    
@@ -70,6 +66,7 @@ namespace gdm5._0
             return Ok(productNew);
         }
 
+        [Authorize]
         [Route("DeleteWareHouse/{id}")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteWareHouse([FromRoute] int id)
@@ -88,6 +85,7 @@ namespace gdm5._0
             return Ok(product);
         }
 
+        [Authorize]
         [Route("GetWareHouseByName/{nameWareHouse}")]
         [HttpGet]
         public IActionResult GetCustomerByNameCompany([FromRoute] string nameWareHouse)
@@ -103,6 +101,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [Route("GetNamesWareHouses")]
         [HttpGet]
         public IActionResult GetNamesWareHouses()
@@ -118,6 +117,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("AddNewWareHouse")]
         public async Task<IActionResult> AddNewWareHouse(addWareHouseRequest newWareHouse)
@@ -137,6 +137,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("UpdateWareHouse")]
         public async Task<IActionResult> UpdateWareHouse(UpdateWareHouseRequest warehouse)

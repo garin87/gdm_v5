@@ -215,9 +215,37 @@ mat-sidenav-container.app-sidenav-container{
 .grid-order-cart .order-grid-content .mdc-data-table__header-cell{
   padding: 0px !important;
 }
+
 .cdk-header-cell.grid-header-cell.grid-cell:first-of-type {
   padding-left: 24px !important;
 }
+
+.picklist-control .mat-mdc-select-trigger {
+  display: flex;
+  justify-content: end;
+}
+
+.picklist-control .mat-mdc-select-value{
+  display: none;
+}
+
+
+.read-only-form-field .mat-mdc-text-field-wrapper.mdc-text-field{
+   background: #80808054 !important;
+}
+
+.container-add-price-list-value input[readonly]{
+  background: #9f9f9d;
+}
+
+.container-add-price-list-value input[disabled]{
+  background: #9f9f9d;
+}
+
+.mat-mdc-card-actions.mdc-card__actions{
+  padding: 6px;
+}
+
 @media (max-width: 820px){
 
   .product-card mat-drawer.mat-drawer.rightActionPanel-content-container {

@@ -1,6 +1,8 @@
-import { Component, ElementRef, Inject, Input, OnInit, ViewChild } from "@angular/core";
+import { Component, ElementRef, HostListener, Inject, Input, OnInit, ViewChild } from "@angular/core";
 import { MAT_DIALOG_DATA, MatDialogRef } from "@angular/material/dialog";
+import { BehaviorSubject, Subscription } from "rxjs";
 import { AlertService } from "src/app/alert/alert.service";
+import { IMetadataProperty } from "src/app/common/objects/common";
 import { FormEditorService } from "src/app/common/services/formEditor.service";
 import { LabelsService } from "src/app/common/services/labels.service";
 
@@ -18,12 +20,21 @@ export class ActionDialogComonent implements OnInit {
     public actionOrderButton:string = this._labelsService.labels.productActionPopUpButton_AddToCart; // "Add to cart";
     public isActionOrder:boolean = false;
     public selectedType:string;
+    public properties:BehaviorSubject<IMetadataProperty[]>;
+    public propertiesSub$:Subscription;
+
+    @HostListener('document:keydown.enter')
+    onDocumentKeydownEnter() {
+        this.executeAction(this.actionButton)
+    }
     
     constructor( public dialogRef: MatDialogRef<ActionDialogComonent>,
                  @Inject(MAT_DIALOG_DATA) public data: any,
                  public _labelsService: LabelsService,
                  private _formEditorService : FormEditorService,
-                 private _alertService: AlertService, ) {}
+                 private _alertService: AlertService, ) {
+        this.properties = new BehaviorSubject<IMetadataProperty[]>(undefined);
+    }
     
  
     ngOnInit(){
@@ -61,6 +72,11 @@ export class ActionDialogComonent implements OnInit {
     onNoClick(data): void {
         this.dialogRef.close(data);
     }
+
+
+    ngOnDestroy(){
+        this.properties = new BehaviorSubject<IMetadataProperty[]>(undefined);
+      }
 }
 
 

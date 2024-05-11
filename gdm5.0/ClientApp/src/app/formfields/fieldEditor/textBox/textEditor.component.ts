@@ -29,7 +29,8 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
     isDeleted: boolean;
     navPriority:string;
     category:string;
-    
+    textType:string;
+
     min:any = null;
     step:any = null;
 
@@ -37,10 +38,7 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
                 public _alertService : AlertService){}
 
     ngOnInit(){
-        console.log(" init TextEditorComponent");
-        console.log(this._property);
-     //   console.log(this.value);
-     //   console.log(this.valueUpdated);
+
         this.typeName = this.applyTypeInput(this._property.type);
         this.required = this._property.required != undefined ? this._property.required: false;
         this.readOnly = this._property.readOnly != undefined ? this._property.readOnly: false;
@@ -50,14 +48,14 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
         this.name = this._property.name;
         this.value = this._property.value !== undefined ? this._property.value : "";
         this.isTypeArea = false;
-        if(this.typeName == "number") {
+        if(this.typeName.toLowerCase() == "number") {
             let number = parseFloat(this.value);
             if(!isNaN(number)){
                 this.value = number.toFixed(2);
             }
         }
-        this.min =  this.typeName == "number" ? "0.001" : null;
-        this.step = this.typeName == "number" ? "any" : null;
+        this.min =  this.typeName.toLowerCase() == "number" ? "0.001" : null;
+        this.step = this.typeName.toLowerCase() == "number" ? "any" : null;
         this.isDeleted = this._property.isDeleted;
         this.category = this._property.category;
         if(this.value){
@@ -74,20 +72,19 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
     }
 
     applyTypeInput(type:string){
-      if(type == "Double" || type == "Int") return "number";
-      if(type == "DateTime") return "date";
-
+      type = type.toLowerCase();
+      if(type == "double" || type == "int") this.textType = "number";
+      
+     // if(type == "double" || type == "int") return "number";
+      if(type == "datetime") return "date";
       return "text";
     }
 
     changeText(){
         if(this.readOnly) return;
         
-        console.log(this.textInput);
         if(this.textInput){
-            if(this._property.name == "primecost"){
-
-            }
+            if(this._property.name == "primecost"){}
             
             this.valChanged(this.textInput.nativeElement.value);
         }
@@ -95,8 +92,6 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
     }
     
     editField(){
-        console.log("----- edit field");
-        console.log(this._property.name);
         const dialogRef = this.dialog.open(ParameterDialogComponent, {
             width: '300px',
             data: {},
@@ -105,17 +100,20 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
         let paramDialog = dialogRef.componentInstance;
         paramDialog.parameterName.setValue(this.displayedName);
         paramDialog.parameterPriority.setValue(this.navPriority);
+        paramDialog.required.setValue(this.required);
+        paramDialog.typeName.setValue(this._property.type);
 
         dialogRef.afterClosed().subscribe((result:ParameterForm) => {
             if(result){
-              console.log('The dialog was closed');
-              console.log(result);
-              console.log(this.textInput);
+
               let propName = this._property.name;
               this.navPriority = result.parameterPriority
               this.displayedName = result.parameterName;
-
-              const updatedData = new valueUpdatedData(propName, "", "string",this.category, result.parameterPriority, result.parameterName,true);
+              let required = result.required;
+              let typeName = result.typeName;
+              
+              const updatedData = new valueUpdatedData(propName, "", typeName ?? "string",this.category, 
+              result.parameterPriority, result.parameterName, true, false, false, undefined, required);
               this.valueUpdated.next(updatedData);
             }
           
@@ -123,14 +121,11 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
     }
 
     deleteField(){
-        console.log("----- delete field");
-        console.log(this._property.name);
+
         const message = "Do you want to delete the parameter - " + this._property.name;
         const title = "Delete prameter of product";
         const choices = ["Cancel", "Delete"];
         this._alertService.choiceModal(message, title, choices).subscribe(result =>{
-            console.log("----- delete field result");
-            console.log(result);
             if(result == "primary"){
                 this.displayedName = this.displayedName + " - Deleted";
                 this.isEditable = false;
@@ -147,13 +142,13 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
       
         let convertedValue: any = tValue;
         this.value = tValue;
-        
-        if(this.typeName == "DataTime"){
+        this.typeName = this.typeName.toLowerCase();
+        if(this.typeName == "datatime"){
             if(tValue){
                 this.value = new Date(tValue).toISOString();
                 convertedValue = new Date(tValue);
             }
-        }else if(this.typeName == "int" || this.typeName == "Int32"){
+        }else if(this.typeName == "int" || this.typeName == "int32"){
             let number = parseFloat(tValue);
             if(!isNaN(number)){
                 this.value = number.toString();
@@ -161,6 +156,15 @@ export class TextEditorComponent implements OnInit, AfterViewInit {
             }else{
                 this.value = "";
                 convertedValue = null;
+            }
+        }
+
+        if(this.typeName?.toLowerCase() == "text"){
+            if(this.textType?.toLowerCase() == "number"){
+                if(convertedValue && typeof convertedValue === 'string' ){
+                    convertedValue = convertedValue?.includes(",") ? convertedValue?.replace(",","."): convertedValue;  
+                }
+                
             }
         }
 

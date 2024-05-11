@@ -1,11 +1,12 @@
 <div class="field-selector">
     <mat-form-field appearance="fill" (click)="clickBySelect()">
- 
         <mat-label>{{displayedName}}</mat-label>
         <mat-select #selectedOption (click)="clickBySelect()" (selectionChange)="optionSelected()" [required]="required" 
         [value]="value" [disabled]="readOnly">
         <div class="filter-search-wrapper">
-            <input type="text" [formControl]="optionFilter" placeholder="Search"
+            <input type="text" 
+            (keyup)="changeText()" (paste)="changeText()" (cut)="changeText()" 
+            (input)="changeText()" [formControl]="optionFilter" placeholder="Search"
                    matInput  #filterContent>
             <mat-icon>search</mat-icon>
         </div>

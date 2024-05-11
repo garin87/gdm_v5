@@ -7,6 +7,11 @@ import { IDictionaryArray, ILocalState, IUserProfile } from '../objects/common';
 
 export class LocalService {
   _localState: ILocalState;
+  public isAdministrator: any;
+  
+  get isAdmin(){
+    return this.getUserRole() === "Admin" ? true : false;
+  };
 
   constructor() {
       this.getStateFromLocalStorage();
@@ -40,6 +45,10 @@ export class LocalService {
       this._localState.UserProfile = userProfile;
       this.saveStateToLocalStorage();
       return true;
+  }
+
+  getUserRole():string{
+    return localStorage.getItem("userRole");
   }
 
   resetSettings(): void {

@@ -28,7 +28,8 @@ export class FilterTileComponent implements OnInit{
 
   listProps : Observable<string[]>;
 
-  constructor(private _appStateService:AppStateService, public _labelsService: LabelsService) { };
+  constructor(private _appStateService:AppStateService, 
+              public _labelsService: LabelsService) { };
 
   filterControl = new UntypedFormControl();
 
@@ -57,7 +58,6 @@ export class FilterTileComponent implements OnInit{
   }
 
   reset(){
-    console.log("--- reset --");
   }
 
   ngOnDestroy(){

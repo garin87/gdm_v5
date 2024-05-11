@@ -7,6 +7,8 @@ namespace gdm5._0.Domain.Models.Filters
     {
         public string NameCompany { get; set; }
         public string NameProduct { get; set; }
+        public string Manufacturer { get; set; }
+        public string Supplier { get; set; }
         public double? TotalPrice { get; set; }
         public int? Number { get; set; }
         public int? CustomerId { get; set; }

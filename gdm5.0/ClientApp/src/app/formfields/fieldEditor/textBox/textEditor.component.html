@@ -5,7 +5,7 @@
         <mat-label>{{displayedName}}</mat-label>
         <mat-label *ngIf="navPriority">  PRI - {{navPriority}}</mat-label>
         <div class="field-input-wrapper">
-            <input #textInput [type]="typeName" [attr.step]="step" [attr.min]="min" 
+            <input #textInput [textType]="textType" [type]="typeName" [attr.step]="step" [attr.min]="min" 
                    matInput [required]="required" [readonly]="readOnly" [value]="value"
                    (keyup)="changeText()" (paste)="changeText()" (cut)="changeText()" 
                    (input)="changeText()">

@@ -96,7 +96,8 @@ export class DataValueService {
                    );
                 });
                
-            })
+            });
+
             return of(listCompanies);
         }
 
@@ -117,7 +118,6 @@ export class DataValueService {
         }
 
         public loadProductManufacturers():Observable<ISelectableItem[]>{
-            console.log("--------------  -------------- loadProductManufacturers");
             let listCompanies : ISelectableItem[] = [];
             this._applicationService.getProductManufacturers().subscribe( data =>{
                  data.forEach(element => {
@@ -134,7 +134,6 @@ export class DataValueService {
         }
 
         public loadProductManufacturersByProductName():Observable<ISelectableItem[]>{
-            console.log("--------------  -------------- loadProductManufacturersByProductName");
             let listCompanies : ISelectableItem[] = [];
             const instanceName = this._appStateService.selectedInstancePanel;
             this._applicationService.loadProductManufacturersByProductName(instanceName)
@@ -191,8 +190,7 @@ export class DataValueService {
            const instanceName = this._appStateService.selectedInstancePanel;
            const paramertName = property.name;
            const isParameter = property?.isParameter;
-           console.log(paramertName);
-           console.log(instanceName);
+
            let listProductNames : ISelectableItem[] = [
             {
                 "name": "notSet",
@@ -231,8 +229,89 @@ export class DataValueService {
             const instanceName = property.category;
             const paramertName = property.name;
             const isParameter = property?.isParameter;
-            console.log(paramertName);
-            console.log(instanceName);
+
+            let listProductNames : ISelectableItem[] = [
+             {
+                 "name": "notSet",
+                 "value": "---------Not set---------"
+             }
+            ];
+            
+            const parameters = {
+                NameType:instanceName,
+                NameParameter: paramertName,  
+                IsParameter: isParameter,
+                FilterParameters:[]
+            }
+
+            if(this._appStateService.listFilterParameters.length > 0){
+                parameters.FilterParameters = this._appStateService.listFilterParameters;
+            }
+
+            this._applicationService.getInstancesParameter(parameters)
+             .subscribe( data =>{
+                 data.forEach(element => {
+                     listProductNames.push(
+                         {
+                             "name": element.name,
+                             "value": element.value
+                         },
+                     );
+                 });
+ 
+
+             });
+
+             return of(listProductNames);
+        }
+
+        public loadInstancesPP(property):Observable<ISelectableItem[]>{
+
+            const instanceName = property.category;
+            const paramertName = property.parentName; // name
+            const isParameter = property?.isParameter;
+
+            let listProductNames : ISelectableItem[] = [
+             {
+                 "name": "notSet",
+                 "value": "---------Not set---------"
+             }
+            ];
+            
+            const parameters = {
+                NameType:instanceName,
+                NameParameter: paramertName,  
+                IsParameter: isParameter,
+                FilterParameters:[]
+            }
+
+            if(this._appStateService.listFilterParameters.length > 0){
+                parameters.FilterParameters = this._appStateService.listFilterParameters;
+            }
+
+            this._applicationService.getInstancesParameter(parameters)
+             .subscribe( data =>{
+                 data.forEach(element => {
+                     listProductNames.push(
+                         {
+                             "name": element.name,
+                             "value": element.value
+                         },
+                     );
+                 });
+ 
+
+             });
+
+             return of(listProductNames);
+        }
+        //parentName
+        public loadInstancesParameterProductFilter(property):Observable<ISelectableItem[]>{
+
+            const instanceName = property.category;
+            const paramertName = property.name;
+            const isParameter = property?.isParameter;
+
             let listProductNames : ISelectableItem[] = [
              {
                  "name": "notSet",

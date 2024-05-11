@@ -6,6 +6,7 @@ export interface IGdmLabels{
     globalMenu_Product:string;
     globalMenu_Modeling:string;
     globalMenu_Order:string;
+    globalMenu_Report:string;
     globalMenu_Account:string;
     globalMenu_SingUP:string;
     globalMenu_Logout:string;
@@ -13,6 +14,7 @@ export interface IGdmLabels{
     // Product command
     productCommand_Product: string;
     productCommand_AddProduct: string;
+    productCommand_ReportProduct: string;
     productCommand_AddNewProduct: string;
     productCommand_EditProduct: string;
 
@@ -60,6 +62,7 @@ export interface IGdmLabels{
     // Order
     orderComandButton_Cart:string;
     orderComandButton_OrderHistory:string;
+    orderComandButton_OrderReport:string;
     
     // Order title
     orderTitleCart_InfoTitle:string;
@@ -163,6 +166,8 @@ export interface userRole {
 export interface ParameterForm {
     parameterName: string;
     parameterPriority: any;
+    typeName: string;
+    required:boolean;
 }
 
 export interface IMetadataProperty
@@ -203,6 +208,7 @@ export interface ISelectableItem
     type?:string;
     childCount?:number;
 }
+
 export interface IParameter
 {
     id:number;
@@ -210,7 +216,9 @@ export interface IParameter
     value:string;
     nameType:string;
     priority:number;
+    isRequired:boolean;
 }
+
 export interface IPaginationAction
 {  
     paginationEventName?:string;
@@ -365,9 +373,17 @@ export interface CountCartProducts{
 }
 
 export class valueUpdatedData {
-    constructor(public propertyName:string, public value: any, public ValueType?:string, public category?:string,
-        public navPriority?:number, public propertyNewName?:string, public isEditedName?:boolean,
-        public isNewProp?:boolean, public isDeletedProp?:boolean, public parentName?:string) {
+    constructor(public propertyName:string, 
+        public value: any, 
+        public ValueType?:string, 
+        public category?:string,
+        public navPriority?:number, 
+        public propertyNewName?:string, 
+        public isEditedName?:boolean,
+        public isNewProp?:boolean, 
+        public isDeletedProp?:boolean, 
+        public parentName?:string,
+        public isRequired?:boolean) {
         this.propertyName = this.propertyName.toLowerCase();
     }
 }

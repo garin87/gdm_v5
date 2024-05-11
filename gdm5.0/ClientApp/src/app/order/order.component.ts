@@ -21,10 +21,13 @@ export class OrderComponent {
 
       // public instanceName:string = 'Product';
       public sidenavToggle;
-      public namesParoduct: any = undefined;
+      public namesParoduct: any;
       public isGridOrderShow:boolean = false;
+      public isGridOrderReportShow:boolean = false;
       public isOrderCart:boolean = false;
-      public gridOrderData = undefined;
+      public isOrderReport:boolean = false;
+      public gridOrderData;
+      public gridOrderReportData;
       public gridMetadaType = "OrderGrid";
       public isLoadingResults = false;
       public currentModelName : string;
@@ -133,10 +136,10 @@ export class OrderComponent {
           //    this.activePanel("isGridShow");
           // }, 0);         
         },
+
         err => {
             this.isLoadingResults = false;
-            this.alertService.error(err.error.message);
-            console.log("----  error getProductTypeIntances");
+            this.alertService.error(err?.error?.message || err );
             console.log(err);
         });
       }
@@ -145,21 +148,29 @@ export class OrderComponent {
         this._appStateService.initRightActionPanel = false;
         if(namePanel == "orderHistory"){
           this.isOrderCart = false;
+          this.isOrderReport = false;
           this.isGridOrderShow = true;
           this._appStateService.initRightActionPanel = false;
           this.getOrdersData();
         }
         if(namePanel == "orderCart"){
           this.isGridOrderShow = false;
+          this.isOrderReport = false;
           this.isOrderCart = true; 
           this.getOrderFromCart();
         }
+        if(namePanel == "orderReport"){
+          this.isGridOrderShow = false;
+          this.isOrderCart = false; 
+          this.isOrderReport = true;
+        }
 
+
+
+        
         this._formEditorService.resetValueProperties();
         this.dispose();
       }
-
-
 
       saveOrder(){
         this.isLoadingResults = true;
@@ -178,6 +189,7 @@ export class OrderComponent {
             console.log(err);
         });
       }
+
       cancelCartOrder(){
         this.isLoadingResults = true;
         this._applicationService.cancelOrderCart()
@@ -197,10 +209,47 @@ export class OrderComponent {
         });
       }
 
+
+      loadReport(){
+        const id = "ReportProduct" + "controls-id";
+        if(!this._formEditorService.isRequiredValue(id)){
+          this._alertService.warning("Please fill out all required fields");
+          return;
+        } 
+
+        this.isLoadingResults = true;
+        const reportFilterRequest = this.formFilterForReport();
+        this._applicationService.loadOrederReport(reportFilterRequest)
+          .subscribe(response => {
+            this.isLoadingResults = false;
+            this.gridOrderData = false;
+            this.gridOrderReportData = response;
+          },
+          err => {
+              this.isLoadingResults = false;
+              this.alertService.error(err?.error?.message || err?.error);
+              console.log("----  error loadOrederReport");
+              console.log(err);
+          });
+      }
+
+      formFilterForReport(){
+          let orderReportData = Object.assign({}, this._formEditorService.instanceData);
+          const parameters = this._formEditorService.instanceData?.parameters;
+          let param = [];
+          if(orderReportData?.parameters){
+            for(let item in orderReportData?.parameters){
+              param.push(orderReportData?.parameters[item]);
+            }
+            orderReportData.parameters = param;
+          } 
+          
+          return orderReportData;
+      }
+
       ngOnDestroy(){
         this.dispose();
         this.routerEvents$.unsubscribe();
-
         this.resetOrderTableValueSubscription$.unsubscribe();
         this.refreshPainGridSubscription$.unsubscribe();
         this.refreshOrderGridSubPanelSubscription$.unsubscribe();

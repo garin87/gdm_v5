@@ -40,7 +40,7 @@ export class CurrenciesService {
         return dateWithoutTime + "T00:00:00";
     }
 
-    private getLastRate(){
+    public getLastRate(){
         const currenciesRateLast = this._localService.getCurrenciesRateLast();
         if(currenciesRateLast.key){
             this.getCurrencyInfoUSDandEUR(currenciesRateLast.valueArray);

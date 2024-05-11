@@ -36,3 +36,8 @@
 .field-input-action > mat-icon:hover{
     color: #797968;
 }
+
+
+.container-add-price-list-value > input[readonly]{
+    background: #797968;
+}

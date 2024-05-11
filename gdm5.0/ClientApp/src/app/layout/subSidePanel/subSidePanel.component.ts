@@ -54,7 +54,6 @@ export class SubSidePanelComponent implements OnInit{
         this.selectedItem = undefined;
       }
     });
-
     this._appStateService.selectedSideSubPanelValueName.subscribe( data=>{
       if(!data){
         this.selectedItem = undefined;

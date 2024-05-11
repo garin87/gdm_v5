@@ -23,27 +23,23 @@ export class CustomFieldComponent implements OnInit {
     
         dialogRef.afterClosed().subscribe((result:ParameterForm) => {
           if(result){
-            console.log('The parameter dialog was closed');
-            console.log(result);
             const navPriority = result.parameterPriority == "" || 
                                 result.parameterPriority == null ? 0 : result.parameterPriority;
 
-            let newField = new MetadataProperty(result.parameterName, "string", null, null, result.parameterName,"",
-            undefined,undefined,undefined,undefined, 0, true, navPriority, false, true,false,true,true,true);
+            let newField = new MetadataProperty(result.parameterName, result.typeName, null, null, result.parameterName,"",
+            undefined,undefined,undefined, undefined, 0, true, navPriority, result.required, true,false,true,true,true);
         
-
             this._formEditorService.customProperties.next([newField]);
-            
-            let d = new valueUpdatedData(result.parameterName, "", "string","", navPriority,undefined, false);
-            this.valueUpdated.next(d);
 
+
+            let d = new valueUpdatedData(result.parameterName, "", result.typeName, "", navPriority,
+            undefined, false,true,false,undefined, result.required);
+            this.valueUpdated.next(d);
           }
-        
         });
     }
     
     ngOnInit(){
-        console.log(" init TextEditorComponent");
     }
 }
 

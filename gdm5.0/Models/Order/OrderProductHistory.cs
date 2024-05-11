@@ -20,5 +20,6 @@ namespace gdm5._0.Models
         public double TotalPrice { get; set; }
         public double TaxNDS { get; set; }
         public double Markup { get; set; }
+        public DateTime CreatedDateTime { get; set; }
     }
 }

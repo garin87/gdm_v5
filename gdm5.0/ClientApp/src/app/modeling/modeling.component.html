@@ -4,7 +4,7 @@
    
     <div class="modeling-container">
         <mat-card class="modeling-card modeling-commands">
-            <mat-card-title>{{this._labelsService.labels.globalMenu_Modeling}} {{ currentModelNameGet}} {{ currentModelInstanceNameGet}}  </mat-card-title> 
+            <mat-card-title>{{this._labelsService.labels.globalMenu_Modeling}} {{ currentModelNameGet}} {{ currentModelInstanceNameGet}}  </mat-card-title>
             <mat-card-actions>
                 <button mat-raised-button [class.sidePanelOpened]="this.appSidePanel.drawer.opened" class=" modeling-command-button"
                      color="primary" (click)="onToggleSidenav($event)" style="margin-right: 12px;">
@@ -23,6 +23,7 @@
         <div class="modeling-content">
             <app-subSidePanel #appSubSidePanel  [eventToggle]="sidenavToggle" [properties]="companyIntems" [page]="'submodeling'"></app-subSidePanel>
             <div class="container-modeling-actions" *ngIf="!isProductPage">
+                
                     <mat-card-actions class="container-modeling-action-commands">
                         <button mat-raised-button class="product-command-button"
                           [class.subSidePanelOpened]="this.appSubSidePanel.drawer.opened" color="primary" (click)="onToggleSidenavSub($event)">
@@ -61,20 +62,21 @@
 
                 <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isPriceListPage">
                     <div class="container-price-list-content">
-                        <form-editor  [instanceName]="'pricelistContent'" ></form-editor>
+                        <!-- <form-editor  [instanceName]="'pricelistContent'"   ></form-editor> -->
+                        <baseFieldEditor [component]="'form-editor'" [instanceName]="'pricelistContent'"
+                        [priority]="1" ></baseFieldEditor>
                         <div class="container-grid">
                         
                             <div class="price-list-action-bth">
-                                <div class="price-list-add-button ">
-                                    <button  mat-raised-button color="primary" (click)="addPriceValue()">Add price value</button> 
-                                </div>
                                 <div class="price-list-save-button">
                                     <button  mat-raised-button color="primary" (click)="savePriceValue()" >Save price value</button> 
                                 </div>
                             </div> 
 
                             <div class="container-add-price-list-value">
-                                <form-editor  [instanceName]="'OptionOfPriceListProduct'"></form-editor>
+                                <baseFieldEditor [component]="'form-editor'" [instanceName]="'OptionOfPriceListProduct'"
+                                     [priority]="2"></baseFieldEditor>
+                                <!-- <form-editor  [instanceName]="'OptionOfPriceListProduct'"></form-editor> -->
                             </div>
 
                             <div class="price-list-grid-content" *ngIf="priceListValuesData; else elseBlock" >
@@ -82,11 +84,12 @@
                                 [gridMetadataType]="gridMetadaType" [typeFilter]="''"></gridExpandRow-control> -->
                                 
                                 <mat-card-title>Price list values</mat-card-title>
-   
+                            
                                 <gridPlain-control [selectedProduct]="'priceList'" [gridData]="priceListValuesData" 
                                 [gridMetadataType]="'PriceListValuesGrid'" ></gridPlain-control>
-            
-                            
+
+                                <!-- <grid-control [selectedProduct]="'priceList" [gridData]="priceListValuesData" 
+                                [gridMetadataType]="'PriceListValuesGrid'" [typeFilter]="'OptionalOfProduct'"></grid-control> -->
                             </div>
                             <rightActionPanel *ngIf="gridOrderData" ></rightActionPanel>
                             <ng-template #elseBlock>
@@ -98,6 +101,17 @@
                 
                     <rightActionPanel></rightActionPanel>
                 </mat-card>
+
+                <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isPriceListBasePage">
+                    <div class="container-price-list-content">
+                        <baseFieldEditor [component]="'form-editor'" [instanceName]="'pricelistContent'"
+                        [priority]="1" ></baseFieldEditor>
+                    </div>
+                
+                    <rightActionPanel></rightActionPanel>
+                </mat-card>
+
+
             </div>
             <mat-card class="modeling-card parameters-modeling-content-card"  *ngIf="isProductPage">
                 <div class="modeling-content-productPage-container">

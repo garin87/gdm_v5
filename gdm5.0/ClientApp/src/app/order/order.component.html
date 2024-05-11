@@ -5,10 +5,12 @@
     <div class="order-container">
         <mat-card class="order-card order-commands">
             <mat-card-actions>
-                <button class="order-command-button" mat-raised-button color="primary"
+                <button [class.selected-panel]="isOrderCart" class="order-command-button" mat-raised-button color="primary"
                     (click)="activePanel('orderCart')" style="margin-right: 12px;">{{this._labelsService.labels.orderComandButton_Cart}}</button>
-                <button class="order-command-button" mat-raised-button color="primary"
-                    (click)="activePanel('orderHistory')">{{this._labelsService.labels.orderComandButton_OrderHistory}}</button>                    
+                <button [class.selected-panel]="isGridOrderShow" class="order-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('orderHistory')">{{this._labelsService.labels.orderComandButton_OrderHistory}}</button>    
+                <button [class.selected-panel]="isOrderReport" class="order-command-button" mat-raised-button color="primary"
+                    (click)="activePanel('orderReport')">{{this._labelsService.labels.orderComandButton_OrderReport}}</button>                 
             </mat-card-actions>
         </mat-card>
     
@@ -27,8 +29,6 @@
                     <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
                 </div>
                 <div class="order-grid-content" *ngIf="gridOrderData; else elseBlock" >
-                    <!-- <gridExpandRow-control [selectedProduct]="currentProductName" [gridData]="gridOrderData" 
-                    [gridMetadataType]="gridMetadaType" [typeFilter]="''"></gridExpandRow-control> -->
                     <mat-card-title style="font-size: 1.7em;">{{this._labelsService.labels.orderTitleCart_InfoTitle}}</mat-card-title>
                     <div class="order-row">
                         <div class="order-cell">
@@ -62,6 +62,27 @@
                 </div>
                 <rightActionPanel *ngIf="gridOrderData" ></rightActionPanel>
             </mat-card>
+            <mat-card class="order-card grid-order-report"  *ngIf="isOrderReport" style="box-shadow: none;">
+                <mat-card-title style="padding-left: 0px;">Статистика заказов</mat-card-title> 
+                <div class="order-report-content" style="margin-left: -4px;"> 
+                    <form-editor class="container-report-porduct-fields"  [instanceName]="'ReportProduct'"></form-editor>
+                    <div class="order-action-report-bth">
+                        <div class="order-report-button">
+                            <button  mat-raised-button color="primary" (click)="loadReport()">Показать статистику</button> 
+                        </div>
+                    </div> 
+                </div>
+                <div class="loading-shade" *ngIf="isLoadingResults">
+                    <mat-spinner *ngIf="isLoadingResults"></mat-spinner>
+                </div>
+                <div class="order-grid-content" *ngIf="gridOrderReportData" >
+                        <!-- <mat-card-title style="font-size: 1.4em;">Статистика заказов</mat-card-title> -->
+                    <gridPlain-control [selectedProduct]="'OrderReport'" [gridData]="gridOrderReportData" 
+                      [gridMetadataType]="'OrderReportGrid'" ></gridPlain-control>
+                </div>
+            </mat-card>
+
+            
             <ng-template #elseBlock>
                 <mat-card-title>{{ this._labelsService.labels.orderTitleCart_CartIsEmpty}}</mat-card-title>
             </ng-template>

@@ -1,7 +1,7 @@
 ﻿using gdm5._0.Models;
 using gdm5._0.Requests.PriceList;
-using gdm5._0.Requests.Product;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -14,15 +14,14 @@ namespace gdm5._0
     [ApiController]
     public class PriceListValueController : Controller
     {
-        private readonly DataContext _context;
         private readonly IPriceListValueService _priceListValueService;
-        public PriceListValueController(DataContext context, IPriceListValueService PriceListValueService) 
+        public PriceListValueController(IPriceListValueService PriceListValueService) 
         {
-            _context = context;
             _priceListValueService = PriceListValueService;
         }
 
         // GET: api/pricelistvalue/GetAll
+        [Authorize]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -31,6 +30,7 @@ namespace gdm5._0
         }
 
         // GET: api/pricelistvalue/GetProduct/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPriceListValue(int id)
         {   
@@ -50,6 +50,7 @@ namespace gdm5._0
         }
 
         // POST: api/pricelistvalue/AddCustomer
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddPriceListValue(PriceListValue piceListValue)
         {    
@@ -64,6 +65,7 @@ namespace gdm5._0
         }
 
         // DELETE: api/pricelistvalue/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeletePriceListValue([FromRoute] int id)
         {
@@ -81,9 +83,10 @@ namespace gdm5._0
             return Ok(product);
         }
 
+        [Authorize]
         [HttpPost]
         [Route("addPriceListValues")]
-        public IActionResult AddPriceList(addPriceListValuesRequest addPriceListValues)
+        public IActionResult AddPriceList(addPriceListValueRequest addPriceListValues)
         {
 
             if (addPriceListValues == null || !ModelState.IsValid)
@@ -100,9 +103,10 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("updatePriceListValues")]
-        public IActionResult UpdatePriceList(addPriceListValuesRequest addPriceListValues)
+        public IActionResult UpdatePriceList(addPriceListValueRequest addPriceListValues)
         {
 
             if (addPriceListValues == null || !ModelState.IsValid)
@@ -117,9 +121,13 @@ namespace gdm5._0
             {
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
         }
 
-
+        [Authorize]
         [HttpGet]
         [Route("getPriceListValues/{priceListId}")]
         public IActionResult GetPriceListValues(int priceListId)
@@ -145,15 +153,16 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpDelete]
-        [Route("deletePriceListValues")]
-        public IActionResult DeletePriceListValues(List<int> priceListValueIds)
+        [Route("deletePriceListValues/{priceListValueProductUniqCode}")]
+        public IActionResult DeletePriceListValues(int priceListValueProductUniqCode)
         {
             try
             {
-                _priceListValueService.DeletePriceListValues(priceListValueIds);
+                _priceListValueService.DeletePriceListValues(priceListValueProductUniqCode);
 
-                return NoContent();
+                return Ok(new { IsSuccess = false, Message = "Price list value deleted" });
             }
             catch (ArgumentException ex)
             {

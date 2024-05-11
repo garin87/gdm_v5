@@ -11,6 +11,7 @@ import { ApplicationService } from 'src/app/common/services/application.service'
 import { AppStateService } from 'src/app/common/services/appState.service';
 import { CustomParameterService } from 'src/app/common/services/custom-parameter.service';
 import { FormEditorService } from 'src/app/common/services/formEditor.service';
+import { LocalService } from 'src/app/common/services/local.service';
 import { MetadataService } from 'src/app/common/services/metadata.service';
 import { CommonUtil } from 'src/app/common/utils/common-utils';
 
@@ -52,24 +53,26 @@ export class GridControlComponent implements OnInit{
   pageFilterPublick:PageFilter;
   selectedRow:any;
   getProductTypeInstancesRequest:IgetProductTypeInstancesRequest; 
+ 
 
   private changedGridOptionSubscription$:Subscription;
   private refreshGridDataSubscription$:Subscription;
   private loadingGridResultsSubscription$:Subscription;
   private filter_clickByTileFilterSubscription$:Subscription;
-  //private loadInstancesParameterProductSubscription$:Subscription;
   private loadCustomParameterValuesByDefaultSubscription$:Subscription;
 
   public isLoadingResults:boolean = false;
-  
+  public isAdmin:boolean;
+
   @ViewChild(MatSort) sort: MatSort;
   
   listProps : Observable<string[]>;
-  constructor(private _metadataService:MetadataService,
-              public  _appStateService:AppStateService,
+  constructor(private _metadataService: MetadataService,
+              public  _appStateService: AppStateService,
               private _applicationService : ApplicationService,
               private _customParameterService: CustomParameterService,
-              private _FormEditorService:FormEditorService) { };
+              private _FormEditorService: FormEditorService,
+              private _LocalService: LocalService) { };
 
   announceSortChange(sortState: Sort) {
       if(!sortState.direction){
@@ -99,7 +102,9 @@ export class GridControlComponent implements OnInit{
     this._FormEditorService.listCreatedField.forEach( item =>{
 
       if(item.propertyName == nameControl.toLowerCase()){
-         item.htmlRef.value = valueControl;
+         if(item?.htmlRef){
+            item.htmlRef.value = valueControl;
+         }
       }
 
     })
@@ -143,11 +148,8 @@ export class GridControlComponent implements OnInit{
   }
 
   getTotalQuantity(){
-    console.log("-------------- getTotalQuantity")  
-    console.log(this.dataSource);
     if(Array.isArray(this.dataSource) && this.dataSource.length > 0){
         const total = this.dataSource.map(t => t?.quantity).reduce((acc, value) => acc + value, 0);
-        console.log(total);
         return total;
     }
   }
@@ -169,6 +171,7 @@ export class GridControlComponent implements OnInit{
       this.pageFilterPublick = new PageFilter();
       this.getProductTypeInstancesRequest = new ProductTypeInstancesRequest();
       
+      this.isAdmin = this._LocalService.isAdmin;
       // need to improve tile filter
       this.loadCustomParameterValuesByDefaultSubscription$ = this._customParameterService.loadCustomParameterValuesByDefault(this.selectedProductName)
              .subscribe((parameterValues:IOptionParameterValues) => {
@@ -181,19 +184,6 @@ export class GridControlComponent implements OnInit{
               }
          }); 
 
-      // if(this.selectedProductName == "Шток хромированный" || this.selectedProductName ==  "Труба хонингованная"){
-
-      //   this.loadCustomParameterValuesByDefaultSubscription$ = this._customParameterService.loadCustomParameterValuesByDefault(this.selectedProductName)
-      //        .subscribe((parameterValues:IOptionParameterValues) => {
-      //         if(parameterValues){
-      //           this.priority = parameterValues?.Priority;
-      //           this.dataTile = parameterValues?.ParameterValues;
-      //           this.customParameters = this._customParameterService.filterCustomParamaters(parameterValues?.Parameters);
-                           
-      //           this._appStateService.filter_initCreateFilterTileComponent.next(parameterValues);
-      //         }
-      //    }); 
-      // };
      
       // tile filter
       this.filter_clickByTileFilterSubscription$ = this._appStateService.filter_clickByTileFilter.subscribe((parameterVal:IParameterSelectionValue)=>{
@@ -203,31 +193,7 @@ export class GridControlComponent implements OnInit{
             if(!nextParameterOption){
               this.dataTile = undefined;
               this.priority = undefined;
-              //  seletedParameter = this.getCustomPrameter(parameterVal?.name);
               this.setValuesOfFilterPanel(parameterVal);
-              // if(seletedParameter){
-              //   const option:gridParameter = {
-              //     isParameter: true,
-              //     value: parameterVal.value,
-              //     name: parameterVal.name,
-              //     priority: seletedParameter.priority,
-              //   }
-    
-              //   this.getProductTypeInstancesRequest.Filter.Parameters = this.getProductTypeInstancesRequest.Filter.Parameters.filter(item =>{
-              //        return item.Priority >= option.priority;
-              //   });
-
-              //   this._appStateService.changedGridOption.next(option);
-              //   this.setValueCreatedSeletor(option.name, option.value);
-                
-               
-              //   // const delitedOptionPruduct = listOptionFilter.filter((item:FilterParameters) => item.Priority < filter.Priority);
-              //   // delitedOptionPruduct.forEach((item:FilterParameters)=>{
-              //   //   if(item){
-              //   //      this.setValueCreatedSeletor(item.ParameterName, "");
-              //   //   }
-              //   // });
-              // }  
               return;
             }
          
@@ -282,10 +248,14 @@ export class GridControlComponent implements OnInit{
       });
 
       this.changedGridOptionSubscription$ = this._appStateService.changedGridOption.subscribe(item =>{
-        console.log("--------- -------- ---------changedGridOption.subscribe");
+       
         this.dispose();
-        if(item){
-          
+        if(this.paginator){
+          this.paginator.firstPage();
+          this.paginator.pageSize = 10;
+        }
+   
+        if(item){      
           const filterParameters:FilterParameters = {
             IsParameter: item.isParameter,
             ParameterName: item.name, 
@@ -297,7 +267,7 @@ export class GridControlComponent implements OnInit{
             const seletedParameter: IParameter | undefined = this.customParameters.find((item: IParameter) => item.value === item.name);
             if(seletedParameter) filterParameters.Priority = seletedParameter?.priority;
           }
-         // this._appStateService.listFilterParameters.push(filterParameters);
+
           this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
           this.pageFilterPublick.pageSize = 10, this.sortOptionsPublick, item); 
         }
@@ -436,13 +406,13 @@ export class GridControlComponent implements OnInit{
  
   getCellValue(row, column, i){
     let totalRow = "";
-    if(row == "row-total"){
+    if(row == "row-total" ){
       totalRow = column.columnDef == "position" ? "Total" : totalRow;
       totalRow = column.columnDef == "quantity" ? this.totalQuantity?.toFixed(2) : totalRow;
       totalRow = column.columnDef == "primeCost" ? this.totalPrimeCost?.toFixed(2) : totalRow;
       totalRow = column.columnDef == "primeCostEUR" ? this.totalPrimeCostEUR?.toFixed(2) : totalRow;
       totalRow = column.columnDef == "primeCostUSD" ? this.totalPrimeCostUSD?.toFixed(2) : totalRow;
-      return typeof totalRow == "undefined" ? "" : totalRow;;
+      return typeof totalRow == "undefined" || !this.isAdmin ? "" : totalRow;;
     } 
 
     let startPageNumber;
@@ -455,7 +425,9 @@ export class GridControlComponent implements OnInit{
     valueColumn = column.columnDef  == "dateOfLastChanged"? valueColumn.split("T")[0] : valueColumn;
     valueColumn = column.columnDef  == "standartCost"? (valueColumn * this._appStateService.Cur_OfficialRate_EUR).toFixed(2) : valueColumn;
 
-
+    valueColumn = column.columnDef  == "priceValueEUR"? (valueColumn * this._appStateService.Cur_OfficialRate_EUR).toFixed(2) : valueColumn;
+    valueColumn = column.columnDef  == "priceValueEURNDS"? (valueColumn * this._appStateService.Cur_OfficialRate_EUR).toFixed(2) : valueColumn;
+   
     if(column.columnDef  == "dateOfLastChanged"){
        if(valueColumn == "01/01/0001 00:00"){
           valueColumn = "";
@@ -474,7 +446,11 @@ export class GridControlComponent implements OnInit{
       }
     }
 
-    return typeof valueColumn == "undefined" ? null : valueColumn;
+    if(valueColumn === null){
+      valueColumn = ""
+    }
+
+    return typeof valueColumn == "undefined" ? "" : valueColumn;
   }
 
   createColumns(gridMetadata){

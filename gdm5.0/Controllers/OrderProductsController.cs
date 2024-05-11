@@ -8,15 +8,15 @@ using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
 using gdm5._0.Services;
 using gdm5._0.DTO;
+using Microsoft.AspNetCore.Authorization;
 
 namespace gdm5._0.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/orderProducts")]
     [ApiController]
     public class OrderProductsController : Controller
     {
         private readonly DataContext _context;
-
         private OrderProductService _orderProductService;
 
         public OrderProductsController(DataContext context)
@@ -26,6 +26,7 @@ namespace gdm5._0.Controllers
         }
 
         // GET: api/OrderProducts
+        [Authorize]
         [HttpGet]
         public IEnumerable<OrderProduct> GetOrderProducts()
         {
@@ -33,6 +34,7 @@ namespace gdm5._0.Controllers
         }
 
         // GET: api/OrderProducts/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrderProduct([FromRoute] int id)
         {
@@ -52,6 +54,7 @@ namespace gdm5._0.Controllers
         }
 
         // PUT: api/OrderProducts/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutOrderProduct([FromRoute] int id, [FromBody] OrderProduct orderProduct)
         {
@@ -70,22 +73,8 @@ namespace gdm5._0.Controllers
             return NoContent();
         }
 
-        // PUT: api/UpdateOrderP
-        [HttpPut("UpdateOrderP")]
-        public async Task<IActionResult> UpdateOrderP(OrderDTO orderDTO)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-
-            await _orderProductService.UpdateOrderP(orderDTO);
-
-            return NoContent();
-        }
-
         // POST: api/OrderProducts
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> PostOrderProduct([FromBody] OrderProduct orderProduct)
         {
@@ -100,6 +89,7 @@ namespace gdm5._0.Controllers
         }
 
         // DELETE: api/OrderProducts/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrderProduct([FromRoute] int id)
         {
@@ -117,28 +107,5 @@ namespace gdm5._0.Controllers
             return Ok(orderProduct);
         }
 
-        private bool OrderProductExists(int id)
-        {
-            return _context.OrderProducts.Any(e => e.Id == id);
-        }
-
-
-
-
-        // GET: api/OrderProducts/GetOrderByProductId/{id}
-        [HttpGet]
-        [Route("GetOrderByProductId/{id}")]
-        public Task<IEnumerable<OrderPDTO>> GetOrderByProductId(int id)
-        {
-            return _orderProductService.GetOrderByPruductId(id);
-        }
-
-        // GET: api/OrderProducts/GetOrderByOrderId/{id}
-        [HttpGet]
-        [Route("GetOrderByOrderId/{id}")]
-        public Task<IEnumerable<OrderPDTO>> GetOrderByOrderId(int id)
-        {
-            return _orderProductService.GetOrderByOrderId(id);
-        }
     }
 }

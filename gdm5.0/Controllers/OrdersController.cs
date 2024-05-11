@@ -8,32 +8,38 @@ using gdm5._0.Services;
 using gdm5._0.Requests.Product;
 using gdm5._0.Services.Interfaces;
 using gdm5._0.Requests.Order;
+using gdm5._0.Controllers.Base;
+using System.Linq;
+using gdm5._0.Shared.Constants;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace gdm5._0.Controllers
 {
     [Route("api/orders")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class OrdersController : WarehouseController
     {
-        private readonly DataContext _context;
-
-        private OrderService _orderService;
+        public readonly DataContext _context;
+        public OrderService _orderService;
 
         public OrdersController(DataContext context, IHttpContextAccessor httpContextAccessor,
-             IProductService ProductService, IUriService uriService)
+             IProductService ProductService, IUriService uriService):base(httpContextAccessor)
         {
-            _context = context;
-            _orderService = new OrderService(_context, httpContextAccessor, ProductService, uriService);
+               _context = context;
+               _orderService = new OrderService(_context, ProductService, uriService);
         }
   
         // GET: api/Orders
         [HttpGet]
+        [Authorize]
         public IEnumerable<Order> GetOrders()
         {
             return _orderService.GetAll();
         }
 
         // GET: api/Orders/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetOrder([FromRoute] int id)
         {
@@ -52,66 +58,15 @@ namespace gdm5._0.Controllers
             return Ok(order);
         }
 
-        // PUT: api/Orders/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutOrder([FromRoute] int id, [FromBody] Order order)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != order.Id)
-            {
-                return BadRequest();
-            }
-
-            await _orderService.UpdateOrder(id, order);
-
-            return NoContent();
-        }
-
-        // POST: api/Orders
-        [HttpPost]
-        public async Task<IActionResult> PostOrder([FromBody] Order order)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var orderNew = await _orderService.AddItem(order);
-
-            return Ok(orderNew);
-        }
-
-        // DELETE: api/Orders/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteOrder([FromRoute] int id)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var order = await _orderService.DeleteOrder(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(order);
-        }
-
-        
         // POST: api/Orders/addOrderProduct
+        [Authorize]
         [Route("addOrderProduct")]
         [HttpPost]
         public async Task<IActionResult> addOrderProduct(AddOrderRequest AddOrderRequest)
         {
             try
             {
-                await _orderService.AddOrder(AddOrderRequest);
+                await _orderService.AddOrder(AddOrderRequest, CurrentUserName);
                 return Ok(new { IsSuccess = true, Message = "Success: Order has added." });
             }
             catch (Exception ex)
@@ -122,13 +77,14 @@ namespace gdm5._0.Controllers
         }
 
         // POST: api/Orders/addToCartOrder
+        [Authorize]
         [Route("addToCartOrder")]
         [HttpPost]
         public async Task<IActionResult> AddToCartOrder(AddOrderRequest AddOrderRequest)
         {
             try
             {
-                await _orderService.AddToCartOrder(AddOrderRequest);
+                await _orderService.AddToCartOrder(AddOrderRequest, CurrentUserName);
                 return Ok(new { IsSuccess = true, Message = "Success: Order has added to cart." });
             }
             catch (Exception ex)
@@ -139,13 +95,14 @@ namespace gdm5._0.Controllers
         }
 
         // POST: api/Orders/addOrderProduct
+        [Authorize]
         [Route("addOrderProductList")]
         [HttpPost]
         public async Task<IActionResult> addOrderProductList(addOrderListProductRequest AddOrderRequest)
         {
             try
             {
-                await _orderService.addOrderProductList(AddOrderRequest);
+                await _orderService.addOrderProductList(AddOrderRequest, CurrentUserId ?? 0, CurrentUserName);
                 return Ok(new { IsSuccess = true, Message = "Success: Order has added." });
             }
             catch (Exception ex)
@@ -155,6 +112,7 @@ namespace gdm5._0.Controllers
 
         }
 
+        [Authorize]
         [Route("getOrderProduct")]
         [HttpPost]
         public IActionResult getOrderProduct(getOrdersRequest request)
@@ -172,6 +130,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("getOrderProductList")]
         [HttpPost]
         public IActionResult getOrderProductList(getOrdersRequest request)
@@ -179,8 +138,7 @@ namespace gdm5._0.Controllers
             var route = Request.Path.Value;
             try
             {
-                var result = this._orderService.getOrderProducts(request.Name,
-                    request.PageFilter, route, request.SortOption, request.Filter);
+                var result = this._orderService.getOrderProducts(request.Name, request.PageFilter, route, request.SortOption, request.Filter);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -189,6 +147,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("getCartOrderProducts")]
         [HttpGet]
         public IActionResult getCartOrderProducts()
@@ -196,7 +155,9 @@ namespace gdm5._0.Controllers
             var route = Request.Path.Value;
             try
             {
-                var result = this._orderService.getCartOrderProducts(route);
+                var t = CurrentUserName;
+                var rt = CurrentUserId;
+                var result = this._orderService.getCartOrderProducts(route, CurrentUserId ?? 0);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -205,13 +166,14 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("saveOrderCart")]
         [HttpGet]
         public async Task<IActionResult> saveOrderCart()
         {
             try
             {
-                await this._orderService.saveOrderCart();
+                await this._orderService.saveOrderCart(CurrentUserName, CurrentUserId ?? 0);
 
                 return Ok(new { IsSuccess = true, Message = "Success: Order has saved." });
             }
@@ -221,6 +183,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("cancelOrderCart")]
         [HttpGet]
         public IActionResult cancelOrderCart()
@@ -237,6 +200,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [HttpDelete]
         [Route("deleteOrderProduct/{id}")]
         public IActionResult deleteOrderProduct(int id)
@@ -252,13 +216,15 @@ namespace gdm5._0.Controllers
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
         }
+
+        [Authorize]
         [Route("GetCartOrderCount")]
         [HttpGet]
         public IActionResult GetCartOrderCount()
         {
             try
             {
-                return Ok(this._orderService.GetCartOrderCount());
+                return Ok(_orderService.GetCartOrderCount(CurrentUserId ?? 0));
             }
             catch (Exception ex)
             {
@@ -266,36 +232,14 @@ namespace gdm5._0.Controllers
             }
         }
 
-        // GET: api/Orders
-        //[HttpGet]
-        //[Route("GetOrders")]
-        //public Task<IEnumerable<Order>> GetOrderProd()
-        //{
-        //    return _orderService.GetOrders();
-        //}
-        // GET: api/Orders/GetOrderProducts
-        //[HttpGet]
-        //[Route("GetOrderProducts")]
-        //public Task<IEnumerable<OrderPDTO>> GetOrderProducts()
-        //{
-        //    return _orderService.GetOrderProduct();
-        //}
-
-        // GET: api/Orders/GetOrderByNameCompany/{nameCompany}
-        //[HttpGet]
-        //[Route("GetOrderByNameCompany/{nameCompany}")]
-        //public Task<IEnumerable<OrderPDTO>> GetOrderByNameCompany(string nameCompany)
-        //{
-        //    return _orderService.GetOrderByNameCompany(nameCompany);
-        //}
-
+        [Authorize]
         [Route("getOrderNameCompanies")]
         [HttpGet]
         public IActionResult getOrderNameCompanies()
         {
             try
             {
-                return Ok(this._orderService.getOrderNameCompanies());
+                return Ok(_orderService.getOrderNameCompanies());
             }
             catch (Exception ex)
             {
@@ -303,6 +247,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("getOrderNameCompaniesByNameCompany")]
         [HttpGet]
         public IActionResult getOrderNameCompanies([FromRoute] string nameCompany)
@@ -317,7 +262,7 @@ namespace gdm5._0.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpDelete]
         [Route("deleteCartProduct/{id}")]
         public  IActionResult DeleteCartProduct(int id)
@@ -334,6 +279,7 @@ namespace gdm5._0.Controllers
             }
         }
 
+        [Authorize]
         [Route("getNamesProduct")]
         [HttpGet]
         public IActionResult getNamesProduct()
@@ -347,23 +293,86 @@ namespace gdm5._0.Controllers
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
         }
-       
-        // DELETE: api/Orders/DeleteOrders/5
-        //[HttpDelete("DeleteOrders/{id}")]
-        //public async Task<IActionResult> DeleteOrders([FromRoute] int id)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
 
-        //    var order = await _orderService.DeleteOrders(id);
-        //    if (order == null)
-        //    {
-        //        return NotFound();
-        //    }
+        [Authorize]
+        [Route("loadOrederReport")]
+        [HttpPost]
+        public IActionResult loadOrderReport(loadOrderReportRequest request)
+        {
+            var route = Request.Path.Value;
+            try
+            {
+                var result = this._orderService.LoadOrderReport(request);  //  this._orderService.getOrderProducts(request);
 
-        //    return Ok(order);
-        //}
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [Route("getProcessingOrderInfo")]
+        [HttpGet]
+        public IActionResult GetProcessingOrderInfo()
+        {
+            try
+            {
+                return Ok(_orderService.GetProcessingOrderInfo(CurrentUserId ?? 0));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { IsSuccess = false, Message = ex.Message });
+            }
+        }
+
+        private string CurrentUserName {
+            get {
+                //  var companyIdClaim2 = _httpContextAccessor.HttpContext.User.Claims.ToList();
+                //  var userName =_httpContextAccessor.HttpContext.User?.Identity?.Name;
+                if (_httpContextAccessor?.HttpContext == null)
+                {
+                    return "";
+                }
+
+                if (_httpContextAccessor?.HttpContext?.User == null)
+                {
+                    return "";
+                }
+
+                var userNameClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == "UserName");
+
+                if (userNameClaim == null)
+                {
+                    return "";
+                }
+
+                return string.IsNullOrEmpty(userNameClaim?.Value) ? "" : userNameClaim?.Value;
+            }
+        }
+
+        private int? CurrentUserId {
+            get {
+                if (_httpContextAccessor?.HttpContext == null)
+                {
+                    return 0;
+                }
+
+                if (_httpContextAccessor?.HttpContext?.User == null)
+                {
+                    return 0;
+                }
+                var userIdClaim = _httpContextAccessor.HttpContext.User.Claims.FirstOrDefault(c => c.Type == ClaimsConstants.UserId);
+
+                if (userIdClaim == null)
+                {
+                    return 0;
+                }
+
+
+                return userIdClaim != null ? int.Parse(userIdClaim?.Value) : 0;
+            }
+        }
     }
 }

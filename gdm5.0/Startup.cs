@@ -68,7 +68,7 @@ namespace gdm5._0
                     .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
 
-         
+
             //.AddCookie(config =>
             // {
             //     config.Cookie.Name = "auth";
@@ -76,12 +76,14 @@ namespace gdm5._0
             //                                   // config.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict;//This cookie cannot be used as a third-party cookie under any circumstances, without exception. For example, suppose b.com sets the following cookies:
             // })
 
+
             var jwtSettings = Configuration.GetSection("JwtSettings");
+
             services.AddAuthentication(options =>
            {
                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
+             
                //options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
                //}).AddCookie("CookiewAuth", options => {
                //    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("Identity/Account/Login");
@@ -91,17 +93,18 @@ namespace gdm5._0
             {
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    //http://localhost:24378
-                    ValidateAudience = true,
-                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
-                    ValidAudience = jwtSettings.GetSection("validAudience").Value,
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSettings.GetSection("securityKey").Value))
+                    RequireExpirationTime = false,
+                    ClockSkew = TimeSpan.Zero,
+                    //ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
+                    //ValidAudience = jwtSettings.GetSection("validAudience").Value,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.GetSection("securityKey").Value))
 
                 };
+
             }).AddIdentityServerJwt();
 
             services.AddControllersWithViews();
@@ -119,8 +122,8 @@ namespace gdm5._0
                 options.AddPolicy("EnableCORS", builder =>
                 {
                     builder.AllowAnyOrigin()
-                       .AllowAnyHeader()
-                       .AllowAnyMethod();
+                           .AllowAnyHeader()
+                           .AllowAnyMethod();
                 });
             });
 
@@ -171,11 +174,11 @@ namespace gdm5._0
             //    SupportedCultures = new List<CultureInfo> { ci },
             //    SupportedUICultures = new List<CultureInfo> { ci }
             //});
-            app.UseRouting();
+            
 
             app.UseAuthentication();
             // app.UseIdentityServer();
-        
+            app.UseRouting();
             app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
@@ -198,7 +201,6 @@ namespace gdm5._0
 
                 //   spa.UseAngularCliServer(npmScript: "start");
             });
-
             //app.UseSpa(spa =>
             //{
             //    // To learn more about options for serving an Angular SPA from ASP.NET Core,

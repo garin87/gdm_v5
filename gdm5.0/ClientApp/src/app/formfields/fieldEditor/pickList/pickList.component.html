@@ -1,4 +1,4 @@
-<div class="field-selector">
+<div class="field-pickList field-selector">
     <mat-form-field appearance="fill" class="container-picklist-control">
       <input type="text" [formControl]="inputControl" placeholder="Value"
       matInput  #textInput [required]="required" 
@@ -12,7 +12,7 @@
                    matInput  #filterContent>
             <mat-icon>search</mat-icon>
         </div>
-          <mat-option  *ngFor="let item of listOptions | async" [value]="item.value">
+          <mat-option #matOption class="picklist-control-option"  *ngFor="let item of listOptions | async" [value]="item.value">
             {{item.value}}
           </mat-option>
         </mat-select>

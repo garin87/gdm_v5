@@ -4,6 +4,7 @@ using gdm5._0.Requests.Customer;
 using gdm5._0.Requests.Product;
 using gdm5._0.Services;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -18,16 +19,15 @@ namespace gdm5._0
     [ApiController]
     public class CustomersController : Controller
     {
-        private readonly DataContext _context;
         private readonly ICustomerService _customerService;
-        public CustomersController(DataContext context, ICustomerService CustomerService) 
+        public CustomersController(ICustomerService CustomerService) 
         {
-            _context = context;
             _customerService = CustomerService;
         }
 
 
         // GET: api/customer/GetAll
+        [Authorize]
         [HttpGet]
         [Route("GetAll")]
         public IActionResult GetAll()
@@ -37,6 +37,7 @@ namespace gdm5._0
         }
 
         // GET: api/customer/GetProduct/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCustomer(int id)
         {   
@@ -56,6 +57,7 @@ namespace gdm5._0
         }
 
         // POST: api/customer/AddCustomer
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddCustomer(Customer customer)
         {    
@@ -69,6 +71,7 @@ namespace gdm5._0
             return Ok(productNew);
         }
 
+        [Authorize]
         [Route("DeleteCustomer/{id}")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCustomer([FromRoute] int id)
@@ -87,7 +90,7 @@ namespace gdm5._0
             return Ok(new { IsSuccess = false, Message = " The company deleted" });
         }
 
-
+        [Authorize]
         [Route("getCustomerByNameCompany/{nameCompany}")]
         [HttpGet]
         public IActionResult GetCustomerByNameCompany([FromRoute] string nameCompany)
@@ -103,6 +106,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [Route("GetNamesCustomeres")]
         [HttpGet]
         public IActionResult GetNamesCustomeres()
@@ -118,7 +122,7 @@ namespace gdm5._0
             }
         }
 
-
+        [Authorize]
         [HttpPost]
         [Route("AddNewCustomer")]
         public async Task<IActionResult> AddNewCustomer(addCustomerRequest newCustomer)
@@ -138,6 +142,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [HttpPost]
         [Route("UpdateCustomer")]
         public async Task<IActionResult> UpdateCustomer(UpdateCustomerRequest customer)

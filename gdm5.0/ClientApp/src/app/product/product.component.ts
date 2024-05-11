@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { AlertService } from '../alert/alert.service';
@@ -7,6 +7,7 @@ import { ApplicationService } from '../common/services/application.service';
 import { AppStateService } from '../common/services/appState.service';
 import { FormEditorService } from '../common/services/formEditor.service';
 import { LabelsService } from '../common/services/labels.service';
+import { CurrenciesService } from '../common/services/currencies.service';
 
 @Component({
   selector: 'app-product-component',
@@ -21,19 +22,23 @@ export class ProductComponent {
       public isAddProduct: boolean = false;
       public isNewProduct: boolean = false;
       public isEditParamProduct: boolean = false;
+      public isReportProduct: boolean = false;
       public instanceName:string = 'Product';
       public sidenavToggle;
-      public namesParoduct: any = undefined;
+      public namesParoduct;
       public isGridShow:boolean = false;
-      public gridProductData = undefined;
+      public gridProductData;
       public gridMetadaType = "ProductGrid";
       public isLoadingResults = false;
       public currentProductName :string;
+      public gridProductReportData;
       private routerEvents$:Subscription;
       private selectedSidePanelValueSubscription$:Subscription;
       private changedPageGridSubscription$:Subscription;
       private refreshAddProductSectionSubscription$:Subscription;
       private isActiveRightActionPanelSubscription$:Subscription;
+      
+
 
       constructor(private _alertService : AlertService,
                   private _applicationService : ApplicationService, 
@@ -42,7 +47,8 @@ export class ProductComponent {
                   private _appStateService:AppStateService,
                   private router: Router,
                   private changeDetector: ChangeDetectorRef,
-                  public _labelsService: LabelsService){}
+                  public _labelsService: LabelsService,
+                  public _currenciesService:CurrenciesService){}
                      
       onToggleSidenav(event) {
         
@@ -142,17 +148,20 @@ export class ProductComponent {
             this.isNewProduct = false;
             this.isEditParamProduct = false;
             this.isGridShow = false;
+            this.isReportProduct = false;
           } else if(namePanel == "isAddNewProduct"){
             this.isNewProduct = true;
             this.isAddProduct = false;
             this.isEditParamProduct = false;
             this.isGridShow = false;
+            this.isReportProduct = false;
             this._appStateService.selectedProductName = undefined;
           }else if(namePanel == "isEditParamProduct"){
             this.isEditParamProduct = true;
             this.isNewProduct = false;
             this.isAddProduct = false;
             this.isGridShow = false;
+            this.isReportProduct = false;
             this._appStateService.selectedProductName = undefined;
           }
           else if(namePanel == "isGridShow"){
@@ -160,8 +169,19 @@ export class ProductComponent {
             this.isNewProduct = false;
             this.isAddProduct = false;
             this.isEditParamProduct = false;
+            this.isReportProduct = false;
             this._appStateService.selectedProductName = undefined;
           }
+          else if(namePanel == "isReportProduct"){
+            this.isGridShow = false;
+            this.isNewProduct = false;
+            this.isAddProduct = false;
+            this.isEditParamProduct = false;
+            this.isReportProduct = true;
+            this._appStateService.selectedProductName = undefined;
+          }
+
+          
           this._formEditorService.resetValueProperties(); 
           this.dispose();
       }
@@ -231,8 +251,6 @@ export class ProductComponent {
              this._applicationService.updateProductParameters(product)
              .subscribe(response => {
                  this.alertService.success(response.message);
-                 console.log("Successful save parameters");
-                 console.log(response);
                  // refresh
                  this.isEditParamProduct = false;
                  this._formEditorService.resetValueProperties();
@@ -321,7 +339,15 @@ export class ProductComponent {
         const primeCostUSD = this._formEditorService.instanceData["primecostusd"]?.value;
         const customCurrencyRateEUR = this._formEditorService.instanceData["currencyrateeur"]?.value;
        
-       
+        if(!primeCostBYN && !primeCostEUR && !primeCostUSD){
+            this.alertService.warning("Введите себестоимость продукта")
+        }
+
+        if(!this._appStateService.Cur_OfficialRate_EUR || 
+           !this._appStateService.Cur_OfficialRate_USD){
+           this._currenciesService.getLastRate();
+        }
+        
         if(primeCostBYN && this._appStateService.Cur_OfficialRate_EUR && 
           this._appStateService.Cur_OfficialRate_USD){
           
@@ -361,7 +387,6 @@ export class ProductComponent {
           productData["primecostusd"] = primeCostUSD;
 
         }
-
 
         if(!primeCostBYN && primeCostUSD){
          
@@ -438,8 +463,46 @@ export class ProductComponent {
         return message;
       }
 
+      loadProductReport(){
+        const id = "ReportCommanProduct" + "controls-id";
+        if(!this._formEditorService.isRequiredValue(id)){
+          this._alertService.warning("Please fill out all required fields");
+          return;
+        } 
+
+        this.isLoadingResults = true;
+        const reportFilterRequest = this.formFilterForReport();
+        this._applicationService.loadProductReport(reportFilterRequest)
+          .subscribe(response => {
+            this.isLoadingResults = false;
+            this.isGridShow = false;
+            this.gridProductReportData = response;
+         //   this.gridOrderData = false;
+        //    this.gridOrderReportData = response;
+          },
+          err => {
+              this.isLoadingResults = false;
+              this.alertService.error(err?.error?.message || err?.error);
+              console.log("----  error loadOrederReport");
+              console.log(err);
+          });
+      }
+
+      formFilterForReport(){
+          let orderReportData = Object.assign({}, this._formEditorService.instanceData);
+          const parameters = this._formEditorService.instanceData?.parameters;
+          let param = [];
+          if(orderReportData?.parameters){
+            for(let item in orderReportData?.parameters){
+              param.push(orderReportData?.parameters[item]);
+            }
+            orderReportData.parameters = param;
+          } 
+          
+          return orderReportData;
+      }
       ngOnDestroy(){
-        console.log("------------------------------- product onDestroy");
+
         this.dispose();
         this._formEditorService.listCreatedField = [];
 
@@ -453,6 +516,5 @@ export class ProductComponent {
       dispose(){
         this._appStateService.initRightActionPanel = false;
         this._appStateService.instanceOfProduct = undefined;
-       // this._appStateService.selectedInstancePanel = undefined;
       }
 }

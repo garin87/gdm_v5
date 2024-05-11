@@ -60,9 +60,6 @@ export class gridExpandRowComponent implements OnInit{
               private _applicationService : ApplicationService) { };
 
   announceSortChange(sortState: Sort) {
-      console.log(sortState);
-      console.log(this.paginator);
-      //this.paginator._pageSize
       if(!sortState.direction){
         this.sortOptionsPublick = null;
         return;
@@ -85,14 +82,6 @@ export class gridExpandRowComponent implements OnInit{
       this.gridMetadata = this._metadataService.getMetadataType(this.gridMetadataType);
       this.gridcolumns = this.createColumns(this.gridMetadata);
       this.dataSource = this.gridData?.data || [];
-
-     // this.gridcolumns = this.gridcolumns.concat(this.convertParametersToColumn(this.dataSource));
-    //  this.gridcolumns = CommonUtil.sortProperties(this.gridcolumns);
-      // this.gridcolumns = [...this.gridcolumns, {
-      //   columnDef : 'isExpanded',
-      //   header: '', 
-      //   cell: ()=> '',
-      // }]
       this.displayedColumns = this.gridcolumns.map(c => c.columnDef);
       this.totalRecords = this.gridData?.totalRecords;
       this.sortOptionsPublick = null;
@@ -100,7 +89,6 @@ export class gridExpandRowComponent implements OnInit{
       this.GetOrdersRequest = new OrdersRequest();
 
       this.changedGridOptionSubscription$ = this._appStateService.changedGridOption.subscribe(item =>{
-        console.log("--------- -------- ---------changedGridOption.subscribe");
         this.dispose();
         if(item){
           this.getGridData(this.selectedProductName, this.pageFilterPublick.pageNumber = 1,
@@ -116,8 +104,6 @@ export class gridExpandRowComponent implements OnInit{
   };
  
   ngOnChanges(changes): void {
-    console.log("--------------------- -----console.log(changes);");
-    console.log(changes);
     if(changes['gridData']) {
       if( this.gridData?.data || this.gridData?.currentValue){
         this.sortOptionsPublick = null;
@@ -132,12 +118,7 @@ export class gridExpandRowComponent implements OnInit{
   }
 
   handlePage($event){
-   console.log("---------- handlePage($event)");
-   console.log($event);
    let actionName = this.getPaginationEventName($event);
-   //  this.paginationParameters = this.getPaginationEventName($event);
-   console.log(actionName);
-   // this._appStateService.changedPageGrid.next(actionName);
    this.pageFilterPublick.pageNumber = actionName.pageNumber;
    this.pageFilterPublick.pageSize = actionName.pageSize;
    this.isLoadingResults = true;
@@ -147,7 +128,6 @@ export class gridExpandRowComponent implements OnInit{
 
   getGridData(nameProduct, pageNumber, pageSize, sortOptions:ISortOption = null, filter:gridParameter = null){
    
-    //this.getProductTypeInstancesRequest.NameProductType = nameProduct;
     this.GetOrdersRequest.SortOption = {
       name: sortOptions?.name.trim(),
       direction: sortOptions?.direction.trim(),
@@ -159,23 +139,18 @@ export class gridExpandRowComponent implements OnInit{
       pageSize: pageSize
     }
 
-
-    
     if(filter){
       this.GetOrdersRequest.Filter[filter?.name] = filter.value;
     }
         
-    
-    this._applicationService.getOrderProductList(this.GetOrdersRequest).subscribe(response => {
-      console.log("--------- getGridData ------------ getProductTypeIntances");
-      console.log(response);
-      this.isLoadingResults = false;
-      this.dataSource = response.data;
-      this.totalRecords = this.gridData?.totalRecords;
-      if(this.table){
-        this.table.renderRows();
-      }
-      
+    this._applicationService.getOrderProductList(this.GetOrdersRequest)
+    .subscribe(response => {
+        this.isLoadingResults = false;
+        this.dataSource = response.data;
+        this.totalRecords = this.gridData?.totalRecords;
+        if(this.table){
+          this.table.renderRows();
+        }
     },
     err => {
         this.isLoadingResults = false;
@@ -190,8 +165,6 @@ export class gridExpandRowComponent implements OnInit{
 
   convertParametersToColumn(gridData){
     if(!gridData) return;
-   // let parametersData = gridData[0]?.parameters;
-   // let params = parameters.find(item => item.name == column.columnDef)?.value;
     let unicParameters = [];
     gridData.forEach(orderData => {
       orderData.products.forEach(product => {
@@ -203,22 +176,10 @@ export class gridExpandRowComponent implements OnInit{
         });
       });
     })
-    
-    //  if(!parametersData) return;
-    //  return  parametersData.map(element => {
-    //     return {
-    //       columnDef : element.name,
-    //       header: element.name,
-    //       isSortable: true,
-    //       cell: (row, column, i) => `${this.getCellValue(row, column, i)}`,
-    //       order: element?.order || element?.priority  
-    //     }
-    //  });
   }
  
   getCellValue(row, column, i){
     let startPageNumber;
-
     if(this.paginator){
       startPageNumber = (this.paginator.pageSize * this.paginator.pageIndex) + i + 1;
     }else startPageNumber = i + 1;
@@ -230,8 +191,12 @@ export class gridExpandRowComponent implements OnInit{
         valueColumn = row?.parameters.find(item => item.name == column.columnDef)?.value;
       }
     }
-    
-    return typeof valueColumn == "undefined" ? null : valueColumn;
+
+    if(valueColumn === null){
+       valueColumn = ""
+    }
+
+    return typeof valueColumn == "undefined" ? "" : valueColumn;
   }
 
   createColumns(gridMetadata){
@@ -260,8 +225,6 @@ export class gridExpandRowComponent implements OnInit{
   }
 
   selectRow(row){
-     console.log("-------- grid ------ selectRow");
-     console.log(row);
      this.selectedRow = row;
      row.isExpanded = !row.isExpanded;
      this._appStateService.initRightActionPanel = false;
@@ -271,7 +234,6 @@ export class gridExpandRowComponent implements OnInit{
        this._appStateService.instanceOfProduct = row;
        this._appStateService.selectedRowGrid.next(row);
      }
-    
   }
 
   private getPaginationEventName(pEvent):IPaginationAction{

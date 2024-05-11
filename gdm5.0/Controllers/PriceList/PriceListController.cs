@@ -2,6 +2,7 @@
 using gdm5._0.Requests.PriceList;
 using gdm5._0.Requests.Product;
 using gdm5._0.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -13,15 +14,14 @@ namespace gdm5._0
     [ApiController]
     public class PriceListController : Controller
     {
-        private readonly DataContext _context;
         private readonly IPriceListService _priceListService;
-        public PriceListController(DataContext context, IPriceListService PriceListService) 
+        public PriceListController(IPriceListService PriceListService) 
         {
-            _context = context;
             _priceListService = PriceListService;
         }
 
         // GET: api/pricelist/GetAll
+        [Authorize]
         [HttpGet]
         [Route("GetAll")]
         public IActionResult GetAll()
@@ -31,6 +31,7 @@ namespace gdm5._0
         }
 
         // GET: api/pricelist/GetPriceList/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetPriceList(int id)
         {   
@@ -50,6 +51,7 @@ namespace gdm5._0
         }
 
         // POST: api/pricelist/AddPriceList
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Add(PriceList piceList)
         {    
@@ -64,6 +66,7 @@ namespace gdm5._0
         }
 
         // DELETE: api/pricelist/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete([FromRoute] int id)
         {
@@ -81,7 +84,7 @@ namespace gdm5._0
             return Ok(product);
         }
 
-
+        [Authorize]
         [HttpPost]
         [Route("addPriceList")]
         public IActionResult AddPriceList(addPriceListRequest addPriceList)
@@ -101,6 +104,7 @@ namespace gdm5._0
             }
         }
 
+        [Authorize]
         [Route("updatePriceList")]
         [HttpPost]
         public IActionResult UpdatePriceList(addPriceListRequest addPriceList)
@@ -116,7 +120,33 @@ namespace gdm5._0
                 return BadRequest(new { IsSuccess = false, Message = ex.Message });
             }
         }
-      
+
+        [Authorize]
+        [Route("getPriceListByName/{namePriceList}")]
+        public IActionResult getPriceListByName([FromRoute] string namePriceList)
+        {
+            try
+            {
+                PriceListWithValues priceList = _priceListService.GetPriceList(namePriceList);
+
+                if (priceList == null)
+                {
+                    return NotFound("No price list found for the specified price list ID.");
+                }
+
+                return Ok(priceList);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "An error occurred while processing the request.");
+            }
+        }
+
+        [Authorize]
         [Route("getPriceListWithValuesByName/{namePriceList}")]
         public IActionResult GetPriceListWithValues([FromRoute] string namePriceList)
         {
@@ -141,39 +171,16 @@ namespace gdm5._0
             }
         }
 
-        //[Route("getPriceListWithValues/{priceListId}")]
-        //public IActionResult GetPriceListWithValues(int priceListId)
-        //{
-        //    try
-        //    {
-        //        PriceListWithValues priceListValues = _priceListService.GetPriceListWithValues(priceListId);
-
-        //        if (priceListValues == null)
-        //        {
-        //            return NotFound("No price list values found for the specified price list ID.");
-        //        }
-
-        //        return Ok(priceListValues);
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //    catch (Exception)
-        //    {
-        //        return StatusCode(500, "An error occurred while processing the request.");
-        //    }
-        //}
-
+        [Authorize]
         [HttpDelete]
-        [Route("deletePriceList")]
+        [Route("deletePriceList/{priceListValueIds}")]
         public IActionResult DeletePriceList(int priceListValueIds)
         {
             try
             {
                 _priceListService.DeletePriceList(priceListValueIds);
-
-                return NoContent();
+                  
+                return Ok(new { IsSuccess = false, Message = "Price list deleted" });
             }
             catch (ArgumentException ex)
             {
@@ -183,9 +190,9 @@ namespace gdm5._0
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "An error occurred while processing the request.");
+                return StatusCode(500, ex.Message);
             }
         }
 

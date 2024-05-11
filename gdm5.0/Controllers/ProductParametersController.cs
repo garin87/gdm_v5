@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using gdm5._0.Models;
 using gdm5._0.Services;
-using gdm5._0.DTO;
 using Microsoft.AspNetCore.Authorization;
 
 namespace gdm5._0
@@ -26,8 +23,9 @@ namespace gdm5._0
             _productParameterService = new _ProductParameterService(_context);
         }
 
-       
+
         // GET: api/ProductParameters
+        [Authorize]
         [HttpGet]
         public IEnumerable<ProductParameter> GetProductParameters()
         {
@@ -35,6 +33,7 @@ namespace gdm5._0
         }
 
         // GET: api/ProductParameters/5
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<IActionResult> GetProductParameter([FromRoute] int id)
         {
@@ -54,6 +53,7 @@ namespace gdm5._0
         }
 
         // PUT: api/ProductParameters/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutProductParameter([FromRoute] int id, [FromBody] ProductParameter productParameter)
         {
@@ -89,6 +89,7 @@ namespace gdm5._0
         }
 
         // POST: api/ProductParameters
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> PostProductParameter([FromBody] ProductParameter productParameter)
         {
@@ -104,6 +105,7 @@ namespace gdm5._0
         }
 
         // DELETE: api/ProductParameters/5
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProductParameter([FromRoute] int id)
         {
@@ -127,75 +129,6 @@ namespace gdm5._0
         private bool ProductParameterExists(int id)
         {
             return _context.ProductParameters.Any(e => e.Id == id);
-        }
-
-        //api/ProductParameters/GetProductParameters/4
-        [HttpGet]
-        [Route("GetProductParameters/{id}")]
-        public Task<IEnumerable<ProductParameter>> GetProductParameters(long id)
-        {
-            return  _productParameterService.GetProductParameters(id);
-        }
-
-        [HttpGet]
-        [Route("GetProductDiameters/{id}")]
-        public Task<IEnumerable<DiameterDTO>> GetProductDiameters(int id, [FromQuery]string param, [FromQuery]int paramId)
-        {
-            return _productParameterService.GetProductDiameters(id, param, paramId);
-        }
-
-        //api/ProductParameters/1?param=Стандарт&paramId=2&paramDiameterId=4&diameter=20
-        [HttpGet]
-        [Route("GetProductByDiameter/{typeId}")]
-        public Task<IEnumerable<ProductDTO>> GetProductDiameters(int typeId, string param, int paramId, int paramDiameterId, string diameter)
-        {
-            return _productParameterService.GetProductsByDiameter(typeId, param, paramId, paramDiameterId, diameter);
-        }
-
-        // get other product
-        //api/GetOtherProductByType/typeId = 3;
-        [HttpGet]
-        [Route("GetOtherProductByType/{typeId}")]
-        public Task<IEnumerable<ProductDTO>> GetOtherProductByType(int typeId)
-        {
-            return _productParameterService.GetOtherProducts(typeId);
-        }
-
-        [HttpGet]
-        [Route("GetSortProductParameters/{id}")]
-        public Task<IEnumerable<ProductParameter>> GetSortProductParameters(long id)
-        {
-            return _productParameterService.GetSortProductParameters(id);
-        }
-
-        [HttpGet]
-        [Route("GetSumSteelBars/{id}")]
-        public async Task<double> GetSumSteelBars(int value)
-        {
-            return await _productParameterService.GetSumSteelBars(value);
-        }
-
-        [HttpGet]
-        [Route("GetSumTubes/{id}")]
-        public async Task<double> GetSumTubes(int value)
-        {
-            return await _productParameterService.GetSumTubes(value);
-        }
-
-        // api/ProductParameters/GetSumQuantityByParam/1?param=Стандарт&paramId=1&paramDiameterId=4&diameter=20
-        [HttpGet]
-        [Route("GetSumQuantityByParam/{typeId}")]
-        public async Task<double> GetSumQuantityByParam(int typeId, string param, int paramId, int paramDiameterId, string diameter)
-        {
-            return await _productParameterService.GetSumQuantityByParam(typeId, param, paramId, paramDiameterId, diameter);
-        }
-
-        // api/ProductParameters/GetSumPriceByParam/1?param=Стандарт&paramId=1&paramDiameterId=4&diameter=20
-        [HttpGet]
-        [Route("GetSumPriceByParam/{typeId}")]
-        public async Task<double> GetSumPriceByParam(int typeId, string param, int paramId, int paramDiameterId, string diameter)
-        {
-            return await _productParameterService.GetSumPriceByParam(typeId, param, paramId, paramDiameterId, diameter);
         }
 
     }

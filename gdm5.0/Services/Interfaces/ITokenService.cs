@@ -11,7 +11,7 @@ namespace gdm5._0.Services.Interfaces
         string GenerateAccessToken(IEnumerable<Claim> claims);
         string GenerateRefreshToken();
         ClaimsPrincipal GetPrincipalFromExpiredToken(string token);
-        List<Claim> GetClaims(User user);
+     //   List<Claim> GetClaims(User user);
         void RevokeRefreshToken(string username);
 
     }
