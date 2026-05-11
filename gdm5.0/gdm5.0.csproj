@@ -55,6 +55,7 @@
     <None Include=".ai\README.md" />
     <None Include=".claude\CLAUDE.md" />
     <None Include=".claude\skills\Cartograph\SKILL.md" />
+    <None Include=".claude\skills\DoR\SKILL.md" />
     <None Include=".github\copilot-instructions.md" />
   </ItemGroup>
 
