@@ -45,6 +45,13 @@
     <None Include="$(SpaRoot)**" Exclude="$(SpaRoot)node_modules\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include=".ai\README.md" />
+    <None Include=".claude\CLAUDE.md" />
+    <None Include=".claude\skills\Cartograph\SKILL.md" />
+    <None Include=".github\copilot-instructions.md" />
+  </ItemGroup>
+
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
     <!-- Ensure Node.js is installed -->
     <Exec Command="node --version" ContinueOnError="true">
