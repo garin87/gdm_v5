@@ -40,6 +40,25 @@ This repository has been configured with comprehensive AI-assisted development s
   - Common anti-patterns to avoid
   - Example code templates
 
+### 4. MCP Integration (Task Tracker Connection)
+- ? **`.ai/MCP_QUICK_START.md`** - Quick setup guide (5 minutes)
+  - GitHub Issues integration instructions
+  - Step-by-step token creation
+  - AI client configuration
+  - Test commands
+
+- ? **`docs/MCP_INTEGRATION_GUIDE.md`** - Comprehensive MCP documentation
+  - Detailed setup for all AI clients
+  - Alternative tracker integrations (Linear, Jira, Asana)
+  - Security best practices
+  - Troubleshooting guide
+  - Team configuration templates
+
+- ? **`.ai/mcp-config-template.json`** - Configuration template
+  - Ready-to-use JSON config
+  - Team can copy and customize
+  - Includes placeholder for token
+
 ---
 
 ## ?? Directory Structure
@@ -57,9 +76,14 @@ D:\Dev\Ggm\gdm_v5\gdm5.0\
 ?
 ??? .ai/
 ?   ??? README.md                            ? Multi-tool reference
+?   ??? MCP_QUICK_START.md                   ? MCP setup (5 min)
+?   ??? mcp-config-template.json             ? Config template
 ?
 ??? .github/
 ?   ??? copilot-instructions.md              ? GitHub Copilot config
+?
+??? docs/
+?   ??? MCP_INTEGRATION_GUIDE.md             ? Detailed MCP guide
 ?
 ??? [rest of your project files...]
 ```

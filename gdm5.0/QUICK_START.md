@@ -41,6 +41,16 @@ Specific instructions for GitHub Copilot with code examples and patterns.
 #### `.ai/README.md`
 Configuration reference for all AI tools (Cursor, Tabnine, etc.)
 
+### 5. **MCP Integration (Task Tracker)**
+
+#### `.ai/MCP_QUICK_START.md`
+Quick setup guide to connect GitHub Issues (or other task trackers) through MCP.
+
+#### `docs/MCP_INTEGRATION_GUIDE.md`
+Comprehensive guide for setting up task tracker integration.
+
+**How it works:** Once configured, your AI assistant can retrieve issue information, comments, and discussions without leaving your IDE.
+
 ---
 
 ## ?? How to Use
@@ -73,6 +83,21 @@ Example:
 1. Read **PROJECT_MAP.md** before starting
 2. Reference **.ai/README.md** for guidance
 3. Follow documented patterns
+
+### For Task Tracker Integration (MCP)
+
+**Quick setup (5 minutes):**
+1. Read **`.ai/MCP_QUICK_START.md`**
+2. Create GitHub Personal Access Token
+3. Configure your AI client
+4. Ask: "List open issues in garin87/gdm_v5"
+
+**Benefits:**
+- ?? Find related issues before coding
+- ?? Get requirements without switching apps
+- ?? Read discussion context
+- ?? Plan work based on issues
+- ?? Generate code with issue context
 
 ---
 
@@ -117,14 +142,19 @@ Open **PROJECT_MAP.md** and edit line 3:
 - Verify it matches your current architecture
 - Add any missing information
 
-### 3. Commit Everything
+### 3. Set Up MCP Integration (Optional but Recommended)
+- Follow **`.ai/MCP_QUICK_START.md`** (5 minutes)
+- Connect GitHub Issues to your AI client
+- Test: Ask "List issues in garin87/gdm_v5"
+
+### 4. Commit Everything
 ```bash
-git add PROJECT_MAP.md .claude/ .ai/ .github/ AI_SETUP_VERIFICATION.md QUICK_START.md
-git commit -m "Add Cartograph skill and AI tooling configuration"
+git add PROJECT_MAP.md .claude/ .ai/ .github/ docs/ *.md
+git commit -m "Add Cartograph skill, AI tooling, and MCP integration"
 git push origin AI-tooling-setup
 ```
 
-### 4. Test It Out!
+### 5. Test It Out!
 
 #### Test with Claude Code:
 1. Open your IDE with Claude Code

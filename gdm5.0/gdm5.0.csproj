@@ -46,6 +46,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include=".ai\mcp-config-template.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include=".ai\MCP_CHEAT_SHEET.md" />
+    <None Include=".ai\MCP_QUICK_START.md" />
     <None Include=".ai\README.md" />
     <None Include=".claude\CLAUDE.md" />
     <None Include=".claude\skills\Cartograph\SKILL.md" />
