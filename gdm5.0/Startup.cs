@@ -63,9 +63,7 @@ namespace gdm5._0
                     .AddEntityFrameworkStores<ApplicationDbContext>()
                     .AddDefaultTokenProviders();
 
-            services.AddIdentityServer()        
-                    //.AddSigningCredential(cert)
-                    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
+            // Identity Server removed - using JWT Bearer authentication only (configured below)
 
 
 
@@ -105,7 +103,8 @@ namespace gdm5._0
 
                 };
 
-            }).AddIdentityServerJwt();
+            });
+            // .AddIdentityServerJwt() removed - not needed for JWT Bearer authentication
 
             services.AddControllersWithViews();
 
@@ -160,7 +159,7 @@ namespace gdm5._0
             app.UseCors("EnableCORS");
 
             app.UseHttpsRedirection();
-            app.UseIdentityServer();
+            // app.UseIdentityServer(); // Removed - not needed with JWT Bearer
             if (!env.IsDevelopment())
             {
                 app.UseSpaStaticFiles();
