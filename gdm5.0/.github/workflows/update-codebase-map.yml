@@ -1,0 +1,194 @@
+# Codebase Map Update Workflow
+# Automatically updates PROJECT_MAP.md when significant changes occur
+
+name: Update Codebase Map
+
+on:
+  # Trigger on merges to main branches
+  push:
+    branches:
+      - main
+      - AI-tooling-setup
+      - develop
+
+  # Trigger on significant PRs
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+      - AI-tooling-setup
+
+  # Manual trigger
+  workflow_dispatch:
+
+  # Weekly schedule to keep map fresh
+  schedule:
+    - cron: '0 0 * * 0'  # Every Sunday at midnight
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-map:
+    name: Update Project Map
+    runs-on: ubuntu-latest
+
+    # Only run on merged PRs or scheduled runs
+    if: |
+      github.event_name == 'schedule' || 
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
+      github.event_name == 'push'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Analyze project structure
+        id: analyze
+        run: |
+          echo "Analyzing project structure..."
+
+          # Get .NET version
+          DOTNET_VERSION=$(grep -oP '<TargetFramework>net\K[0-9.]+' gdm5.0/gdm5.0.csproj | head -1)
+          echo "dotnet_version=$DOTNET_VERSION" >> $GITHUB_OUTPUT
+
+          # Count files
+          CS_FILES=$(find gdm5.0 -name "*.cs" -not -path "*/obj/*" -not -path "*/bin/*" | wc -l)
+          TS_FILES=$(find gdm5.0/ClientApp -name "*.ts" -not -path "*/node_modules/*" | wc -l)
+          echo "cs_files=$CS_FILES" >> $GITHUB_OUTPUT
+          echo "ts_files=$TS_FILES" >> $GITHUB_OUTPUT
+
+          # Get package versions
+          EF_VERSION=$(grep -oP 'Microsoft.EntityFrameworkCore.SqlServer.*Version="\K[^"]+' gdm5.0/gdm5.0.csproj | head -1)
+          echo "ef_version=$EF_VERSION" >> $GITHUB_OUTPUT
+
+          # Check for Identity Server
+          if grep -q "IdentityServer" gdm5.0/gdm5.0.csproj; then
+            echo "has_identity_server=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_identity_server=false" >> $GITHUB_OUTPUT
+          fi
+
+          # Get Angular version
+          if [ -f gdm5.0/ClientApp/package.json ]; then
+            ANGULAR_VERSION=$(jq -r '.dependencies["@angular/core"]' gdm5.0/ClientApp/package.json)
+            echo "angular_version=$ANGULAR_VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Update PROJECT_MAP.md metadata
+        run: |
+          # Update last updated timestamp
+          sed -i "s/\*\*Last Updated:\*\*.*/\*\*Last Updated:\*\* $(date +'%Y-%m-%d %H:%M:%S UTC') - Auto-updated by CI/" PROJECT_MAP.md
+
+          # Update .NET version
+          sed -i "s/ASP\.NET Core [0-9.]\+ Backend/ASP.NET Core ${{ steps.analyze.outputs.dotnet_version }} Backend/" PROJECT_MAP.md
+          sed -i "s/\*\*Framework:\*\* ASP\.NET Core [0-9.]\+/\*\*Framework:\*\* ASP.NET Core ${{ steps.analyze.outputs.dotnet_version }}/" PROJECT_MAP.md
+
+          # Update EF version
+          sed -i "s/Entity Framework Core [0-9.]\+/Entity Framework Core ${{ steps.analyze.outputs.ef_version }}/" PROJECT_MAP.md
+
+          # Update Identity Server status
+          if [ "${{ steps.analyze.outputs.has_identity_server }}" == "false" ]; then
+            sed -i "s/- IdentityServer4.*/- ~~IdentityServer4~~ (Removed - using JWT Bearer only)/" PROJECT_MAP.md
+          fi
+
+      - name: Generate statistics
+        run: |
+          cat >> PROJECT_MAP.md << 'EOF'
+
+          ---
+
+          ## Statistics (Auto-generated)
+
+          **Last Analyzed:** $(date +'%Y-%m-%d %H:%M:%S UTC')
+
+          ### Codebase Metrics:
+          - **C# Files:** ${{ steps.analyze.outputs.cs_files }}
+          - **TypeScript Files:** ${{ steps.analyze.outputs.ts_files }}
+          - **.NET Version:** ${{ steps.analyze.outputs.dotnet_version }}
+          - **Entity Framework:** ${{ steps.analyze.outputs.ef_version }}
+          - **Angular Version:** ${{ steps.analyze.outputs.angular_version }}
+          - **Identity Server:** ${{ steps.analyze.outputs.has_identity_server == 'true' && 'Yes' || 'No (JWT Bearer)' }}
+
+          ### Recent Changes:
+          - **Last Commit:** $(git log -1 --pretty=format:'%h - %s (%an, %ar)')
+          - **Last PR Merged:** ${{ github.event.pull_request.title || 'N/A' }}
+          - **Branch:** ${{ github.ref_name }}
+
+          EOF
+
+      - name: Check for changes
+        id: git-check
+        run: |
+          git diff --exit-code PROJECT_MAP.md || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push if changed
+        if: steps.git-check.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add PROJECT_MAP.md
+          git commit -m "??? Auto-update PROJECT_MAP.md [skip ci]
+
+          - Updated metadata and versions
+          - Refreshed statistics
+          - Analyzed: ${{ steps.analyze.outputs.cs_files }} C# files
+          - .NET ${{ steps.analyze.outputs.dotnet_version }}
+          - EF Core ${{ steps.analyze.outputs.ef_version }}"
+          git push
+
+      - name: Create PR if significant changes
+        if: |
+          steps.git-check.outputs.changed == 'true' && 
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "??? Scheduled update of PROJECT_MAP.md"
+          title: "??? Update Project Map (Scheduled)"
+          body: |
+            ## Automated Project Map Update
+
+            This PR updates PROJECT_MAP.md with current project information.
+
+            ### Changes:
+            - Updated metadata timestamps
+            - Refreshed technology versions
+            - Updated codebase statistics
+
+            ### Analyzed:
+            - **C# Files:** ${{ steps.analyze.outputs.cs_files }}
+            - **TypeScript Files:** ${{ steps.analyze.outputs.ts_files }}
+            - **.NET Version:** ${{ steps.analyze.outputs.dotnet_version }}
+            - **EF Version:** ${{ steps.analyze.outputs.ef_version }}
+            - **Angular Version:** ${{ steps.analyze.outputs.angular_version }}
+
+            **Generated by:** Automated workflow
+            **Triggered by:** ${{ github.event_name }}
+          branch: auto-update-project-map
+          delete-branch: true
+
+      - name: Post summary
+        if: always()
+        run: |
+          echo "## ??? Project Map Update Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** ${{ steps.git-check.outputs.changed == 'true' && '? Updated' || '? No changes needed' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Analyzed Files:** ${{ steps.analyze.outputs.cs_files }} C# + ${{ steps.analyze.outputs.ts_files }} TS" >> $GITHUB_STEP_SUMMARY
+          echo "**.NET Version:** ${{ steps.analyze.outputs.dotnet_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Identity Server:** ${{ steps.analyze.outputs.has_identity_server == 'true' && 'Yes' || 'No (JWT Bearer)' }}" >> $GITHUB_STEP_SUMMARY

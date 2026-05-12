@@ -1,0 +1,142 @@
+# Custom AI Code Review using OpenAI GPT-4
+
+name: AI Code Review (OpenAI)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v40
+        with:
+          files: |
+            **/*.cs
+            **/*.csproj
+            **/*.json
+
+      - name: Review with AI
+        uses: actions/github-script@v7
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        with:
+          script: |
+            const OpenAI = require('openai');
+            const openai = new OpenAI({
+              apiKey: process.env.OPENAI_API_KEY
+            });
+
+            const changedFiles = `${{ steps.changed-files.outputs.all_changed_files }}`.split(' ');
+
+            // Read file contents
+            const fs = require('fs');
+            const fileContents = {};
+            for (const file of changedFiles) {
+              try {
+                fileContents[file] = fs.readFileSync(file, 'utf8');
+              } catch (e) {
+                console.log(`Could not read file: ${file}`);
+              }
+            }
+
+            // Prepare prompt
+            const prompt = `You are an expert .NET 8 code reviewer. Review the following code changes from a .NET 5 to .NET 8 migration:
+
+            Focus on:
+            1. Security vulnerabilities
+            2. Performance issues
+            3. .NET 8 best practices
+            4. Breaking changes
+            5. Missing tests
+            6. Authentication changes (Identity Server removed, JWT Bearer added)
+            7. Async/await patterns
+            8. Null reference issues
+
+            Files changed:
+            ${Object.entries(fileContents).map(([file, content]) => 
+              `\n### ${file}\n\`\`\`\n${content}\n\`\`\``
+            ).join('\n')}
+
+            Provide:
+            1. Summary of changes
+            2. Potential risks
+            3. Missing tests
+            4. Security concerns
+            5. Performance issues
+            6. Specific recommendations with line numbers
+
+            Format as GitHub-flavored markdown.`;
+
+            // Call OpenAI
+            const completion = await openai.chat.completions.create({
+              model: "gpt-4-turbo-preview",
+              messages: [
+                {
+                  role: "system",
+                  content: "You are an expert .NET code reviewer focusing on security, performance, and best practices."
+                },
+                {
+                  role: "user",
+                  content: prompt
+                }
+              ],
+              max_tokens: 4000
+            });
+
+            const review = completion.choices[0].message.content;
+
+            // Post review as comment
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ?? AI Code Review\n\n${review}\n\n---\n*Reviewed by GPT-4*`
+            });
+
+            // Check for critical issues
+            const hasCriticalIssues = review.toLowerCase().includes('critical') || 
+                                     review.toLowerCase().includes('security vulnerability') ||
+                                     review.toLowerCase().includes('breaking change');
+
+            if (hasCriticalIssues) {
+              // Add label
+              await github.rest.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['needs-review', 'potential-issues']
+              });
+
+              // Request changes
+              await github.rest.pulls.createReview({
+                pull_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: 'REQUEST_CHANGES',
+                body: '?? AI review found potential critical issues. Please review carefully.'
+              });
+            } else {
+              // Approve
+              await github.rest.pulls.createReview({
+                pull_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                event: 'COMMENT',
+                body: '? AI review completed. No critical issues found.'
+              });
+            }

@@ -1,0 +1,180 @@
+# CodeRabbit Configuration for gdm_v5 .NET 8 Migration
+
+# Language settings
+language: "en-US"
+
+# Review settings
+reviews:
+  # Review all pull requests
+  auto_review:
+    enabled: true
+
+  # Request changes if critical issues found
+  request_changes: true
+
+  # Focus areas for review
+  profile: "chill" # Options: "chill", "assertive", "strictest"
+
+  # What to check
+  checks:
+    - security          # Security vulnerabilities
+    - performance       # Performance issues
+    - best_practices    # Code quality and best practices
+    - testing           # Missing or inadequate tests
+    - documentation     # Documentation gaps
+    - accessibility     # Accessibility issues
+
+  # File types to review
+  path_filters:
+    include:
+      - "**/*.cs"       # C# files
+      - "**/*.csproj"   # Project files
+      - "**/*.ts"       # TypeScript
+      - "**/*.json"     # Config files
+      - "**/*.md"       # Documentation
+    exclude:
+      - "**/Migrations/**" # Skip EF migrations
+      - "**/bin/**"
+      - "**/obj/**"
+      - "**/node_modules/**"
+      - "**/*.Designer.cs"
+
+  # Specific rules for .NET projects
+  rules:
+    dotnet:
+      # Check for .NET 8 best practices
+      target_framework: "net8.0"
+
+      # Security checks
+      check_sql_injection: true
+      check_xss: true
+      check_csrf: true
+
+      # Performance
+      check_linq_performance: true
+      check_async_usage: true
+
+      # Code quality
+      check_null_reference: true
+      check_unused_code: true
+      check_code_smells: true
+
+    frontend:
+      # Angular checks
+      check_angular_patterns: true
+      check_typescript_strict: true
+
+# Tone of comments
+tone_instructions: |
+  - Be constructive and helpful
+  - Focus on why, not just what
+  - Suggest improvements with examples
+  - Acknowledge good practices
+  - For critical issues, explain the risk
+
+# AI model to use (optional)
+chat:
+  # Use more powerful model for complex reviews
+  model: "gpt-4"
+
+# Summary format
+summary:
+  enabled: true
+  include:
+    - overview              # High-level summary
+    - changed_files         # Files changed count
+    - key_changes          # Most important changes
+    - risks                # Potential risks
+    - testing_gaps         # Missing tests
+    - security_concerns    # Security issues
+    - performance_issues   # Performance problems
+    - suggestions          # Improvement suggestions
+
+# Automatically label PRs
+labels:
+  # Apply labels based on review findings
+  auto_label:
+    enabled: true
+    labels:
+      - name: "security-review-needed"
+        condition: "has_security_issues"
+      - name: "performance-review-needed"
+        condition: "has_performance_issues"
+      - name: "needs-tests"
+        condition: "has_testing_gaps"
+      - name: "breaking-change"
+        condition: "has_breaking_changes"
+
+# Integration with GitHub
+github:
+  # Post summary as PR comment
+  post_summary: true
+
+  # Post inline comments
+  post_inline_comments: true
+
+  # Request review from humans if critical issues
+  request_human_review:
+    enabled: true
+    threshold: "medium" # low, medium, high
+
+  # Auto-approve if no issues
+  auto_approve:
+    enabled: false # Set to true if you trust the AI completely
+
+# Specific checks for migration
+custom_checks:
+  - name: "Check .NET 8 compatibility"
+    pattern: "*.cs"
+    rules:
+      - "No usage of obsolete .NET 5 APIs"
+      - "Proper async/await usage"
+      - "No blocking calls in async methods"
+
+  - name: "Check Identity Server removal"
+    pattern: "*.cs"
+    rules:
+      - "No references to IdentityServer4"
+      - "No ApiAuthorizationDbContext usage"
+      - "JWT Bearer properly configured"
+
+  - name: "Check package versions"
+    pattern: "*.csproj"
+    rules:
+      - "All Microsoft packages are 8.0.x"
+      - "No vulnerable packages"
+      - "No deprecated packages"
+
+# Notifications
+notifications:
+  # Notify on Slack (optional)
+  slack:
+    enabled: false
+    webhook_url: "${SLACK_WEBHOOK_URL}"
+
+  # Email notifications (optional)
+  email:
+    enabled: false
+    recipients:
+      - "team@example.com"
+
+# Ignore certain types of changes
+ignore:
+  - "*.md"     # Don't nitpick documentation
+  - "*.txt"    # Ignore text files
+
+# Performance settings
+performance:
+  # Max time for review (seconds)
+  max_review_time: 300
+
+  # Max files to review in one PR
+  max_files: 100
+
+# Learning and improvement
+learning:
+  # Learn from human reviewer feedback
+  learn_from_feedback: true
+
+  # Improve over time
+  adaptive_learning: true

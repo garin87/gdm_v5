@@ -12,7 +12,8 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.FileProviders;
+    using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,10 @@ namespace gdm5._0
                 .Build();
 
             string conString = Configuration["ConnectionStrings:DefaultConnection"];
+            
+            //services.AddDbContext<ApplicationDbContext>(options =>
+            //    options.UseSqlServer(conString));
+            
             services.AddDbContext<DataContext>(options =>
                 options.UseSqlServer(conString));
 
@@ -55,27 +60,9 @@ namespace gdm5._0
                 return new UriService(uri);
             });
 
-            //services.AddDefaultIdentity<ApplicationUser>(options => 
-            //          options.SignIn.RequireConfirmedAccount = true)
-            //         .AddEntityFrameworkStores<ApplicationDbContext>();
-
             services.AddIdentity<ApplicationUser, IdentityRole>()
-                    .AddEntityFrameworkStores<ApplicationDbContext>()
+                    .AddEntityFrameworkStores<DataContext>()
                     .AddDefaultTokenProviders();
-
-            services.AddIdentityServer()        
-                    //.AddSigningCredential(cert)
-                    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-
-
-
-            //.AddCookie(config =>
-            // {
-            //     config.Cookie.Name = "auth";
-            //     config.Cookie.HttpOnly = true;//The cookie cannot be obtained by the front-end or the browser, and can only be modified on the server side
-            //                                   // config.Cookie.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.Strict;//This cookie cannot be used as a third-party cookie under any circumstances, without exception. For example, suppose b.com sets the following cookies:
-            // })
-
 
             var jwtSettings = Configuration.GetSection("JwtSettings");
 
@@ -83,11 +70,6 @@ namespace gdm5._0
            {
                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-             
-               //options.DefaultSignInScheme = JwtBearerDefaults.AuthenticationScheme;
-               //}).AddCookie("CookiewAuth", options => {
-               //    options.LoginPath = new Microsoft.AspNetCore.Http.PathString("Identity/Account/Login");
-
 
            }).AddJwtBearer(options =>
             {
@@ -99,22 +81,18 @@ namespace gdm5._0
                     ValidateIssuerSigningKey = true,
                     RequireExpirationTime = false,
                     ClockSkew = TimeSpan.Zero,
-                    //ValidIssuer = jwtSettings.GetSection("validIssuer").Value,
-                    //ValidAudience = jwtSettings.GetSection("validAudience").Value,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.GetSection("securityKey").Value))
 
                 };
 
-            }).AddIdentityServerJwt();
+            });
 
             services.AddControllersWithViews();
 
             services.AddRazorPages();
-            // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
-                configuration.RootPath = "ClientApp/dist/gdm5._0";
-             //   configuration.RootPath = "ClientApp/dist";
+                configuration.RootPath = "ClientApp/dist";
             });
 
             services.AddCors(options =>
@@ -149,72 +127,40 @@ namespace gdm5._0
                 app.UseDeveloperExceptionPage();
                 app.UseMigrationsEndPoint();
             }
-            //else
-            //{
-            //    app.UseExceptionHandler("/Error");
-            //    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-            //    app.UseHsts();
-            //    app.UseDeveloperExceptionPage();
-            //}
 
             app.UseCors("EnableCORS");
 
             app.UseHttpsRedirection();
-            app.UseIdentityServer();
-            if (!env.IsDevelopment())
-            {
-                app.UseSpaStaticFiles();
-            }
-         
-            //var ci = new CultureInfo("en-US");
-            //ci.DateTimeFormat.LongDatePattern = "MM/dd/yyyy";
-            //app.UseRequestLocalization(new RequestLocalizationOptions
-            //{
-            //    DefaultRequestCulture = new Microsoft.AspNetCore.Localization.RequestCulture(ci),
-            //    SupportedCultures = new List<CultureInfo> { ci },
-            //    SupportedUICultures = new List<CultureInfo> { ci }
-            //});
             
+            // Serve static files from wwwroot
+            app.UseStaticFiles();
+            
+            // Serve static files from ClientApp/dist
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(env.ContentRootPath, "ClientApp", "dist")),
+                RequestPath = ""
+            });
 
-            app.UseAuthentication();
-            // app.UseIdentityServer();
             app.UseRouting();
+            app.UseAuthentication();
             app.UseAuthorization();
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
-            });
-            app.UseSpa(spa =>
-            {
-                // To learn more about options for serving an Angular SPA from ASP.NET Core,
-                // see https://go.microsoft.com/fwlink/?linkid=864501
-                //  spa.Options.SourcePath = "ClientApp";
-                spa.Options.SourcePath = "ClientApp/dist";
-
-                if (env.IsDevelopment())
+                
+                // Fallback to index.html for SPA routes
+                endpoints.MapFallbackToFile("index.html", new StaticFileOptions
                 {
-                    spa.UseAngularCliServer(npmScript: "start");
-                }
-
-                //   spa.UseAngularCliServer(npmScript: "start");
+                    FileProvider = new PhysicalFileProvider(
+                        Path.Combine(env.ContentRootPath, "ClientApp", "dist"))
+                });
             });
-            //app.UseSpa(spa =>
-            //{
-            //    // To learn more about options for serving an Angular SPA from ASP.NET Core,
-            //    // see https://go.microsoft.com/fwlink/?linkid=864501
-
-            //    spa.Options.SourcePath = "ClientApp";
-
-            //    if (env.IsDevelopment())
-            //    {
-            //        spa.UseAngularCliServer(npmScript: "start");
-            //    }
-
-            //   // spa.UseAngularCliServer(npmScript: "start");
-            //});
         }
     }
 }
