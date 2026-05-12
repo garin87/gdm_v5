@@ -61,6 +61,7 @@
     <None Include=".github\workflows\ai-code-review.yml" />
     <None Include=".github\workflows\copilot-code-review.yml" />
     <None Include=".github\workflows\sonarcloud.yml" />
+    <None Include=".github\workflows\update-codebase-map.yml" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

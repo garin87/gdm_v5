@@ -1,9 +1,10 @@
 # GDM 5.0 Project Map
 
 ## Document Ownership
-**Owner:** [TO BE ASSIGNED - Client/Team Lead]  
-**Last Updated:** [Auto-generated on creation]  
-**Purpose:** Architectural reference for development team and AI-assisted tooling
+**Owner:** Development Team  
+**Last Updated:** $(Get-Date -Format "yyyy-MM-dd HH:mm:ss") - Updated for .NET 8 migration  
+**Purpose:** Architectural reference for development team and AI-assisted tooling  
+**Version:** 2.0 (Post .NET 8 Migration)
 
 ---
 
@@ -11,13 +12,13 @@
 
 **Project Name:** GDM 5.0 (gdm5._0)  
 **Type:** Full-stack web application  
-**Architecture:** ASP.NET Core 5.0 Backend + Angular 16 Frontend (SPA)  
+**Architecture:** ASP.NET Core 8.0 Backend + Angular 16 Frontend (SPA)  
 **Repository:** https://github.com/garin87/gdm_v5  
-**Branch:** AI-tooling-setup
+**Branch:** feature/dotnet8-migration (migration in progress)
 
 ### Business Domain
 Enterprise Resource Planning (ERP) system focused on:
-- Product inventory management
+- Product inventory management with parametric search
 - Order processing and tracking
 - Customer relationship management
 - Multi-currency price list management
@@ -27,19 +28,21 @@ Enterprise Resource Planning (ERP) system focused on:
 
 ## 2. Technology Stack
 
-### Backend (.NET 5.0)
-- **Framework:** ASP.NET Core 5.0
-- **ORM:** Entity Framework Core 5.0.4
+### Backend (.NET 8.0)
+- **Framework:** ASP.NET Core 8.0
+- **Language:** C# 10+
+- **ORM:** Entity Framework Core 8.0.0
 - **Database:** SQL Server
 - **Authentication:** 
   - ASP.NET Core Identity
-  - IdentityServer4 (API Authorization)
-  - JWT Bearer Tokens
+  - JWT Bearer Tokens (Microsoft.AspNetCore.Authentication.JwtBearer 8.0.0)
+  - ~~IdentityServer4~~ (Removed in .NET 8 migration - using pure JWT Bearer)
 - **Key Libraries:**
-  - System.Linq.Dynamic.Core (dynamic querying)
-  - MigraDoc/PdfSharp (PDF generation)
-  - Newtonsoft.Json
-  - Realm 10.4.1
+  - EntityFramework.DynamicLinq 1.7.2 (dynamic querying)
+  - System.Linq.Dynamic.Core 1.7.2 (parametric search)
+  - MigraDoc/PdfSharp 1.3.67 (PDF generation)
+  - Newtonsoft.Json 13.0.4
+  - Realm 11.7.0 (major version update)
 
 ### Frontend (Angular 16)
 - **Framework:** Angular 16.2.3
