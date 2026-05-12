@@ -3,7 +3,7 @@
 ## Project Identity
 **Name:** GDM 5.0 (gdm5._0)  
 **Type:** Enterprise Resource Planning (ERP) System  
-**Architecture:** Full-stack web application with .NET 5.0 backend and Angular 16 frontend
+**Architecture:** Full-stack web application with ASP.NET Core net8.0 backend and Angular 16 frontend; IdentityServer is not part of the current authentication architecture
 
 ---
 
