@@ -1,0 +1,89 @@
+# GitHub Copilot Code Review Workflow
+
+name: Copilot Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - AI-tooling-setup
+      - 'feature/**'
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  copilot-review:
+    name: AI Code Review
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore gdm5.0/gdm5.0.sln
+
+      - name: Build
+        run: dotnet build gdm5.0/gdm5.0.sln --no-restore
+
+      - name: Run tests
+        run: dotnet test gdm5.0/gdm5.0.sln --no-build --verbosity normal
+        continue-on-error: true
+
+      - name: GitHub Copilot Code Review
+        uses: github/copilot-code-review-action@v1
+        with:
+          # Focus areas
+          focus: |
+            - Security vulnerabilities
+            - Performance issues
+            - .NET 8 best practices
+            - Async/await patterns
+            - Null reference issues
+            - LINQ performance
+            - Authentication changes
+            - Breaking changes
+
+          # Review severity
+          min-severity: 'warning'
+
+          # Comment on PR
+          comment: true
+
+          # Request changes if critical issues
+          request-changes: true
+
+      - name: Post Review Summary
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `## ?? AI Code Review Summary
+
+            **Branch:** ${{ github.head_ref }}
+            **Base:** ${{ github.base_ref }}
+
+            **Build Status:** ${{ job.status }}
+
+            Review completed by GitHub Copilot.
+
+            Check the review comments for details.
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: summary
+            });
