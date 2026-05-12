@@ -58,6 +58,9 @@
     <None Include=".claude\skills\Cartograph\SKILL.md" />
     <None Include=".claude\skills\DoR\SKILL.md" />
     <None Include=".github\copilot-instructions.md" />
+    <None Include=".github\workflows\ai-code-review.yml" />
+    <None Include=".github\workflows\copilot-code-review.yml" />
+    <None Include=".github\workflows\sonarcloud.yml" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">
